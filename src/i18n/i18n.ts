@@ -1,0 +1,145 @@
+import i18n from 'i18next';
+import { initReactI18next } from 'react-i18next';
+import { resolveSystemLocale } from '@/lib/locale';
+
+const resources = {
+  'zh-CN': {
+    translation: {
+      appName: 'Cloud Pika',
+      nav: {
+        explorer: '文件浏览',
+        transfer: '传输任务',
+        settings: '设置',
+      },
+      common: {
+        language: '语言',
+        theme: '主题',
+        save: '保存',
+        cancel: '取消',
+        loading: '加载中...',
+        refresh: '刷新',
+        search: '搜索',
+      },
+      login: {
+        title: '连接云存储账户',
+        subtitle: '支持多云平台，凭证本地 AES 加密',
+        provider: '云厂商',
+        alias: '别名',
+        accessKey: 'Access Key',
+        secretKey: 'Secret Key',
+        endpoint: 'Endpoint',
+        region: 'Region',
+        connect: '连接并保存',
+        recent: '最近账户',
+        empty: '暂无账户',
+      },
+      bucket: {
+        title: '存储空间',
+        folder: '目录',
+        table: '列表',
+        grid: '网格',
+        upload: '上传',
+        download: '下载',
+        delete: '删除',
+        rename: '重命名',
+        syncing: '同步存储空间中...',
+        dropHint: '拖拽文件到此处上传到当前存储空间',
+        empty: '暂无对象',
+      },
+      transfer: {
+        title: '传输任务',
+        queued: '排队中',
+        running: '进行中',
+        completed: '已完成',
+        failed: '失败',
+        canceled: '已取消',
+      },
+      settings: {
+        title: '偏好设置',
+        system: '跟随系统',
+        dark: '深色',
+        light: '浅色',
+        chinese: '中文',
+        english: '英文',
+        https: '启用 HTTPS',
+        hideDelete: '隐藏删除按钮',
+        paging: '分页模式',
+      },
+    },
+  },
+  'en-US': {
+    translation: {
+      appName: 'Cloud Pika',
+      nav: {
+        explorer: 'Explorer',
+        transfer: 'Transfers',
+        settings: 'Settings',
+      },
+      common: {
+        language: 'Language',
+        theme: 'Theme',
+        save: 'Save',
+        cancel: 'Cancel',
+        loading: 'Loading...',
+        refresh: 'Refresh',
+        search: 'Search',
+      },
+      login: {
+        title: 'Connect Cloud Account',
+        subtitle: 'Multi-cloud desktop client with local AES credential encryption',
+        provider: 'Provider',
+        alias: 'Alias',
+        accessKey: 'Access Key',
+        secretKey: 'Secret Key',
+        endpoint: 'Endpoint',
+        region: 'Region',
+        connect: 'Connect & Save',
+        recent: 'Recent Accounts',
+        empty: 'No account yet',
+      },
+      bucket: {
+        title: 'Buckets',
+        folder: 'Folder',
+        table: 'Table',
+        grid: 'Grid',
+        upload: 'Upload',
+        download: 'Download',
+        delete: 'Delete',
+        rename: 'Rename',
+        syncing: 'Syncing buckets...',
+        dropHint: 'Drop files here to upload to current bucket',
+        empty: 'No objects',
+      },
+      transfer: {
+        title: 'Transfers',
+        queued: 'Queued',
+        running: 'Running',
+        completed: 'Completed',
+        failed: 'Failed',
+        canceled: 'Canceled',
+      },
+      settings: {
+        title: 'Preferences',
+        system: 'System',
+        dark: 'Dark',
+        light: 'Light',
+        chinese: 'Chinese',
+        english: 'English',
+        https: 'Enable HTTPS',
+        hideDelete: 'Hide Delete Action',
+        paging: 'Paging Mode',
+      },
+    },
+  },
+};
+
+void i18n.use(initReactI18next).init({
+  resources,
+  lng: resolveSystemLocale(),
+  fallbackLng: 'en-US',
+  interpolation: {
+    escapeValue: false,
+  },
+});
+
+export default i18n;
