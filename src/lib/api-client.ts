@@ -27,6 +27,25 @@ client.interceptors.request.use((config) => {
   return config;
 });
 
+client.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    const payload = error?.response?.data as
+      | { error?: string; message?: string; detail?: string; provider?: string; stage?: string }
+      | undefined;
+    if (payload) {
+      const detail = payload.detail?.trim();
+      const baseMessage = payload.message?.trim() || payload.error?.trim();
+      const providerStage =
+        payload.provider && payload.stage ? ` (${payload.provider}/${payload.stage})` : '';
+      if (baseMessage) {
+        error.message = detail ? `${baseMessage}${providerStage}: ${detail}` : `${baseMessage}${providerStage}`;
+      }
+    }
+    return Promise.reject(error);
+  },
+);
+
 export function setApiRuntime(url: string, token: string): void {
   baseUrl = url;
   accessToken = token;

@@ -26,6 +26,7 @@ export default function App() {
   return (
     <AppLayout>
       <Routes>
+        <Route path="/login" element={<LoginPage />} />
         <Route path="/bucket" element={<BucketPage />} />
         <Route path="/transfers" element={<TransfersPage />} />
         <Route path="/settings" element={<SettingsPage />} />

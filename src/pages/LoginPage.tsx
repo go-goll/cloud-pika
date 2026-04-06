@@ -2,18 +2,25 @@ import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Trash2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { AxiosError } from 'axios';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
-import { providerOptions } from '@/lib/provider';
+import {
+  fieldIsRequired,
+  getMissingRequiredField,
+  getProviderOption,
+  providerOptions,
+  type LoginFieldKey,
+} from '@/lib/provider';
 import { useCreateAccountMutation, useDeleteAccountMutation } from '@/hooks/useCloudApi';
 import { useAccountStore } from '@/stores/useAccountStore';
 import type { ProviderKey } from '@/types/account';
 
 const defaults = {
   provider: 'qiniu' as ProviderKey,
-  name: '七牛云',
+  name: getProviderOption('qiniu').defaultAlias,
   accessKey: '',
   secretKey: '',
   endpoint: '',
@@ -29,28 +36,80 @@ export function LoginPage() {
   const accounts = useAccountStore((s) => s.accounts);
   const setActiveAccountId = useAccountStore((s) => s.setActiveAccountId);
   const [form, setForm] = useState(defaults);
+  const [nameTouched, setNameTouched] = useState(false);
+  const [showAdvanced, setShowAdvanced] = useState(false);
+  const [submitError, setSubmitError] = useState('');
 
   const createMutation = useCreateAccountMutation();
   const deleteMutation = useDeleteAccountMutation();
-
-  const providerLabel = useMemo(
-    () => providerOptions.find((item) => item.value === form.provider)?.label ?? '',
-    [form.provider],
-  );
+  const providerMeta = useMemo(() => getProviderOption(form.provider), [form.provider]);
 
   useEffect(() => {
-    if (!form.name.trim()) {
-      setForm((prev) => ({ ...prev, name: providerLabel }));
+    if (!nameTouched) {
+      setForm((prev) => ({ ...prev, name: providerMeta.defaultAlias }));
     }
-  }, [providerLabel, form.name]);
+  }, [nameTouched, providerMeta.defaultAlias]);
+
+  const showEndpoint =
+    fieldIsRequired(providerMeta.endpointMode) ||
+    (providerMeta.endpointMode === 'optional' && showAdvanced);
+  const showRegion =
+    fieldIsRequired(providerMeta.regionMode) || (providerMeta.regionMode === 'optional' && showAdvanced);
+  const showInternal = providerMeta.showInternal && showAdvanced;
+  const canToggleAdvanced =
+    providerMeta.endpointMode === 'optional' ||
+    providerMeta.regionMode === 'optional' ||
+    providerMeta.showInternal;
+
+  const getFieldLabel = (field: LoginFieldKey): string => {
+    switch (field) {
+      case 'name':
+        return t('login.alias');
+      case 'accessKey':
+        return t(providerMeta.accessKeyLabelKey ?? 'login.accessKey');
+      case 'secretKey':
+        return t(providerMeta.secretKeyLabelKey ?? 'login.secretKey');
+      case 'serviceName':
+        return t('login.serviceName');
+      case 'endpoint':
+        return t('login.endpoint');
+      case 'region':
+        return t('login.region');
+      default:
+        return field;
+    }
+  };
 
   const onSubmit = async () => {
-    if (!form.name || !form.accessKey || !form.secretKey) {
+    const missing = getMissingRequiredField(form);
+    if (missing) {
+      setSubmitError(t('login.requiredField', { field: getFieldLabel(missing) }));
       return;
     }
-    const account = await createMutation.mutateAsync(form);
-    setActiveAccountId(account.id);
-    navigate('/bucket');
+
+    try {
+      setSubmitError('');
+      const account = await createMutation.mutateAsync({
+        ...form,
+        endpoint: form.endpoint.trim(),
+        region: form.region.trim(),
+        serviceName: form.serviceName.trim(),
+      });
+      setActiveAccountId(account.id);
+      navigate('/bucket');
+    } catch (error) {
+      const fallback = t('login.connectFailed');
+      if (error instanceof AxiosError) {
+        const response = error.response?.data as
+          | { error?: string; message?: string; detail?: string }
+          | undefined;
+        setSubmitError(response?.message || response?.error || response?.detail || error.message || fallback);
+      } else if (error instanceof Error) {
+        setSubmitError(error.message || fallback);
+      } else {
+        setSubmitError(fallback);
+      }
+    }
   };
 
   const onDelete = async (id: string) => {
@@ -69,9 +128,21 @@ export function LoginPage() {
               <span className="mb-2 block text-[var(--text-muted)]">{t('login.provider')}</span>
               <Select
                 value={form.provider}
-                onChange={(event) =>
-                  setForm((prev) => ({ ...prev, provider: event.target.value as ProviderKey }))
-                }
+                onChange={(event) => {
+                  const nextProvider = event.target.value as ProviderKey;
+                  const nextMeta = getProviderOption(nextProvider);
+                  setShowAdvanced(false);
+                  setSubmitError('');
+                  setForm((prev) => ({
+                    ...prev,
+                    provider: nextProvider,
+                    name: nameTouched ? prev.name : nextMeta.defaultAlias,
+                    serviceName: nextMeta.serviceNameMode === 'hidden' ? '' : prev.serviceName,
+                    endpoint: nextMeta.endpointMode === 'hidden' ? '' : prev.endpoint,
+                    region: nextMeta.regionMode === 'hidden' ? '' : prev.region,
+                    internal: nextMeta.showInternal ? prev.internal : false,
+                  }));
+                }}
               >
                 {providerOptions.map((item) => (
                   <option key={item.value} value={item.value}>
@@ -85,12 +156,17 @@ export function LoginPage() {
               <span className="mb-2 block text-[var(--text-muted)]">{t('login.alias')}</span>
               <Input
                 value={form.name}
-                onChange={(event) => setForm((prev) => ({ ...prev, name: event.target.value }))}
+                onChange={(event) => {
+                  setNameTouched(true);
+                  setForm((prev) => ({ ...prev, name: event.target.value }));
+                }}
               />
             </label>
 
             <label className="text-sm">
-              <span className="mb-2 block text-[var(--text-muted)]">{t('login.accessKey')}</span>
+              <span className="mb-2 block text-[var(--text-muted)]">
+                {t(providerMeta.accessKeyLabelKey ?? 'login.accessKey')}
+              </span>
               <Input
                 value={form.accessKey}
                 onChange={(event) => setForm((prev) => ({ ...prev, accessKey: event.target.value }))}
@@ -98,7 +174,9 @@ export function LoginPage() {
             </label>
 
             <label className="text-sm">
-              <span className="mb-2 block text-[var(--text-muted)]">{t('login.secretKey')}</span>
+              <span className="mb-2 block text-[var(--text-muted)]">
+                {t(providerMeta.secretKeyLabelKey ?? 'login.secretKey')}
+              </span>
               <Input
                 type="password"
                 value={form.secretKey}
@@ -106,23 +184,64 @@ export function LoginPage() {
               />
             </label>
 
-            <div className="grid gap-4 sm:grid-cols-2">
+            {providerMeta.serviceNameMode !== 'hidden' ? (
               <label className="text-sm">
-                <span className="mb-2 block text-[var(--text-muted)]">{t('login.endpoint')}</span>
+                <span className="mb-2 block text-[var(--text-muted)]">{t('login.serviceName')}</span>
                 <Input
-                  value={form.endpoint}
-                  onChange={(event) => setForm((prev) => ({ ...prev, endpoint: event.target.value }))}
+                  value={form.serviceName}
+                  onChange={(event) => setForm((prev) => ({ ...prev, serviceName: event.target.value }))}
+                  placeholder={t('login.serviceNamePlaceholder')}
                 />
               </label>
+            ) : null}
 
-              <label className="text-sm">
-                <span className="mb-2 block text-[var(--text-muted)]">{t('login.region')}</span>
-                <Input
-                  value={form.region}
-                  onChange={(event) => setForm((prev) => ({ ...prev, region: event.target.value }))}
-                />
-              </label>
-            </div>
+            {canToggleAdvanced ? (
+              <button
+                type="button"
+                className="w-fit text-xs text-[var(--text-muted)] underline-offset-4 hover:underline"
+                onClick={() => setShowAdvanced((value) => !value)}
+              >
+                {showAdvanced ? t('login.hideAdvanced') : t('login.showAdvanced')}
+              </button>
+            ) : null}
+
+            {showEndpoint || showRegion || showInternal ? (
+              <div className="grid gap-4 sm:grid-cols-2">
+                {showEndpoint ? (
+                  <label className="text-sm">
+                    <span className="mb-2 block text-[var(--text-muted)]">{t('login.endpoint')}</span>
+                    <Input
+                      value={form.endpoint}
+                      onChange={(event) => setForm((prev) => ({ ...prev, endpoint: event.target.value }))}
+                      placeholder={t('login.endpointPlaceholder')}
+                    />
+                  </label>
+                ) : null}
+                {showRegion ? (
+                  <label className="text-sm">
+                    <span className="mb-2 block text-[var(--text-muted)]">{t('login.region')}</span>
+                    <Input
+                      value={form.region}
+                      onChange={(event) => setForm((prev) => ({ ...prev, region: event.target.value }))}
+                      placeholder={t('login.regionPlaceholder')}
+                    />
+                  </label>
+                ) : null}
+                {showInternal ? (
+                  <label className="col-span-full flex items-center gap-2 text-sm text-[var(--text-muted)]">
+                    <input
+                      type="checkbox"
+                      checked={form.internal}
+                      onChange={(event) =>
+                        setForm((prev) => ({ ...prev, internal: event.target.checked }))
+                      }
+                      className="h-4 w-4 accent-[var(--primary)]"
+                    />
+                    {t('login.internal')}
+                  </label>
+                ) : null}
+              </div>
+            ) : null}
 
             <div className="pt-2">
               <Button
@@ -132,6 +251,7 @@ export function LoginPage() {
               >
                 {t('login.connect')}
               </Button>
+              {submitError ? <p className="mt-2 text-xs text-[var(--danger)]">{submitError}</p> : null}
             </div>
           </div>
         </Card>

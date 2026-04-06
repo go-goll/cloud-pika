@@ -7,6 +7,7 @@ interface BucketState {
   objects: ObjectItem[];
   marker: string;
   syncStatus: 'idle' | 'syncing';
+  reset: () => void;
   setBuckets: (items: BucketInfo[]) => void;
   setActiveBucket: (bucket: string) => void;
   setObjects: (items: ObjectItem[], marker?: string) => void;
@@ -20,10 +21,13 @@ export const useBucketStore = create<BucketState>((set) => ({
   objects: [],
   marker: '',
   syncStatus: 'idle',
+  reset: () => set({ buckets: [], activeBucket: '', objects: [], marker: '', syncStatus: 'idle' }),
   setBuckets: (buckets) =>
     set((prev) => ({
       buckets,
-      activeBucket: prev.activeBucket || buckets[0]?.name || '',
+      activeBucket: buckets.some((item) => item.name === prev.activeBucket)
+        ? prev.activeBucket
+        : buckets[0]?.name || '',
     })),
   setActiveBucket: (activeBucket) => set({ activeBucket }),
   setObjects: (objects, marker = '') => set({ objects, marker }),

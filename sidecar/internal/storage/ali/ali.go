@@ -2,6 +2,8 @@ package ali
 
 import (
 	"context"
+	"fmt"
+	"strings"
 
 	"github.com/goll/cloud-pika/sidecar/internal/model"
 	"github.com/goll/cloud-pika/sidecar/internal/storage/s3compat"
@@ -12,7 +14,24 @@ type Provider struct {
 }
 
 func New() *Provider {
-	return &Provider{base: s3compat.New("aliyun", []string{"paging"})}
+	return &Provider{
+		base: s3compat.New(
+			"aliyun",
+			[]string{"paging"},
+			s3compat.Options{
+				ResolveEndpoint: func(cfg model.Account) string {
+					region := strings.TrimSpace(cfg.Region)
+					if region == "" {
+						region = "cn-hangzhou"
+					}
+					if cfg.Internal {
+						return fmt.Sprintf("oss-%s-internal.aliyuncs.com", region)
+					}
+					return fmt.Sprintf("oss-%s.aliyuncs.com", region)
+				},
+			},
+		),
+	}
 }
 
 func (p *Provider) Init(cfg model.Account) error { return p.base.Init(cfg) }

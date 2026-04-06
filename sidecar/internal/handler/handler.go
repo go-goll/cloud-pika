@@ -1,8 +1,14 @@
 package handler
 
 import (
+	"context"
 	"database/sql"
 	"errors"
+	"fmt"
+	"net/http"
+	"time"
+
+	"github.com/gin-gonic/gin"
 
 	"github.com/goll/cloud-pika/sidecar/internal/config"
 	"github.com/goll/cloud-pika/sidecar/internal/crypto"
@@ -59,4 +65,40 @@ func (h *Handler) accountWithSecret(id string) (model.Account, error) {
 
 func isNotFound(err error) bool {
 	return errors.Is(err, sql.ErrNoRows)
+}
+
+func (h *Handler) validateAccountConnectivity(account model.Account) error {
+	provider, err := h.providers.Create(account.Provider)
+	if err != nil {
+		return newValidationErr(account.Provider, "provider", "unsupported provider", err)
+	}
+	if err = provider.Init(account); err != nil {
+		return newValidationErr(account.Provider, "init", "provider init failed", err)
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 8*time.Second)
+	defer cancel()
+
+	_, err = provider.ListBuckets(ctx)
+	if err != nil {
+		return newValidationErr(account.Provider, "listBuckets", "credential validation failed", fmt.Errorf("validate account failed: %w", err))
+	}
+	return nil
+}
+
+func writeValidationError(c *gin.Context, err error) {
+	var vErr *validationErr
+	if errors.As(err, &vErr) {
+		response := gin.H{
+			"error":    vErr.Error(),
+			"provider": vErr.Provider,
+			"stage":    vErr.Stage,
+		}
+		if detail := vErr.Detail(); detail != "" {
+			response["detail"] = detail
+		}
+		c.JSON(http.StatusBadRequest, response)
+		return
+	}
+	c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 }

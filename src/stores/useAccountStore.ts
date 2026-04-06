@@ -19,8 +19,10 @@ export const useAccountStore = create<AccountState>((set) => ({
     })),
   setActiveAccountId: (activeAccountId) => set({ activeAccountId }),
   removeAccount: (id) =>
-    set((prev) => ({
-      accounts: prev.accounts.filter((item) => item.id !== id),
-      activeAccountId: prev.activeAccountId === id ? '' : prev.activeAccountId,
-    })),
+    set((prev) => {
+      const accounts = prev.accounts.filter((item) => item.id !== id);
+      const activeAccountId =
+        prev.activeAccountId === id ? (accounts[0]?.id ?? '') : prev.activeAccountId;
+      return { accounts, activeAccountId };
+    }),
 }));

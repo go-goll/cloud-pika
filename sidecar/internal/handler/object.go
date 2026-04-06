@@ -2,6 +2,7 @@ package handler
 
 import (
 	"context"
+	"errors"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -240,10 +241,10 @@ func (h *Handler) providerFromAccount(accountID string) (storage.Provider, error
 
 	provider, err := h.providers.Create(account.Provider)
 	if err != nil {
-		return nil, err
+		return nil, newValidationErr(account.Provider, "provider", "unsupported provider", err)
 	}
 	if err = provider.Init(account); err != nil {
-		return nil, err
+		return nil, newValidationErr(account.Provider, "init", "provider init failed", err)
 	}
 	return provider, nil
 }
@@ -251,6 +252,19 @@ func (h *Handler) providerFromAccount(accountID string) (storage.Provider, error
 func (h *Handler) writeProviderErr(c *gin.Context, err error) {
 	if isNotFound(err) {
 		c.JSON(http.StatusNotFound, gin.H{"error": "account not found"})
+		return
+	}
+	var vErr *validationErr
+	if errors.As(err, &vErr) {
+		response := gin.H{
+			"error":    vErr.Error(),
+			"provider": vErr.Provider,
+			"stage":    vErr.Stage,
+		}
+		if detail := vErr.Detail(); detail != "" {
+			response["detail"] = detail
+		}
+		c.JSON(http.StatusBadRequest, response)
 		return
 	}
 	c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})

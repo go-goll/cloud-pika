@@ -1,8 +1,9 @@
 import { Link, useLocation } from 'react-router-dom';
-import { FolderKanban, Settings2, Workflow } from 'lucide-react';
+import { FolderKanban, KeyRound, Settings2, Workflow } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 const navItems = [
+  { to: '/login', icon: KeyRound, key: 'nav.accounts' },
   { to: '/bucket', icon: FolderKanban, key: 'nav.explorer' },
   { to: '/transfers', icon: Workflow, key: 'nav.transfer' },
   { to: '/settings', icon: Settings2, key: 'nav.settings' },

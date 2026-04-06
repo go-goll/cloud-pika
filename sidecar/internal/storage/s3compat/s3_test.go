@@ -7,7 +7,7 @@ import (
 )
 
 func TestGenerateURLFallback(t *testing.T) {
-	provider := New("aws", []string{"paging"})
+	provider := New("aws", []string{"paging"}, Options{})
 
 	url, err := provider.GenerateURL(model.SignedURLParams{
 		Key:    "abc/file.png",

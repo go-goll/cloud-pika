@@ -2,6 +2,7 @@ package handler
 
 import (
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -32,27 +33,34 @@ func (h *Handler) CreateAccount(c *gin.Context) {
 		return
 	}
 
-	if payload.Provider == "" || payload.Name == "" || payload.AccessKey == "" || payload.SecretKey == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "provider/name/accessKey/secretKey required"})
+	normalized, err := normalizeProviderConfig(payload)
+	if err != nil {
+		writeValidationError(c, err)
 		return
 	}
 
 	now := time.Now().UTC()
 	account := model.Account{
 		ID:          uuid.NewString(),
-		Provider:    payload.Provider,
-		Name:        payload.Name,
-		AccessKey:   payload.AccessKey,
-		Endpoint:    payload.Endpoint,
-		Region:      payload.Region,
-		ServiceName: payload.ServiceName,
-		Internal:    payload.Internal,
-		Paging:      payload.Paging,
+		Provider:    normalized.Provider,
+		Name:        normalized.Name,
+		AccessKey:   normalized.AccessKey,
+		Endpoint:    normalized.Endpoint,
+		Region:      normalized.Region,
+		ServiceName: normalized.ServiceName,
+		Internal:    normalized.Internal,
+		Paging:      normalized.Paging,
 		CreatedAt:   now,
 		UpdatedAt:   now,
 	}
+	account.SecretKey = normalized.SecretKey
 
-	encrypted, err := h.encryptor.Encrypt(payload.SecretKey)
+	if err = h.validateAccountConnectivity(account); err != nil {
+		writeValidationError(c, err)
+		return
+	}
+
+	encrypted, err := h.encryptor.Encrypt(normalized.SecretKey)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -89,18 +97,7 @@ func (h *Handler) UpdateAccount(c *gin.Context) {
 		return
 	}
 
-	updated := oldAccount
-	updated.Provider = payload.Provider
-	updated.Name = payload.Name
-	updated.AccessKey = payload.AccessKey
-	updated.Endpoint = payload.Endpoint
-	updated.Region = payload.Region
-	updated.ServiceName = payload.ServiceName
-	updated.Internal = payload.Internal
-	updated.Paging = payload.Paging
-	updated.UpdatedAt = time.Now().UTC()
-
-	secret := payload.SecretKey
+	secret := strings.TrimSpace(payload.SecretKey)
 	if secret == "" {
 		secret, err = h.encryptor.Decrypt(encryptedSecret)
 		if err != nil {
@@ -108,8 +105,31 @@ func (h *Handler) UpdateAccount(c *gin.Context) {
 			return
 		}
 	}
+	payload.SecretKey = secret
+	normalized, err := normalizeProviderConfig(payload)
+	if err != nil {
+		writeValidationError(c, err)
+		return
+	}
 
-	encrypted, err := h.encryptor.Encrypt(secret)
+	updated := oldAccount
+	updated.Provider = normalized.Provider
+	updated.Name = normalized.Name
+	updated.AccessKey = normalized.AccessKey
+	updated.Endpoint = normalized.Endpoint
+	updated.Region = normalized.Region
+	updated.ServiceName = normalized.ServiceName
+	updated.Internal = normalized.Internal
+	updated.Paging = normalized.Paging
+	updated.UpdatedAt = time.Now().UTC()
+	updated.SecretKey = normalized.SecretKey
+
+	if err = h.validateAccountConnectivity(updated); err != nil {
+		writeValidationError(c, err)
+		return
+	}
+
+	encrypted, err := h.encryptor.Encrypt(normalized.SecretKey)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return

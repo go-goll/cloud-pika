@@ -12,7 +12,16 @@ type Provider struct {
 }
 
 func New() *Provider {
-	return &Provider{base: s3compat.New("minio", []string{"paging", "manualPrivateBucket"})}
+	return &Provider{
+		base: s3compat.New(
+			"minio",
+			[]string{"paging", "manualPrivateBucket"},
+			s3compat.Options{
+				RequireEndpoint: true,
+				ForcePathStyle:  true,
+			},
+		),
+	}
 }
 
 func (p *Provider) Init(cfg model.Account) error { return p.base.Init(cfg) }

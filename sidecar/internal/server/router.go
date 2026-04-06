@@ -12,6 +12,7 @@ func buildRouter(token string, h *handler.Handler, hub *SSEHub) *gin.Engine {
 	engine := gin.New()
 	engine.Use(gin.Recovery())
 	engine.Use(gin.Logger())
+	engine.Use(CORSMiddleware())
 
 	engine.GET("/healthz", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"status": "ok"})

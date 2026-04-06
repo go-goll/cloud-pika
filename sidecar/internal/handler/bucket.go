@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"errors"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -26,6 +27,14 @@ func (h *Handler) ListBuckets(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
+	if account.Provider != provider {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error":    "provider mismatch with account",
+			"provider": account.Provider,
+			"stage":    "payload",
+		})
+		return
+	}
 
 	p, err := h.providers.Create(provider)
 	if err != nil {
@@ -34,7 +43,12 @@ func (h *Handler) ListBuckets(c *gin.Context) {
 	}
 
 	if err = p.Init(account); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error":    "provider init failed",
+			"provider": provider,
+			"stage":    "init",
+			"detail":   err.Error(),
+		})
 		return
 	}
 
@@ -45,7 +59,12 @@ func (h *Handler) ListBuckets(c *gin.Context) {
 	})
 	buckets, err := p.ListBuckets(c.Request.Context())
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error":    "list buckets failed",
+			"provider": provider,
+			"stage":    "listBuckets",
+			"detail":   err.Error(),
+		})
 		return
 	}
 	h.queue.Publish("bucket.syncing", gin.H{
@@ -91,13 +110,23 @@ func (h *Handler) ListObjects(c *gin.Context) {
 		return
 	}
 	if err = p.Init(account); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error":    "provider init failed",
+			"provider": account.Provider,
+			"stage":    "init",
+			"detail":   err.Error(),
+		})
 		return
 	}
 
 	result, err := p.ListObjects(c.Request.Context(), params)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error":    "list objects failed",
+			"provider": account.Provider,
+			"stage":    "listObjects",
+			"detail":   err.Error(),
+		})
 		return
 	}
 
@@ -124,7 +153,12 @@ func (h *Handler) ListDomains(c *gin.Context) {
 		return
 	}
 	if err = provider.Init(account); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error":    "provider init failed",
+			"provider": account.Provider,
+			"stage":    "init",
+			"detail":   err.Error(),
+		})
 		return
 	}
 
@@ -136,6 +170,16 @@ func (h *Handler) ListDomains(c *gin.Context) {
 
 	domains, err := specific.ListDomains(c.Request.Context(), bucket)
 	if err != nil {
+		var vErr *validationErr
+		if errors.As(err, &vErr) {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error":    vErr.Error(),
+				"provider": vErr.Provider,
+				"stage":    vErr.Stage,
+				"detail":   vErr.Detail(),
+			})
+			return
+		}
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}

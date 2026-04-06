@@ -2,6 +2,8 @@ package qingstor
 
 import (
 	"context"
+	"fmt"
+	"strings"
 
 	"github.com/goll/cloud-pika/sidecar/internal/model"
 	"github.com/goll/cloud-pika/sidecar/internal/storage/s3compat"
@@ -12,7 +14,21 @@ type Provider struct {
 }
 
 func New() *Provider {
-	return &Provider{base: s3compat.New("qingstor", []string{"urlUpload", "paging"})}
+	return &Provider{
+		base: s3compat.New(
+			"qingstor",
+			[]string{"urlUpload", "paging"},
+			s3compat.Options{
+				ResolveEndpoint: func(cfg model.Account) string {
+					region := strings.TrimSpace(cfg.Region)
+					if region == "" {
+						region = "pek3a"
+					}
+					return fmt.Sprintf("s3.%s.qingstor.com", region)
+				},
+			},
+		),
+	}
 }
 
 func (p *Provider) Init(cfg model.Account) error { return p.base.Init(cfg) }

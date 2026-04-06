@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { UploadCloud } from 'lucide-react';
 import { useDropzone } from 'react-dropzone';
@@ -33,8 +33,9 @@ export function BucketPage() {
   );
   const settings = useAppStore((s) => s.settings);
 
-  const { buckets, activeBucket, objects, syncStatus, setBuckets, setActiveBucket, setObjects } =
+  const { buckets, activeBucket, objects, syncStatus, setBuckets, setActiveBucket, setObjects, reset } =
     useBucketStore();
+  const prevAccountIdRef = useRef('');
   const queueUpload = useUploadMutation().mutateAsync;
   const queueDownload = useDownloadMutation().mutateAsync;
   const deleteObjects = useDeleteObjectsMutation().mutateAsync;
@@ -71,6 +72,14 @@ export function BucketPage() {
       setObjects(objectsQuery.data.items, objectsQuery.data.marker);
     }
   }, [objectsQuery.data, setObjects]);
+
+  useEffect(() => {
+    if (prevAccountIdRef.current !== activeAccountId) {
+      reset();
+      setKeyword('');
+      prevAccountIdRef.current = activeAccountId;
+    }
+  }, [activeAccountId, reset]);
 
   const uploadLocalFiles = useCallback(async (paths: string[]) => {
     if (!activeAccountId || !activeBucket) {
@@ -293,6 +302,16 @@ export function BucketPage() {
 
           {bucketsQuery.isLoading || objectsQuery.isLoading ? (
             <p className="text-sm text-[var(--text-muted)]">{t('common.loading')}</p>
+          ) : null}
+          {bucketsQuery.error ? (
+            <p className="text-sm text-[var(--danger)]">
+              {(bucketsQuery.error as Error).message || 'Bucket loading failed'}
+            </p>
+          ) : null}
+          {objectsQuery.error ? (
+            <p className="text-sm text-[var(--danger)]">
+              {(objectsQuery.error as Error).message || 'Object loading failed'}
+            </p>
           ) : null}
           {syncStatus === 'syncing' ? (
             <p className="text-xs text-[var(--text-muted)]">{t('bucket.syncing')}</p>

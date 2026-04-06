@@ -24,28 +24,59 @@ type Provider struct {
 	features []string
 	account  model.Account
 	client   *minio.Client
+	options  Options
 }
 
-func New(provider string, features []string) *Provider {
-	return &Provider{provider: provider, features: features}
+// EndpointResolver 按账户信息生成厂商默认 endpoint。
+type EndpointResolver func(cfg model.Account) string
+
+// Options 控制 S3 兼容客户端初始化策略。
+type Options struct {
+	RequireEndpoint bool
+	ResolveEndpoint EndpointResolver
+	ForcePathStyle  bool
+}
+
+func New(provider string, features []string, options Options) *Provider {
+	return &Provider{
+		provider: provider,
+		features: features,
+		options:  options,
+	}
 }
 
 func (p *Provider) Init(cfg model.Account) error {
 	p.account = cfg
 
 	endpoint := strings.TrimSpace(cfg.Endpoint)
+	if endpoint == "" && p.options.ResolveEndpoint != nil {
+		endpoint = strings.TrimSpace(p.options.ResolveEndpoint(cfg))
+	}
 	if endpoint == "" {
-		return nil
+		if p.options.RequireEndpoint {
+			return fmt.Errorf("endpoint is required for provider %s", p.provider)
+		}
+		return fmt.Errorf("endpoint resolve failed for provider %s", p.provider)
+	}
+
+	secure := true
+	if strings.HasPrefix(endpoint, "http://") {
+		secure = false
 	}
 
 	endpoint = strings.TrimPrefix(endpoint, "https://")
 	endpoint = strings.TrimPrefix(endpoint, "http://")
 
-	client, err := minio.New(endpoint, &minio.Options{
+	options := &minio.Options{
 		Creds:  credentials.NewStaticV4(cfg.AccessKey, cfg.SecretKey, ""),
-		Secure: !cfg.Internal,
+		Secure: secure,
 		Region: cfg.Region,
-	})
+	}
+	if p.options.ForcePathStyle {
+		options.BucketLookup = minio.BucketLookupPath
+	}
+
+	client, err := minio.New(endpoint, options)
 	if err != nil {
 		return fmt.Errorf("create minio client failed: %w", err)
 	}
@@ -56,7 +87,7 @@ func (p *Provider) Init(cfg model.Account) error {
 
 func (p *Provider) ListBuckets(ctx context.Context) ([]model.BucketInfo, error) {
 	if p.client == nil {
-		return []model.BucketInfo{{Name: p.account.Name, Provider: p.provider}}, nil
+		return nil, fmt.Errorf("provider %s is not initialized", p.provider)
 	}
 
 	buckets, err := p.client.ListBuckets(ctx)
@@ -77,7 +108,7 @@ func (p *Provider) ListBuckets(ctx context.Context) ([]model.BucketInfo, error) 
 
 func (p *Provider) ListObjects(ctx context.Context, params model.ListParams) (model.ListResult, error) {
 	if p.client == nil {
-		return model.ListResult{Items: []model.ObjectItem{}, Truncated: false}, nil
+		return model.ListResult{}, fmt.Errorf("provider %s is not initialized", p.provider)
 	}
 	if params.Limit <= 0 {
 		params.Limit = 200
@@ -120,7 +151,7 @@ func (p *Provider) ListObjects(ctx context.Context, params model.ListParams) (mo
 
 func (p *Provider) UploadObject(ctx context.Context, params model.UploadParams) error {
 	if p.client == nil {
-		return nil
+		return fmt.Errorf("provider %s is not initialized", p.provider)
 	}
 	if params.Bucket == "" {
 		return fmt.Errorf("bucket required")
@@ -175,7 +206,7 @@ func (p *Provider) UploadObject(ctx context.Context, params model.UploadParams) 
 
 func (p *Provider) DownloadObject(ctx context.Context, params model.DownloadParams) error {
 	if p.client == nil {
-		return nil
+		return fmt.Errorf("provider %s is not initialized", p.provider)
 	}
 	if params.LocalPath == "" {
 		return fmt.Errorf("localPath required")
@@ -191,7 +222,7 @@ func (p *Provider) DownloadObject(ctx context.Context, params model.DownloadPara
 
 func (p *Provider) DeleteObjects(ctx context.Context, bucket string, keys []string) error {
 	if p.client == nil {
-		return nil
+		return fmt.Errorf("provider %s is not initialized", p.provider)
 	}
 	if len(keys) == 0 {
 		return nil
@@ -212,7 +243,7 @@ func (p *Provider) DeleteObjects(ctx context.Context, bucket string, keys []stri
 
 func (p *Provider) RenameObject(ctx context.Context, params model.RenameParams) error {
 	if p.client == nil {
-		return nil
+		return fmt.Errorf("provider %s is not initialized", p.provider)
 	}
 	_, err := p.client.CopyObject(
 		ctx,
@@ -239,7 +270,7 @@ func (p *Provider) GenerateURL(params model.SignedURLParams) (string, error) {
 	}
 
 	if p.client == nil {
-		return fmt.Sprintf("https://example.com/%s", params.Key), nil
+		return "", fmt.Errorf("provider %s is not initialized", p.provider)
 	}
 
 	expire := time.Duration(params.DeadlineSeconds) * time.Second
