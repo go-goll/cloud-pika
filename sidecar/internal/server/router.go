@@ -36,6 +36,7 @@ func buildRouter(token string, h *handler.Handler, hub *SSEHub) *gin.Engine {
 		api.POST("/objects/download", h.DownloadObject)
 		api.POST("/objects/fetch", h.FetchObject)
 		api.POST("/objects/rename", h.RenameObject)
+		api.POST("/objects/folder", h.CreateFolder)
 		api.DELETE("/objects", h.DeleteObjects)
 		api.POST("/objects/url", h.GenerateURL)
 		api.POST("/cdn/refresh", h.RefreshCDN)

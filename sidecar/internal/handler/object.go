@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"net/http"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 
@@ -175,6 +176,54 @@ func (h *Handler) DeleteObjects(c *gin.Context) {
 
 	if err = provider.DeleteObjects(c.Request.Context(), payload.Bucket, payload.Keys); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"ok": true})
+}
+
+// createFolderPayload 创建文件夹请求体。
+type createFolderPayload struct {
+	AccountID string `json:"accountId"`
+	Bucket    string `json:"bucket"`
+	Key       string `json:"key"`
+}
+
+// CreateFolder 在对象存储中创建文件夹（以 / 结尾的空对象）。
+func (h *Handler) CreateFolder(c *gin.Context) {
+	var payload createFolderPayload
+	if err := c.ShouldBindJSON(&payload); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	if payload.AccountID == "" || payload.Bucket == "" || payload.Key == "" {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "accountId/bucket/key required",
+		})
+		return
+	}
+	// 确保 key 以 / 结尾
+	if !strings.HasSuffix(payload.Key, "/") {
+		payload.Key += "/"
+	}
+
+	provider, err := h.providerFromAccount(payload.AccountID)
+	if err != nil {
+		h.writeProviderErr(c, err)
+		return
+	}
+
+	uploadParams := model.UploadParams{
+		AccountID: payload.AccountID,
+		Bucket:    payload.Bucket,
+		Key:       payload.Key,
+	}
+	if err = provider.UploadObject(
+		c.Request.Context(), uploadParams,
+	); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": err.Error(),
+		})
 		return
 	}
 

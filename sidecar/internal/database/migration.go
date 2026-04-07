@@ -46,6 +46,17 @@ func Migrate(db *sql.DB) error {
 		}
 	}
 
+	// 增量迁移：为 transfers 表添加速度和大小字段
+	alterStmts := []string{
+		`ALTER TABLE transfers ADD COLUMN speed INTEGER NOT NULL DEFAULT 0`,
+		`ALTER TABLE transfers ADD COLUMN total_size INTEGER NOT NULL DEFAULT 0`,
+		`ALTER TABLE transfers ADD COLUMN transferred_size INTEGER NOT NULL DEFAULT 0`,
+	}
+	for _, stmt := range alterStmts {
+		// 忽略 "duplicate column" 错误，保证向后兼容
+		_, _ = db.Exec(stmt)
+	}
+
 	return seedDefaultSettings(db)
 }
 
