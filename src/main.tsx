@@ -8,31 +8,40 @@ import '@/i18n/i18n';
 import { useSidecarBootstrap } from '@/hooks/useSidecarBootstrap';
 import { useThemeSync } from '@/hooks/useThemeSync';
 import { useSSE } from '@/hooks/useSSE';
+import { BootstrapScreen } from '@/components/BootstrapScreen';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 
 const queryClient = new QueryClient();
 
+/** 启动引导组件：加载 sidecar 并显示品牌化启动画面 */
 function Bootstrap() {
   const { loading, error } = useSidecarBootstrap();
   useThemeSync();
   useSSE();
 
-  if (loading) {
-    return <div className="p-8 text-sm">Bootstrapping sidecar...</div>;
-  }
-
-  if (error) {
-    return <div className="p-8 text-sm text-red-500">{error}</div>;
+  if (loading || error) {
+    return (
+      <BootstrapScreen
+        loading={loading}
+        error={error}
+        onRetry={() => window.location.reload()}
+      />
+    );
   }
 
   return <App />;
 }
 
-ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
+ReactDOM.createRoot(
+  document.getElementById('root') as HTMLElement,
+).render(
   <React.StrictMode>
-    <QueryClientProvider client={queryClient}>
-      <BrowserRouter>
-        <Bootstrap />
-      </BrowserRouter>
-    </QueryClientProvider>
+    <ErrorBoundary>
+      <QueryClientProvider client={queryClient}>
+        <BrowserRouter>
+          <Bootstrap />
+        </BrowserRouter>
+      </QueryClientProvider>
+    </ErrorBoundary>
   </React.StrictMode>,
 );
