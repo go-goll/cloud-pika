@@ -1,8 +1,12 @@
-import type { InputHTMLAttributes } from 'react';
+import { forwardRef, type InputHTMLAttributes } from 'react';
 
-export function Input(props: InputHTMLAttributes<HTMLInputElement>) {
+export const Input = forwardRef<
+  HTMLInputElement,
+  InputHTMLAttributes<HTMLInputElement>
+>(function Input(props, ref) {
   return (
     <input
+      ref={ref}
       {...props}
       className={[
         'h-10 w-full rounded-[var(--radius)] border border-transparent',
@@ -13,4 +17,4 @@ export function Input(props: InputHTMLAttributes<HTMLInputElement>) {
       ].join(' ')}
     />
   );
-}
+});
