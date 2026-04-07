@@ -34,15 +34,14 @@ export function Header() {
         {accounts.length > 0 ? (
           <Select
             value={selectedAccountId}
-            onChange={(event) => setActiveAccountId(event.target.value)}
+            onChange={(val) => setActiveAccountId(val)}
             className="h-9 min-w-[180px]"
-          >
-            {accounts.map((item) => (
-              <option key={item.id} value={item.id}>
-                {item.name}
-              </option>
-            ))}
-          </Select>
+            options={accounts.map((item) => ({
+              value: item.id,
+              label: item.name,
+            }))}
+            label={t('nav.accounts')}
+          />
         ) : null}
         <Button variant="secondary" onClick={() => navigate('/login')}>
           {t('nav.accounts')}

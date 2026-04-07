@@ -31,23 +31,30 @@ export function SettingsPanel({
       <div className="grid gap-4 sm:grid-cols-2">
         <label className="space-y-2 text-sm">
           <span className="text-[var(--text-muted)]">{t('common.theme')}</span>
-          <Select value={themeMode} onChange={(event) => onThemeModeChange(event.target.value as ThemeMode)}>
-            <option value="system">{t('settings.system')}</option>
-            <option value="light">{t('settings.light')}</option>
-            <option value="dark">{t('settings.dark')}</option>
-          </Select>
+          <Select
+            value={themeMode}
+            onChange={(val) => onThemeModeChange(val as ThemeMode)}
+            options={[
+              { value: 'system', label: t('settings.system') },
+              { value: 'light', label: t('settings.light') },
+              { value: 'dark', label: t('settings.dark') },
+            ]}
+          />
         </label>
 
         <label className="space-y-2 text-sm">
           <span className="text-[var(--text-muted)]">{t('common.language')}</span>
           <Select
             value={language}
-            onChange={(event) => onLocaleChange(event.target.value as AppSettings['language'])}
-          >
-            <option value="system">{t('settings.system')}</option>
-            <option value="zh-CN">{t('settings.chinese')}</option>
-            <option value="en-US">{t('settings.english')}</option>
-          </Select>
+            onChange={(val) => onLocaleChange(
+              val as AppSettings['language']
+            )}
+            options={[
+              { value: 'system', label: t('settings.system') },
+              { value: 'zh-CN', label: t('settings.chinese') },
+              { value: 'en-US', label: t('settings.english') },
+            ]}
+          />
         </label>
       </div>
 

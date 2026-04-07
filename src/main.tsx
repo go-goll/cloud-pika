@@ -8,6 +8,8 @@ import '@/i18n/i18n';
 import { useSidecarBootstrap } from '@/hooks/useSidecarBootstrap';
 import { useThemeSync } from '@/hooks/useThemeSync';
 import { useSSE } from '@/hooks/useSSE';
+import { Toaster } from '@/components/ui/Toaster';
+import { TooltipProvider } from '@/components/ui/Tooltip';
 
 const queryClient = new QueryClient();
 
@@ -24,15 +26,22 @@ function Bootstrap() {
     return <div className="p-8 text-sm text-red-500">{error}</div>;
   }
 
-  return <App />;
+  return (
+    <>
+      <App />
+      <Toaster />
+    </>
+  );
 }
 
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
   <React.StrictMode>
     <QueryClientProvider client={queryClient}>
-      <BrowserRouter>
-        <Bootstrap />
-      </BrowserRouter>
+      <TooltipProvider delayDuration={300}>
+        <BrowserRouter>
+          <Bootstrap />
+        </BrowserRouter>
+      </TooltipProvider>
     </QueryClientProvider>
   </React.StrictMode>,
 );

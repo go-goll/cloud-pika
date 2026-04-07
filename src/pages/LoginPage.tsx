@@ -128,28 +128,33 @@ export function LoginPage() {
               <span className="mb-2 block text-[var(--text-muted)]">{t('login.provider')}</span>
               <Select
                 value={form.provider}
-                onChange={(event) => {
-                  const nextProvider = event.target.value as ProviderKey;
+                onChange={(val) => {
+                  const nextProvider = val as ProviderKey;
                   const nextMeta = getProviderOption(nextProvider);
                   setShowAdvanced(false);
                   setSubmitError('');
                   setForm((prev) => ({
                     ...prev,
                     provider: nextProvider,
-                    name: nameTouched ? prev.name : nextMeta.defaultAlias,
-                    serviceName: nextMeta.serviceNameMode === 'hidden' ? '' : prev.serviceName,
-                    endpoint: nextMeta.endpointMode === 'hidden' ? '' : prev.endpoint,
-                    region: nextMeta.regionMode === 'hidden' ? '' : prev.region,
-                    internal: nextMeta.showInternal ? prev.internal : false,
+                    name: nameTouched
+                      ? prev.name
+                      : nextMeta.defaultAlias,
+                    serviceName: nextMeta.serviceNameMode === 'hidden'
+                      ? '' : prev.serviceName,
+                    endpoint: nextMeta.endpointMode === 'hidden'
+                      ? '' : prev.endpoint,
+                    region: nextMeta.regionMode === 'hidden'
+                      ? '' : prev.region,
+                    internal: nextMeta.showInternal
+                      ? prev.internal : false,
                   }));
                 }}
-              >
-                {providerOptions.map((item) => (
-                  <option key={item.value} value={item.value}>
-                    {item.label}
-                  </option>
-                ))}
-              </Select>
+                options={providerOptions.map((item) => ({
+                  value: item.value,
+                  label: item.label,
+                }))}
+                label={t('login.provider')}
+              />
             </label>
 
             <label className="text-sm">
