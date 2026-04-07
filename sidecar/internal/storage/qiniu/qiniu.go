@@ -1,6 +1,7 @@
 package qiniu
 
 import (
+	"bytes"
 	"context"
 	"crypto/hmac"
 	"crypto/sha1"
@@ -26,14 +27,19 @@ func New() *Provider {
 	return &Provider{
 		base: s3compat.New(
 			"qiniu",
-			[]string{"urlUpload", "refreshCDN", "customDomain", "paging"},
+			[]string{
+				"urlUpload", "refreshCDN",
+				"customDomain", "paging",
+			},
 			s3compat.Options{
 				ResolveEndpoint: func(cfg model.Account) string {
 					region := strings.TrimSpace(cfg.Region)
 					if region == "" {
 						region = "cn-east-1"
 					}
-					return fmt.Sprintf("s3-%s.qiniucs.com", region)
+					return fmt.Sprintf(
+						"s3-%s.qiniucs.com", region,
+					)
 				},
 			},
 		),
@@ -45,27 +51,41 @@ func (p *Provider) Init(cfg model.Account) error {
 	return p.base.Init(cfg)
 }
 
-func (p *Provider) ListBuckets(ctx context.Context) ([]model.BucketInfo, error) {
-	token, err := qboxAccessToken(p.account.AccessKey, p.account.SecretKey, qiniuBucketListURL)
+func (p *Provider) ListBuckets(
+	ctx context.Context,
+) ([]model.BucketInfo, error) {
+	token, err := qboxAccessToken(
+		p.account.AccessKey,
+		p.account.SecretKey,
+		qiniuBucketListURL,
+	)
 	if err != nil {
 		return nil, err
 	}
 
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, qiniuBucketListURL, nil)
+	req, err := http.NewRequestWithContext(
+		ctx, http.MethodGet, qiniuBucketListURL, nil,
+	)
 	if err != nil {
-		return nil, fmt.Errorf("build qiniu bucket request failed: %w", err)
+		return nil, fmt.Errorf(
+			"build qiniu bucket request failed: %w", err,
+		)
 	}
 	req.Header.Set("Authorization", "QBox "+token)
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return nil, fmt.Errorf("request qiniu buckets failed: %w", err)
+		return nil, fmt.Errorf(
+			"request qiniu buckets failed: %w", err,
+		)
 	}
 	defer resp.Body.Close()
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return nil, fmt.Errorf("read qiniu buckets response failed: %w", err)
+		return nil, fmt.Errorf(
+			"read qiniu buckets response failed: %w", err,
+		)
 	}
 
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
@@ -87,27 +107,39 @@ func (p *Provider) ListBuckets(ctx context.Context) ([]model.BucketInfo, error) 
 	return result, nil
 }
 
-func (p *Provider) ListObjects(ctx context.Context, params model.ListParams) (model.ListResult, error) {
+func (p *Provider) ListObjects(
+	ctx context.Context, params model.ListParams,
+) (model.ListResult, error) {
 	return p.base.ListObjects(ctx, params)
 }
 
-func (p *Provider) UploadObject(ctx context.Context, params model.UploadParams) error {
+func (p *Provider) UploadObject(
+	ctx context.Context, params model.UploadParams,
+) error {
 	return p.base.UploadObject(ctx, params)
 }
 
-func (p *Provider) DownloadObject(ctx context.Context, params model.DownloadParams) error {
+func (p *Provider) DownloadObject(
+	ctx context.Context, params model.DownloadParams,
+) error {
 	return p.base.DownloadObject(ctx, params)
 }
 
-func (p *Provider) DeleteObjects(ctx context.Context, bucket string, keys []string) error {
+func (p *Provider) DeleteObjects(
+	ctx context.Context, bucket string, keys []string,
+) error {
 	return p.base.DeleteObjects(ctx, bucket, keys)
 }
 
-func (p *Provider) RenameObject(ctx context.Context, params model.RenameParams) error {
+func (p *Provider) RenameObject(
+	ctx context.Context, params model.RenameParams,
+) error {
 	return p.base.RenameObject(ctx, params)
 }
 
-func (p *Provider) GenerateURL(params model.SignedURLParams) (string, error) {
+func (p *Provider) GenerateURL(
+	params model.SignedURLParams,
+) (string, error) {
 	return p.base.GenerateURL(params)
 }
 
@@ -115,21 +147,195 @@ func (p *Provider) GetProviderFeatures() []string {
 	return p.base.GetProviderFeatures()
 }
 
-func (p *Provider) FetchURL(ctx context.Context, params model.UploadParams) error {
-	return p.base.UploadObject(ctx, params)
-}
+// FetchURL 使用七牛 fetch API 从远程 URL 抓取资源到存储空间。
+// API: POST /fetch/{EncodedURL}/to/{EncodedEntryURI}
+func (p *Provider) FetchURL(
+	ctx context.Context, params model.UploadParams,
+) error {
+	if params.SourceURL == "" {
+		return fmt.Errorf("sourceUrl required for fetch")
+	}
 
-func (p *Provider) RefreshCDN(context.Context, []string) error {
+	encodedURL := base64.RawURLEncoding.EncodeToString(
+		[]byte(params.SourceURL),
+	)
+	entryURI := params.Bucket + ":" + params.Key
+	encodedEntry := base64.RawURLEncoding.EncodeToString(
+		[]byte(entryURI),
+	)
+
+	fetchURL := fmt.Sprintf(
+		"%s/fetch/%s/to/%s",
+		qiniuFetchHost, encodedURL, encodedEntry,
+	)
+
+	token, err := qboxAccessToken(
+		p.account.AccessKey, p.account.SecretKey, fetchURL,
+	)
+	if err != nil {
+		return fmt.Errorf("sign qiniu fetch failed: %w", err)
+	}
+
+	req, err := http.NewRequestWithContext(
+		ctx, http.MethodPost, fetchURL, nil,
+	)
+	if err != nil {
+		return fmt.Errorf(
+			"build qiniu fetch request failed: %w", err,
+		)
+	}
+	req.Header.Set("Authorization", "QBox "+token)
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return fmt.Errorf("qiniu fetch request failed: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+		body, _ := io.ReadAll(resp.Body)
+		return fmt.Errorf(
+			"qiniu fetch failed(%d): %s",
+			resp.StatusCode, string(body),
+		)
+	}
 	return nil
 }
 
-func (p *Provider) ListDomains(context.Context, string) ([]string, error) {
-	return []string{}, nil
+// cdnRefreshRequest CDN 刷新请求体。
+type cdnRefreshRequest struct {
+	URLs []string `json:"urls"`
 }
 
-const qiniuBucketListURL = "https://rs.qbox.me/buckets"
+// RefreshCDN 使用七牛 CDN 刷新 API 刷新指定 URL 缓存。
+// API: POST /v2/tune/refresh (fusion.qiniuapi.com)
+func (p *Provider) RefreshCDN(
+	ctx context.Context, urls []string,
+) error {
+	if len(urls) == 0 {
+		return nil
+	}
 
-func qboxAccessToken(accessKey string, secretKey string, rawURL string) (string, error) {
+	payload := cdnRefreshRequest{URLs: urls}
+	body, err := json.Marshal(payload)
+	if err != nil {
+		return fmt.Errorf("marshal cdn refresh body failed: %w", err)
+	}
+
+	refreshURL := qiniuCDNRefreshURL
+
+	// 七牛管理类 API 签名需要包含请求体
+	token, err := qboxAccessTokenWithBody(
+		p.account.AccessKey,
+		p.account.SecretKey,
+		refreshURL,
+		body,
+	)
+	if err != nil {
+		return fmt.Errorf(
+			"sign qiniu cdn refresh failed: %w", err,
+		)
+	}
+
+	req, err := http.NewRequestWithContext(
+		ctx, http.MethodPost, refreshURL, bytes.NewReader(body),
+	)
+	if err != nil {
+		return fmt.Errorf(
+			"build cdn refresh request failed: %w", err,
+		)
+	}
+	req.Header.Set("Authorization", "QBox "+token)
+	req.Header.Set("Content-Type", "application/json")
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return fmt.Errorf("cdn refresh request failed: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+		respBody, _ := io.ReadAll(resp.Body)
+		return fmt.Errorf(
+			"cdn refresh failed(%d): %s",
+			resp.StatusCode, string(respBody),
+		)
+	}
+	return nil
+}
+
+// ListDomains 获取七牛存储空间绑定的域名列表。
+// API: GET /v6/domain/list?tbl={bucket} (api.qiniu.com)
+func (p *Provider) ListDomains(
+	ctx context.Context, bucket string,
+) ([]string, error) {
+	domainURL := fmt.Sprintf(
+		"%s/v6/domain/list?tbl=%s",
+		qiniuAPIHost, url.QueryEscape(bucket),
+	)
+
+	token, err := qboxAccessToken(
+		p.account.AccessKey, p.account.SecretKey, domainURL,
+	)
+	if err != nil {
+		return nil, fmt.Errorf(
+			"sign qiniu domains failed: %w", err,
+		)
+	}
+
+	req, err := http.NewRequestWithContext(
+		ctx, http.MethodGet, domainURL, nil,
+	)
+	if err != nil {
+		return nil, fmt.Errorf(
+			"build qiniu domains request failed: %w", err,
+		)
+	}
+	req.Header.Set("Authorization", "QBox "+token)
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf(
+			"qiniu domains request failed: %w", err,
+		)
+	}
+	defer resp.Body.Close()
+
+	respBody, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf(
+			"read qiniu domains response failed: %w", err,
+		)
+	}
+
+	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+		return nil, fmt.Errorf(
+			"qiniu domains failed(%d): %s",
+			resp.StatusCode, string(respBody),
+		)
+	}
+
+	var domains []string
+	if err = json.Unmarshal(respBody, &domains); err != nil {
+		return nil, fmt.Errorf(
+			"parse qiniu domains failed: %w", err,
+		)
+	}
+	return domains, nil
+}
+
+const (
+	qiniuBucketListURL = "https://rs.qbox.me/buckets"
+	qiniuFetchHost     = "https://ioapi.qiniuapi.com"
+	qiniuCDNRefreshURL = "https://fusion.qiniuapi.com/v2/tune/refresh"
+	qiniuAPIHost       = "https://api.qiniu.com"
+)
+
+// qboxAccessToken 生成七牛 QBox 管理凭证（不含请求体）。
+func qboxAccessToken(
+	accessKey, secretKey, rawURL string,
+) (string, error) {
 	parsed, err := url.Parse(rawURL)
 	if err != nil {
 		return "", fmt.Errorf("parse qiniu url failed: %w", err)
@@ -140,6 +346,32 @@ func qboxAccessToken(accessKey string, secretKey string, rawURL string) (string,
 		signing += "?" + parsed.RawQuery
 	}
 	signing += "\n"
+
+	mac := hmac.New(sha1.New, []byte(secretKey))
+	if _, err = mac.Write([]byte(signing)); err != nil {
+		return "", fmt.Errorf("sign qiniu request failed: %w", err)
+	}
+
+	sign := base64.RawURLEncoding.EncodeToString(mac.Sum(nil))
+	return accessKey + ":" + sign, nil
+}
+
+// qboxAccessTokenWithBody 生成七牛 QBox 管理凭证（包含请求体）。
+func qboxAccessTokenWithBody(
+	accessKey, secretKey, rawURL string,
+	body []byte,
+) (string, error) {
+	parsed, err := url.Parse(rawURL)
+	if err != nil {
+		return "", fmt.Errorf("parse qiniu url failed: %w", err)
+	}
+
+	signing := parsed.Path
+	if parsed.RawQuery != "" {
+		signing += "?" + parsed.RawQuery
+	}
+	signing += "\n"
+	signing += string(body)
 
 	mac := hmac.New(sha1.New, []byte(secretKey))
 	if _, err = mac.Write([]byte(signing)); err != nil {

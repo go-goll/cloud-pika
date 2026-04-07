@@ -103,15 +103,18 @@ type SignedURLParams struct {
 
 // TransferTask 表示上传/下载任务状态。
 type TransferTask struct {
-	ID           string    `json:"id"`
-	Type         string    `json:"type"`
-	Bucket       string    `json:"bucket"`
-	Key          string    `json:"key"`
-	Status       string    `json:"status"`
-	Progress     int       `json:"progress"`
-	ErrorMessage string    `json:"errorMessage,omitempty"`
-	CreatedAt    time.Time `json:"createdAt"`
-	UpdatedAt    time.Time `json:"updatedAt"`
+	ID              string    `json:"id"`
+	Type            string    `json:"type"`
+	Bucket          string    `json:"bucket"`
+	Key             string    `json:"key"`
+	Status          string    `json:"status"`
+	Progress        int       `json:"progress"`
+	ErrorMessage    string    `json:"errorMessage,omitempty"`
+	Speed           int64     `json:"speed"`
+	TotalSize       int64     `json:"totalSize"`
+	TransferredSize int64     `json:"transferredSize"`
+	CreatedAt       time.Time `json:"createdAt"`
+	UpdatedAt       time.Time `json:"updatedAt"`
 }
 
 // AppSettings 应用设置。

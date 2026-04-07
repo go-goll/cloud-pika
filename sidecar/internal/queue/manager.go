@@ -12,6 +12,9 @@ import (
 	"github.com/goll/cloud-pika/sidecar/internal/model"
 )
 
+// DefaultMaxConcurrency 默认最大并发任务数。
+const DefaultMaxConcurrency = 3
+
 type publisher interface {
 	Publish(event string, payload any)
 }
@@ -21,26 +24,44 @@ type Job func(ctx context.Context, notifyProgress func(progress int)) error
 
 // EnqueuePayload 为入队参数。
 type EnqueuePayload struct {
-	Type   string
-	Bucket string
-	Key    string
-	Run    Job
+	Type      string
+	Bucket    string
+	Key       string
+	TotalSize int64
+	Run       Job
 }
 
-// Manager 维护任务队列与状态变更。
+// Manager 维护任务队列与状态变更，支持并发限制。
 type Manager struct {
 	store database.TransferStore
 	hub   publisher
 
 	mu      sync.RWMutex
 	cancels map[string]context.CancelFunc
+
+	// sem 控制最大并发任务数
+	sem chan struct{}
 }
 
+// NewManager 创建任务管理器，默认最大并发为 DefaultMaxConcurrency。
 func NewManager(db *sql.DB, hub publisher) *Manager {
+	return NewManagerWithConcurrency(
+		db, hub, DefaultMaxConcurrency,
+	)
+}
+
+// NewManagerWithConcurrency 创建指定并发数的任务管理器。
+func NewManagerWithConcurrency(
+	db *sql.DB, hub publisher, maxConcurrency int,
+) *Manager {
+	if maxConcurrency <= 0 {
+		maxConcurrency = DefaultMaxConcurrency
+	}
 	return &Manager{
 		store:   database.NewTransferStore(db),
 		hub:     hub,
 		cancels: make(map[string]context.CancelFunc),
+		sem:     make(chan struct{}, maxConcurrency),
 	}
 }
 
@@ -52,7 +73,9 @@ func (m *Manager) Publish(event string, payload any) {
 	m.hub.Publish(event, payload)
 }
 
-func (m *Manager) Enqueue(payload EnqueuePayload) (string, error) {
+func (m *Manager) Enqueue(
+	payload EnqueuePayload,
+) (string, error) {
 	now := time.Now().UTC()
 	task := model.TransferTask{
 		ID:        uuid.NewString(),
@@ -61,6 +84,7 @@ func (m *Manager) Enqueue(payload EnqueuePayload) (string, error) {
 		Key:       payload.Key,
 		Status:    "queued",
 		Progress:  0,
+		TotalSize: payload.TotalSize,
 		CreatedAt: now,
 		UpdatedAt: now,
 	}
@@ -79,7 +103,24 @@ func (m *Manager) Enqueue(payload EnqueuePayload) (string, error) {
 	return task.ID, nil
 }
 
-func (m *Manager) run(ctx context.Context, task model.TransferTask, job Job) {
+func (m *Manager) run(
+	ctx context.Context, task model.TransferTask, job Job,
+) {
+	// 获取并发信号量，超出限制时等待
+	select {
+	case m.sem <- struct{}{}:
+	case <-ctx.Done():
+		task.Status = "canceled"
+		task.ErrorMessage = "canceled while waiting"
+		task.UpdatedAt = time.Now().UTC()
+		_ = m.store.Upsert(task)
+		m.hub.Publish("transfer.failed", ginPayload(task))
+		m.cleanup(task.ID)
+		return
+	}
+	defer func() { <-m.sem }()
+
+	startTime := time.Now()
 	task.Status = "running"
 	task.Progress = 1
 	task.UpdatedAt = time.Now().UTC()
@@ -95,6 +136,19 @@ func (m *Manager) run(ctx context.Context, task model.TransferTask, job Job) {
 		}
 		task.Progress = progress
 		task.UpdatedAt = time.Now().UTC()
+
+		// 计算传输速度和已传输大小
+		if task.TotalSize > 0 {
+			task.TransferredSize = task.TotalSize *
+				int64(progress) / 100
+			elapsed := time.Since(startTime).Seconds()
+			if elapsed > 0 {
+				task.Speed = int64(
+					float64(task.TransferredSize) / elapsed,
+				)
+			}
+		}
+
 		_ = m.store.Upsert(task)
 		m.hub.Publish("transfer.progress", ginPayload(task))
 	}
@@ -120,6 +174,13 @@ func (m *Manager) run(ctx context.Context, task model.TransferTask, job Job) {
 	default:
 		task.Status = "completed"
 		task.Progress = 100
+		task.TransferredSize = task.TotalSize
+		elapsed := time.Since(startTime).Seconds()
+		if elapsed > 0 && task.TotalSize > 0 {
+			task.Speed = int64(
+				float64(task.TotalSize) / elapsed,
+			)
+		}
 		task.UpdatedAt = time.Now().UTC()
 		_ = m.store.Upsert(task)
 		m.hub.Publish("transfer.completed", ginPayload(task))

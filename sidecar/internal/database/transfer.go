@@ -20,13 +20,17 @@ func (s TransferStore) Upsert(task model.TransferTask) error {
 	_, err := s.db.Exec(
 		`INSERT INTO transfers (
 			id, type, bucket, object_key, status, progress,
-			error_message, created_at, updated_at
-		) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+			error_message, speed, total_size, transferred_size,
+			created_at, updated_at
+		) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 		ON CONFLICT(id)
 		DO UPDATE SET
 			status = excluded.status,
 			progress = excluded.progress,
 			error_message = excluded.error_message,
+			speed = excluded.speed,
+			total_size = excluded.total_size,
+			transferred_size = excluded.transferred_size,
 			updated_at = excluded.updated_at;`,
 		task.ID,
 		task.Type,
@@ -35,6 +39,9 @@ func (s TransferStore) Upsert(task model.TransferTask) error {
 		task.Status,
 		task.Progress,
 		task.ErrorMessage,
+		task.Speed,
+		task.TotalSize,
+		task.TransferredSize,
 		task.CreatedAt,
 		task.UpdatedAt,
 	)
@@ -47,7 +54,8 @@ func (s TransferStore) Upsert(task model.TransferTask) error {
 func (s TransferStore) List() ([]model.TransferTask, error) {
 	rows, err := s.db.Query(
 		`SELECT id, type, bucket, object_key, status, progress,
-			error_message, created_at, updated_at
+			error_message, speed, total_size, transferred_size,
+			created_at, updated_at
 		FROM transfers ORDER BY created_at DESC LIMIT 200;`,
 	)
 	if err != nil {
@@ -66,6 +74,9 @@ func (s TransferStore) List() ([]model.TransferTask, error) {
 			&item.Status,
 			&item.Progress,
 			&item.ErrorMessage,
+			&item.Speed,
+			&item.TotalSize,
+			&item.TransferredSize,
 			&item.CreatedAt,
 			&item.UpdatedAt,
 		); err != nil {
