@@ -56,3 +56,27 @@ export function formatRelativeTime(date: string): string {
     return date;
   }
 }
+
+/**
+ * 根据文件key判断是否为图片类型
+ * 通过扩展名推断
+ */
+export function isImageKey(key: string): boolean {
+  const ext = key.split('.').pop()?.toLowerCase() ?? '';
+  return [
+    'jpg', 'jpeg', 'png', 'gif', 'webp',
+    'svg', 'bmp', 'ico', 'avif',
+  ].includes(ext);
+}
+
+/**
+ * 从完整key中提取文件名
+ * 例如 "images/2024/photo.jpg" -> "photo.jpg"
+ */
+export function extractFileName(key: string): string {
+  if (key.endsWith('/')) {
+    const parts = key.slice(0, -1).split('/');
+    return parts[parts.length - 1] + '/';
+  }
+  return key.split('/').pop() ?? key;
+}

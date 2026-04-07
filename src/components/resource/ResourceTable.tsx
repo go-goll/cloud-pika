@@ -1,75 +1,425 @@
-import type { ObjectItem } from '@/types/cloud';
+/**
+ * ResourceTable - 文件资源表格视图组件
+ * 支持Checkbox多选、列排序、行操作菜单、文件夹双击进入
+ */
+import {
+  useCallback,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import { useTranslation } from 'react-i18next';
-import { Button } from '@/components/ui/Button';
+import {
+  ArrowDown,
+  ArrowUp,
+  File,
+  Folder,
+  MoreHorizontal,
+} from 'lucide-react';
+import type { ObjectItem } from '@/types/cloud';
+import {
+  extractFileName,
+  formatFileSize,
+  formatRelativeTime,
+} from '@/lib/format';
+import { ResourceContextMenu } from '@/components/bucket/ResourceContextMenu';
+
+/** 排序方向 */
+type SortDir = 'asc' | 'desc';
+
+/** 可排序列名 */
+type SortColumn = 'key' | 'size' | 'lastModified';
 
 interface ResourceTableProps {
   objects: ObjectItem[];
+  selectedKeys: Set<string>;
+  onSelect: (key: string, shiftKey: boolean) => void;
+  onSelectAll: () => void;
   onCopyUrl?: (key: string) => void;
   onDelete?: (key: string) => void;
   onDownload?: (key: string) => void;
   onRename?: (key: string) => void;
+  onNavigateFolder?: (prefix: string) => void;
+  onUpload?: () => void;
+  onRefresh?: () => void;
+}
+
+/** 行操作下拉菜单 */
+function RowActionMenu({
+  objectKey,
+  onCopyUrl,
+  onDownload,
+  onRename,
+  onDelete,
+}: {
+  objectKey: string;
+  onCopyUrl?: (key: string) => void;
+  onDownload?: (key: string) => void;
+  onRename?: (key: string) => void;
+  onDelete?: (key: string) => void;
+}) {
+  const { t } = useTranslation();
+  const [open, setOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  // 点击外部关闭
+  const handleBlur = useCallback(
+    (e: React.FocusEvent) => {
+      if (!menuRef.current?.contains(e.relatedTarget)) {
+        setOpen(false);
+      }
+    },
+    [],
+  );
+
+  return (
+    <div className="relative" ref={menuRef} onBlur={handleBlur}>
+      <button
+        type="button"
+        onClick={(e) => {
+          e.stopPropagation();
+          setOpen(!open);
+        }}
+        className={[
+          'flex h-7 w-7 items-center justify-center',
+          'rounded-[var(--radius)] transition-colors',
+          'hover:bg-[var(--surface-elevated)]',
+          'text-[var(--text-muted)]',
+        ].join(' ')}
+      >
+        <MoreHorizontal size={15} />
+      </button>
+
+      {open ? (
+        <div
+          className={[
+            'absolute right-0 top-8 z-30 min-w-[160px]',
+            'rounded-[calc(var(--radius)+2px)] p-1.5',
+            'bg-[var(--surface-high)]',
+            'border border-[var(--outline)]',
+            'shadow-[0_8px_30px_rgba(0,0,0,0.12)]',
+          ].join(' ')}
+        >
+          <ActionItem
+            label={t('bucket.copyUrl')}
+            onClick={() => {
+              onCopyUrl?.(objectKey);
+              setOpen(false);
+            }}
+          />
+          <ActionItem
+            label={t('bucket.download')}
+            onClick={() => {
+              onDownload?.(objectKey);
+              setOpen(false);
+            }}
+          />
+          <ActionItem
+            label={t('bucket.rename')}
+            onClick={() => {
+              onRename?.(objectKey);
+              setOpen(false);
+            }}
+          />
+          <div className="my-1 h-px bg-[var(--outline)]" />
+          <ActionItem
+            label={t('bucket.delete')}
+            danger
+            onClick={() => {
+              onDelete?.(objectKey);
+              setOpen(false);
+            }}
+          />
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+/** 下拉菜单项 */
+function ActionItem({
+  label,
+  danger,
+  onClick,
+}: {
+  label: string;
+  danger?: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={[
+        'flex w-full items-center px-3 py-1.5 text-sm',
+        'rounded-[var(--radius)] transition-colors',
+        'hover:bg-[var(--surface-elevated)]',
+        danger ? 'text-[var(--danger)]' : '',
+      ].join(' ')}
+    >
+      {label}
+    </button>
+  );
+}
+
+/** 排序图标 */
+function SortIcon({
+  column,
+  activeColumn,
+  dir,
+}: {
+  column: SortColumn;
+  activeColumn: SortColumn | null;
+  dir: SortDir;
+}) {
+  if (activeColumn !== column) return null;
+  return dir === 'asc'
+    ? <ArrowUp size={12} className="ml-1 inline" />
+    : <ArrowDown size={12} className="ml-1 inline" />;
 }
 
 export function ResourceTable({
   objects,
+  selectedKeys,
+  onSelect,
+  onSelectAll,
   onCopyUrl,
   onDelete,
   onDownload,
   onRename,
+  onNavigateFolder,
+  onUpload,
+  onRefresh,
 }: ResourceTableProps) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const [sortCol, setSortCol] = useState<SortColumn | null>(null);
+  const [sortDir, setSortDir] = useState<SortDir>('asc');
+
+  // 切换排序列
+  const toggleSort = useCallback((col: SortColumn) => {
+    setSortCol((prev) => {
+      if (prev === col) {
+        setSortDir((d) => (d === 'asc' ? 'desc' : 'asc'));
+        return col;
+      }
+      setSortDir('asc');
+      return col;
+    });
+  }, []);
+
+  // 排序后的对象列表
+  const sortedObjects = useMemo(() => {
+    if (!sortCol) return objects;
+    const sorted = [...objects];
+    sorted.sort((a, b) => {
+      let cmp = 0;
+      if (sortCol === 'key') {
+        cmp = a.key.localeCompare(b.key);
+      } else if (sortCol === 'size') {
+        cmp = a.size - b.size;
+      } else if (sortCol === 'lastModified') {
+        const ta = a.lastModified
+          ? new Date(a.lastModified).getTime() : 0;
+        const tb = b.lastModified
+          ? new Date(b.lastModified).getTime() : 0;
+        cmp = ta - tb;
+      }
+      return sortDir === 'asc' ? cmp : -cmp;
+    });
+    return sorted;
+  }, [objects, sortCol, sortDir]);
+
+  const allSelected =
+    objects.length > 0
+    && objects.every((o) => selectedKeys.has(o.key));
+
+  const thClass = [
+    'px-3 cursor-pointer select-none',
+    'hover:text-[var(--text)]',
+  ].join(' ');
 
   return (
-    <div className="rounded-[var(--radius)] bg-[var(--surface-low)] p-3">
-      <table className="w-full border-separate border-spacing-y-2 text-sm">
-        <thead className="text-left text-[var(--text-muted)]">
-          <tr>
-            <th className="px-3">Key</th>
-            <th className="px-3">Size</th>
-            <th className="px-3">MIME</th>
-            <th className="px-3">Updated</th>
-            <th className="px-3 text-right">Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {objects.map((item) => (
-            <tr
-              key={item.key}
-              className="rounded-[var(--radius)] bg-[var(--surface-high)] transition-colors hover:bg-[var(--surface-elevated)]"
-            >
-              <td className="rounded-l-[var(--radius)] px-3 py-2.5">{item.key}</td>
-              <td className="px-3 py-2.5">{item.size}</td>
-              <td className="px-3 py-2.5 text-[var(--text-muted)]">{item.mimeType ?? '-'}</td>
-              <td className="rounded-r-[var(--radius)] px-3 py-2.5 text-[var(--text-muted)]">
-                {item.lastModified ?? '-'}
-              </td>
-              <td className="px-3 py-2.5 text-right">
-                <div className="flex justify-end gap-2">
-                  <Button variant="secondary" onClick={() => onCopyUrl?.(item.key)}>
-                    URL
-                  </Button>
-                  <Button variant="secondary" onClick={() => onDownload?.(item.key)}>
-                    ↓
-                  </Button>
-                  <Button variant="secondary" onClick={() => onRename?.(item.key)}>
-                    Rename
-                  </Button>
-                  <Button variant="secondary" onClick={() => onDelete?.(item.key)}>
-                    Delete
-                  </Button>
-                </div>
-              </td>
-            </tr>
-          ))}
-          {objects.length === 0 ? (
+    <ResourceContextMenu
+      blankActions={
+        onUpload && onRefresh
+          ? { onUpload, onRefresh }
+          : undefined
+      }
+    >
+      <div
+        className={
+          'rounded-[var(--radius)] '
+          + 'bg-[var(--surface-low)] p-3'
+        }
+      >
+        <table className="w-full border-separate border-spacing-y-1 text-sm">
+          <thead className="text-left text-xs text-[var(--text-muted)]">
             <tr>
-              <td colSpan={5} className="px-3 py-6 text-center text-[var(--text-muted)]">
-                {t('bucket.empty')}
-              </td>
+              {/* 全选Checkbox */}
+              <th className="w-10 px-3">
+                <input
+                  type="checkbox"
+                  checked={allSelected}
+                  onChange={onSelectAll}
+                  className="cursor-pointer accent-[var(--primary)]"
+                />
+              </th>
+              <th
+                className={thClass}
+                onClick={() => toggleSort('key')}
+              >
+                Key
+                <SortIcon
+                  column="key"
+                  activeColumn={sortCol}
+                  dir={sortDir}
+                />
+              </th>
+              <th
+                className={thClass}
+                onClick={() => toggleSort('size')}
+              >
+                Size
+                <SortIcon
+                  column="size"
+                  activeColumn={sortCol}
+                  dir={sortDir}
+                />
+              </th>
+              <th className="px-3">MIME</th>
+              <th
+                className={thClass}
+                onClick={() => toggleSort('lastModified')}
+              >
+                Updated
+                <SortIcon
+                  column="lastModified"
+                  activeColumn={sortCol}
+                  dir={sortDir}
+                />
+              </th>
+              <th className="w-12 px-3" />
             </tr>
-          ) : null}
-        </tbody>
-      </table>
-    </div>
+          </thead>
+          <tbody>
+            {sortedObjects.map((item) => {
+              const isSelected = selectedKeys.has(item.key);
+              const isDir = item.isDir || item.key.endsWith('/');
+              const fileName = extractFileName(item.key);
+
+              return (
+                <ResourceContextMenu
+                  key={item.key}
+                  fileActions={{
+                    onCopyUrl: () => onCopyUrl?.(item.key),
+                    onDownload: () => onDownload?.(item.key),
+                    onRename: () => onRename?.(item.key),
+                    onDelete: () => onDelete?.(item.key),
+                  }}
+                >
+                  <tr
+                    className={[
+                      'rounded-[var(--radius)] transition-colors',
+                      'cursor-default',
+                      isSelected
+                        ? 'bg-[color-mix(in_srgb,var(--primary)_10%,var(--surface-high))]'
+                        : 'bg-[var(--surface-high)] hover:bg-[var(--surface-elevated)]',
+                    ].join(' ')}
+                    onDoubleClick={() => {
+                      if (isDir) onNavigateFolder?.(item.key);
+                    }}
+                  >
+                    {/* Checkbox */}
+                    <td className="rounded-l-[var(--radius)] px-3 py-2">
+                      <input
+                        type="checkbox"
+                        checked={isSelected}
+                        onChange={(e) => {
+                          onSelect(
+                            item.key,
+                            (e.nativeEvent as MouseEvent).shiftKey,
+                          );
+                        }}
+                        className="cursor-pointer accent-[var(--primary)]"
+                      />
+                    </td>
+
+                    {/* 文件名 */}
+                    <td className="px-3 py-2.5">
+                      <div className="flex items-center gap-2">
+                        {isDir ? (
+                          <Folder
+                            size={15}
+                            className="shrink-0 text-[var(--primary)]"
+                          />
+                        ) : (
+                          <File
+                            size={15}
+                            className="shrink-0 text-[var(--text-muted)]"
+                          />
+                        )}
+                        <span
+                          className={[
+                            'truncate',
+                            isDir
+                              ? 'font-medium text-[var(--primary)]'
+                              : '',
+                          ].join(' ')}
+                          title={item.key}
+                        >
+                          {fileName}
+                        </span>
+                      </div>
+                    </td>
+
+                    {/* 大小 */}
+                    <td className="px-3 py-2.5 text-[var(--text-muted)]">
+                      {isDir ? '-' : formatFileSize(item.size)}
+                    </td>
+
+                    {/* MIME */}
+                    <td className="px-3 py-2.5 text-[var(--text-muted)]">
+                      {item.mimeType ?? '-'}
+                    </td>
+
+                    {/* 更新时间 */}
+                    <td className="px-3 py-2.5 text-[var(--text-muted)]">
+                      {item.lastModified
+                        ? formatRelativeTime(
+                            item.lastModified,
+                            i18n.language,
+                          )
+                        : '-'}
+                    </td>
+
+                    {/* 操作 */}
+                    <td className="rounded-r-[var(--radius)] px-3 py-2.5">
+                      <RowActionMenu
+                        objectKey={item.key}
+                        onCopyUrl={onCopyUrl}
+                        onDownload={onDownload}
+                        onRename={onRename}
+                        onDelete={onDelete}
+                      />
+                    </td>
+                  </tr>
+                </ResourceContextMenu>
+              );
+            })}
+
+            {objects.length === 0 ? (
+              <tr>
+                <td
+                  colSpan={6}
+                  className="px-3 py-8 text-center text-[var(--text-muted)]"
+                >
+                  {t('bucket.empty')}
+                </td>
+              </tr>
+            ) : null}
+          </tbody>
+        </table>
+      </div>
+    </ResourceContextMenu>
   );
 }
