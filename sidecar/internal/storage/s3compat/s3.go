@@ -87,7 +87,9 @@ func (p *Provider) Init(cfg model.Account) error {
 
 func (p *Provider) ListBuckets(ctx context.Context) ([]model.BucketInfo, error) {
 	if p.client == nil {
-		return nil, fmt.Errorf("provider %s is not initialized", p.provider)
+		return nil, fmt.Errorf(
+			"provider %s is not initialized", p.provider,
+		)
 	}
 
 	buckets, err := p.client.ListBuckets(ctx)
@@ -97,9 +99,16 @@ func (p *Provider) ListBuckets(ctx context.Context) ([]model.BucketInfo, error) 
 
 	result := make([]model.BucketInfo, 0, len(buckets))
 	for _, bucket := range buckets {
+		// 尝试获取 bucket 的区域信息
+		location, _ := p.client.GetBucketLocation(
+			ctx, bucket.Name,
+		)
+		if location == "" {
+			location = p.account.Region
+		}
 		result = append(result, model.BucketInfo{
 			Name:     bucket.Name,
-			Location: bucket.CreationDate.Format(time.RFC3339),
+			Location: location,
 			Provider: p.provider,
 		})
 	}
@@ -282,6 +291,19 @@ func (p *Provider) GenerateURL(params model.SignedURLParams) (string, error) {
 		return "", fmt.Errorf("generate presigned url failed: %w", err)
 	}
 	return link.String(), nil
+}
+
+// BucketLocation 返回 bucket 所在的区域。
+func (p *Provider) BucketLocation(
+	ctx context.Context,
+	bucket string,
+) (string, error) {
+	if p.client == nil {
+		return "", fmt.Errorf(
+			"provider %s is not initialized", p.provider,
+		)
+	}
+	return p.client.GetBucketLocation(ctx, bucket)
 }
 
 func (p *Provider) GetProviderFeatures() []string {
