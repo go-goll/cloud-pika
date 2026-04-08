@@ -7,15 +7,12 @@ import {
 } from 'lucide-react';
 import i18n from 'i18next';
 import { useTranslation } from 'react-i18next';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/Button';
-<<<<<<< HEAD
-import { useAppStore } from '@/stores/useAppStore';
-=======
 import { Select } from '@/components/ui/Select';
 import { SimpleTooltip } from '@/components/ui/Tooltip';
+import { useAppStore } from '@/stores/useAppStore';
 import { useAccountStore } from '@/stores/useAccountStore';
->>>>>>> worktree-agent-ae7d276e
 
 /** 路由 → 标题 i18n 映射 */
 const titleMap: Record<string, string> = {
@@ -29,8 +26,18 @@ const titleMap: Record<string, string> = {
 export function Header() {
   const { t } = useTranslation();
   const { pathname } = useLocation();
-<<<<<<< HEAD
+  const navigate = useNavigate();
   const inBucketPage = pathname.startsWith('/bucket');
+
+  const accounts = useAccountStore((s) => s.accounts);
+  const activeAccountId = useAccountStore(
+    (s) => s.activeAccountId,
+  );
+  const setActiveAccountId = useAccountStore(
+    (s) => s.setActiveAccountId,
+  );
+  const selectedAccountId =
+    activeAccountId || accounts[0]?.id || '';
 
   const themeMode = useAppStore((s) => s.themeMode);
   const setThemeMode = useAppStore((s) => s.setThemeMode);
@@ -62,131 +69,6 @@ export function Header() {
       ).matches);
 
   return (
-<<<<<<< HEAD
-    <header
-      className={[
-        'glass-panel ghost-border',
-        'border-l-0 border-r-0 border-t-0',
-        'sticky top-0 z-30',
-        'flex h-14 items-center justify-between px-6',
-      ].join(' ')}
-    >
-      {/* 左侧：页面标题 */}
-      <h2
-        className={[
-          'font-display text-lg font-semibold',
-          'text-[var(--color-on-surface)]',
-        ].join(' ')}
-      >
-        {t(titleMap[pathname] ?? 'nav.explorer')}
-      </h2>
-
-      {/* 右侧：操作按钮组 */}
-=======
-    <header className="glass sticky top-0 z-30 flex h-16 items-center justify-between border-b border-transparent px-6">
-      <div>
-        <h2 className="font-display text-lg font-semibold">
-          {t(titleMap[pathname] ?? 'nav.explorer')}
-        </h2>
-        <p className="text-xs text-[var(--text-muted)]">
-          {t('header.connectedAccounts', {
-            count: accounts.length,
-          })}
-        </p>
-      </div>
->>>>>>> worktree-agent-a58030ba
-      <div className="flex items-center gap-2">
-        {/* 主题切换 */}
-        <button
-          type="button"
-          onClick={handleToggleTheme}
-          className={[
-            'flex h-9 w-9 items-center justify-center',
-            'rounded-lg transition-all duration-200',
-            'text-[var(--color-on-surface-variant)]',
-            'hover:bg-[var(--color-surface-container-low)]',
-            'hover:text-[var(--color-on-surface)]',
-          ].join(' ')}
-          title={t('header.toggleTheme')}
-        >
-          {isDark ? (
-            <Sun size={18} />
-          ) : (
-            <Moon size={18} />
-          )}
-        </button>
-
-        {/* 语言切换 */}
-        <button
-          type="button"
-          onClick={handleToggleLanguage}
-          className={[
-            'flex items-center gap-1.5 rounded-lg',
-            'px-2.5 py-1.5 text-xs font-medium',
-            'ghost-border transition-all duration-200',
-            'text-[var(--color-on-surface-variant)]',
-            'hover:bg-[var(--color-surface-container-low)]',
-            'hover:text-[var(--color-on-surface)]',
-          ].join(' ')}
-          title={t('header.toggleLanguage')}
-        >
-          <Languages size={14} />
-          <span>
-            {locale === 'zh-CN' ? '中文' : 'EN'}
-          </span>
-        </button>
-
-        {/* 分隔符 */}
-        <div className="mx-1 h-5 w-px bg-[var(--color-outline-variant)]" />
-
-        {/* 刷新按钮 */}
-        <Button
-          variant="secondary"
-          size="sm"
-          onClick={() =>
-            window.dispatchEvent(
-              new CustomEvent(
-                'cloud-pika:refresh-active',
-              ),
-            )
-          }
-          disabled={!inBucketPage}
-          title={t('common.refresh')}
-        >
-          <RefreshCcw size={14} className="mr-1.5" />
-          {t('common.refresh')}
-        </Button>
-
-        {/* 上传按钮 */}
-        <Button
-          size="sm"
-          onClick={() =>
-            window.dispatchEvent(
-              new CustomEvent(
-                'cloud-pika:upload-active',
-              ),
-            )
-          }
-          disabled={!inBucketPage}
-          title={t('bucket.upload')}
-        >
-          <Rocket size={14} className="mr-1.5" />
-          {t('bucket.upload')}
-        </Button>
-=======
-  const navigate = useNavigate();
-  const accounts = useAccountStore((s) => s.accounts);
-  const activeAccountId = useAccountStore(
-    (s) => s.activeAccountId,
-  );
-  const setActiveAccountId = useAccountStore(
-    (s) => s.setActiveAccountId,
-  );
-  const inBucketPage = pathname.startsWith('/bucket');
-  const selectedAccountId =
-    activeAccountId || accounts[0]?.id || '';
-
-  return (
     <header
       className={
         'glass sticky top-0 z-30 flex h-16 '
@@ -200,12 +82,15 @@ export function Header() {
           {t(titleMap[pathname] ?? 'nav.explorer')}
         </h2>
         <p className="truncate text-xs text-[var(--text-muted)]">
-          {accounts.length} account(s) connected
+          {t('header.connectedAccounts', {
+            count: accounts.length,
+          })}
         </p>
       </div>
 
       {/* 右侧操作区 */}
       <div className="flex items-center gap-2">
+        {/* 账户选择器（窄窗口隐藏） */}
         {accounts.length > 0 ? (
           <Select
             value={selectedAccountId}
@@ -219,7 +104,53 @@ export function Header() {
           />
         ) : null}
 
-        {/* 窄窗口下隐藏文字，只保留图标 */}
+        {/* 主题切换 */}
+        <SimpleTooltip
+          content={t('header.toggleTheme')}
+        >
+          <button
+            type="button"
+            onClick={handleToggleTheme}
+            className={[
+              'flex h-9 w-9 items-center justify-center',
+              'rounded-lg transition-all duration-200',
+              'text-[var(--color-on-surface-variant)]',
+              'hover:bg-[var(--color-surface-container-low)]',
+              'hover:text-[var(--color-on-surface)]',
+            ].join(' ')}
+          >
+            {isDark ? (
+              <Sun size={18} />
+            ) : (
+              <Moon size={18} />
+            )}
+          </button>
+        </SimpleTooltip>
+
+        {/* 语言切换 */}
+        <SimpleTooltip
+          content={t('header.toggleLanguage')}
+        >
+          <button
+            type="button"
+            onClick={handleToggleLanguage}
+            className={[
+              'flex items-center gap-1.5 rounded-lg',
+              'px-2.5 py-1.5 text-xs font-medium',
+              'transition-all duration-200',
+              'text-[var(--color-on-surface-variant)]',
+              'hover:bg-[var(--color-surface-container-low)]',
+              'hover:text-[var(--color-on-surface)]',
+            ].join(' ')}
+          >
+            <Languages size={14} />
+            <span>
+              {locale === 'zh-CN' ? '中文' : 'EN'}
+            </span>
+          </button>
+        </SimpleTooltip>
+
+        {/* 账户管理（窄窗口隐藏文字） */}
         <SimpleTooltip content={t('nav.accounts')}>
           <Button
             variant="secondary"
@@ -230,6 +161,7 @@ export function Header() {
           </Button>
         </SimpleTooltip>
 
+        {/* 刷新 */}
         <SimpleTooltip content={t('common.refresh')}>
           <Button
             variant="secondary"
@@ -247,6 +179,7 @@ export function Header() {
           </Button>
         </SimpleTooltip>
 
+        {/* 上传 */}
         <SimpleTooltip content={t('bucket.upload')}>
           <Button
             onClick={() =>
@@ -264,7 +197,6 @@ export function Header() {
             </span>
           </Button>
         </SimpleTooltip>
->>>>>>> worktree-agent-ae7d276e
       </div>
     </header>
   );

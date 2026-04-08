@@ -249,15 +249,9 @@ function CardActionMenu({
                 setOpen(false);
               }}
               className={[
-<<<<<<< HEAD
-                'flex w-full items-center px-3 py-1.5',
-                'text-xs rounded-lg',
-                'hover:bg-surface-container-low',
-=======
                 'flex w-full items-center gap-1.5 px-3 py-1.5',
                 'text-xs rounded-[var(--radius)]',
                 'hover:bg-[var(--surface-elevated)]',
->>>>>>> worktree-agent-a58030ba
               ].join(' ')}
             >
               {item.icon}
@@ -322,29 +316,14 @@ export function ResourceGrid({
             item.isDir || item.key.endsWith('/');
           const fileName = extractFileName(item.key);
           const isImage =
-<<<<<<< HEAD
-            isImageKey(item.key) ||
-            item.mimeType?.startsWith('image/');
-=======
             !isDir
             && (isImageKey(item.key)
               || Boolean(item.mimeType?.startsWith('image/')));
->>>>>>> worktree-agent-a58030ba
 
           return (
             <ResourceContextMenu
               key={item.key}
               fileActions={{
-<<<<<<< HEAD
-                onCopyUrl: () =>
-                  onCopyUrl?.(item.key),
-                onDownload: () =>
-                  onDownload?.(item.key),
-                onRename: () =>
-                  onRename?.(item.key),
-                onDelete: () =>
-                  onDelete?.(item.key),
-=======
                 onCopyUrl: () => onCopyUrl?.(item.key),
                 onDownload: () => onDownload?.(item.key),
                 onRename: () => onRename?.(item.key),
@@ -352,19 +331,11 @@ export function ResourceGrid({
                 onPreview: isImage
                   ? () => onPreview?.(item.key)
                   : undefined,
->>>>>>> worktree-agent-a58030ba
               }}
             >
               <Card
                 hoverable
                 className={[
-<<<<<<< HEAD
-                  'group relative cursor-default',
-                  'transition-all duration-200',
-                  isSelected
-                    ? 'ring-2 ring-primary bg-primary/5'
-                    : 'hover:shadow-lg',
-=======
                   'animate-row-in group relative',
                   'cursor-default transition-all duration-200',
                   'hover:-translate-y-[1px] hover:shadow-md',
@@ -374,7 +345,6 @@ export function ResourceGrid({
                       + 'var(--primary)_5%,'
                       + 'var(--surface-high))]'
                     : '',
->>>>>>> worktree-agent-ae7d276e
                 ].join(' ')}
                 style={{
                   animationDelay: `${index * 30}ms`,
@@ -423,26 +393,6 @@ export function ResourceGrid({
                 </div>
 
                 {/* 缩略图/图标区域 */}
-<<<<<<< HEAD
-                <div
-                  className={[
-                    'flex h-24 items-center',
-                    'justify-center rounded-lg',
-                    isImage
-                      ? 'bg-surface-container-low'
-                      : '',
-                  ].join(' ')}
-                  onDoubleClick={() => {
-                    if (isDir)
-                      onNavigateFolder?.(item.key);
-                  }}
-                >
-                  {getFileIcon(
-                    item.key,
-                    item.mimeType,
-                  )}
-                </div>
-=======
                 <ThumbnailArea
                   objectKey={item.key}
                   mimeType={item.mimeType}
@@ -456,7 +406,6 @@ export function ResourceGrid({
                       : undefined
                   }
                 />
->>>>>>> worktree-agent-a58030ba
 
                 {/* 文件信息 */}
                 <div className="mt-2">
@@ -466,11 +415,7 @@ export function ResourceGrid({
                   >
                     {fileName}
                   </p>
-<<<<<<< HEAD
-                  <p className="mt-1 text-xs text-on-surface-variant">
-=======
                   <p className="mt-1 text-xs text-[var(--text-muted)]">
->>>>>>> worktree-agent-a58030ba
                     {isDir
                       ? t('bucket.folder')
                       : formatFileSize(item.size)}

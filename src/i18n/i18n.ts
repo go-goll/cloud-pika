@@ -154,22 +154,18 @@ const resources = {
         collapse: '收起侧边栏',
         expand: '展开侧边栏',
         switchAccount: '切换账户',
+        subtitle: '数字黑曜石工作台',
       },
       header: {
         toggleTheme: '切换主题',
         toggleLanguage: '切换语言',
+        connectedAccounts: '{{count}} 个账户已连接',
       },
       error: {
         title: '出错了',
         description: '应用遇到了一个错误，请尝试刷新页面',
         refresh: '刷新页面',
         goHome: '返回首页',
-      },
-      header: {
-        connectedAccounts: '{{count}} 个账户已连接',
-      },
-      sidebar: {
-        subtitle: '数字黑曜石工作台',
       },
       toast: {
         accountCreated: '账户创建成功',
@@ -342,22 +338,18 @@ const resources = {
         collapse: 'Collapse Sidebar',
         expand: 'Expand Sidebar',
         switchAccount: 'Switch Account',
+        subtitle: 'Digital Obsidian Workspace',
       },
       header: {
         toggleTheme: 'Toggle Theme',
         toggleLanguage: 'Switch Language',
+        connectedAccounts: '{{count}} account(s) connected',
       },
       error: {
         title: 'Something went wrong',
         description: 'The app encountered an error. Please try refreshing.',
         refresh: 'Refresh Page',
         goHome: 'Go Home',
-      },
-      header: {
-        connectedAccounts: '{{count}} account(s) connected',
-      },
-      sidebar: {
-        subtitle: 'Digital Obsidian Workspace',
       },
       toast: {
         accountCreated: 'Account created',

@@ -32,27 +32,16 @@ export function SelectionBar({
       className={[
         'fixed bottom-4 left-1/2 z-40',
         '-translate-x-1/2',
-<<<<<<< HEAD
-        'flex items-center gap-3',
-        'rounded-xl',
-        'bg-surface-container-lowest px-5 py-3',
-        'shadow-ambient ghost-border',
-=======
         'flex items-center gap-2 sm:gap-3',
         'rounded-[calc(var(--radius)+4px)]',
         'bg-[var(--surface-high)] px-3 py-2.5 sm:px-5 sm:py-3',
         'shadow-[0_8px_40px_rgba(0,0,0,0.15)]',
         'border border-[var(--outline)]',
->>>>>>> worktree-agent-ae7d276e
         'animate-[slideUp_0.2s_ease-out]',
       ].join(' ')}
     >
       {/* 选中数量 */}
-<<<<<<< HEAD
-      <span className="text-sm font-bold text-on-surface">
-=======
       <span className="whitespace-nowrap text-sm font-medium">
->>>>>>> worktree-agent-ae7d276e
         {t('bucket.selectedCount', { count })}
       </span>
 
@@ -86,16 +75,6 @@ export function SelectionBar({
         </Button>
       </SimpleTooltip>
 
-<<<<<<< HEAD
-      <Button
-        variant="ghost"
-        onClick={onBatchDelete}
-        className="gap-1.5 text-danger"
-      >
-        <Trash2 size={14} />
-        {t('bucket.delete')}
-      </Button>
-=======
       <SimpleTooltip content={t('bucket.delete')}>
         <Button
           variant="ghost"
@@ -108,7 +87,6 @@ export function SelectionBar({
           </span>
         </Button>
       </SimpleTooltip>
->>>>>>> worktree-agent-ae7d276e
 
       {/* 分隔线 */}
       <div className="h-5 w-px bg-outline-variant" />

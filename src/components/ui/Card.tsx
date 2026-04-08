@@ -5,16 +5,20 @@ interface CardProps {
   className?: string;
   /** 是否启用 hover 微提升效果 */
   hoverable?: boolean;
+  /** 内联样式 */
+  style?: React.CSSProperties;
 }
 
 /** 卡片容器：ghost-border + ambient-shadow + 圆角 12px */
 export function Card({
   className,
   hoverable = false,
+  style,
   children,
 }: PropsWithChildren<CardProps>) {
   return (
     <section
+      style={style}
       className={[
         'rounded-xl p-4',
         'bg-[var(--color-surface-container-lowest)]',
