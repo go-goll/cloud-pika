@@ -10,6 +10,8 @@ import { useThemeSync } from '@/hooks/useThemeSync';
 import { useSSE } from '@/hooks/useSSE';
 import { BootstrapScreen } from '@/components/BootstrapScreen';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
+import { Toaster } from '@/components/ui/Toaster';
+import { TooltipProvider } from '@/components/ui/Tooltip';
 
 const queryClient = new QueryClient();
 
@@ -37,11 +39,14 @@ ReactDOM.createRoot(
 ).render(
   <React.StrictMode>
     <ErrorBoundary>
-      <QueryClientProvider client={queryClient}>
-        <BrowserRouter>
-          <Bootstrap />
-        </BrowserRouter>
-      </QueryClientProvider>
+      <TooltipProvider>
+        <QueryClientProvider client={queryClient}>
+          <BrowserRouter>
+            <Bootstrap />
+          </BrowserRouter>
+        </QueryClientProvider>
+        <Toaster />
+      </TooltipProvider>
     </ErrorBoundary>
   </React.StrictMode>,
 );
