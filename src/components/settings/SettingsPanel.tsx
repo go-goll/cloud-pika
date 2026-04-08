@@ -43,20 +43,24 @@ export function SettingsPanel({
           <Select
             className="w-36"
             value={themeMode}
-            onChange={(e) =>
-              onThemeModeChange(e.target.value as ThemeMode)
+            onChange={(value) =>
+              onThemeModeChange(value as ThemeMode)
             }
-          >
-            <option value="system">
-              {t('settings.system')}
-            </option>
-            <option value="light">
-              {t('settings.light')}
-            </option>
-            <option value="dark">
-              {t('settings.dark')}
-            </option>
-          </Select>
+            options={[
+              {
+                value: 'system',
+                label: t('settings.system'),
+              },
+              {
+                value: 'light',
+                label: t('settings.light'),
+              },
+              {
+                value: 'dark',
+                label: t('settings.dark'),
+              },
+            ]}
+          />
         </SettingsItem>
 
         <SettingsItem
@@ -66,22 +70,26 @@ export function SettingsPanel({
           <Select
             className="w-36"
             value={language}
-            onChange={(e) =>
+            onChange={(value) =>
               onLocaleChange(
-                e.target.value as AppSettings['language'],
+                value as AppSettings['language'],
               )
             }
-          >
-            <option value="system">
-              {t('settings.system')}
-            </option>
-            <option value="zh-CN">
-              {t('settings.chinese')}
-            </option>
-            <option value="en-US">
-              {t('settings.english')}
-            </option>
-          </Select>
+            options={[
+              {
+                value: 'system',
+                label: t('settings.system'),
+              },
+              {
+                value: 'zh-CN',
+                label: t('settings.chinese'),
+              },
+              {
+                value: 'en-US',
+                label: t('settings.english'),
+              },
+            ]}
+          />
         </SettingsItem>
       </SettingsGroup>
 
@@ -93,8 +101,8 @@ export function SettingsPanel({
         >
           <Checkbox
             checked={settings.https}
-            onChange={(e) =>
-              onSettingsChange({ https: e.target.checked })
+            onCheckedChange={(checked) =>
+              onSettingsChange({ https: checked })
             }
           />
         </SettingsItem>
@@ -106,17 +114,16 @@ export function SettingsPanel({
           <Select
             className="w-36"
             value={settings.copyType}
-            onChange={(e) =>
+            onChange={(value) =>
               onSettingsChange({
-                copyType: e.target.value as
-                  | 'url'
-                  | 'markdown',
+                copyType: value as 'url' | 'markdown',
               })
             }
-          >
-            <option value="url">URL</option>
-            <option value="markdown">Markdown</option>
-          </Select>
+            options={[
+              { value: 'url', label: 'URL' },
+              { value: 'markdown', label: 'Markdown' },
+            ]}
+          />
         </SettingsItem>
 
         <SettingsItem
@@ -125,8 +132,8 @@ export function SettingsPanel({
         >
           <Checkbox
             checked={settings.paging}
-            onChange={(e) =>
-              onSettingsChange({ paging: e.target.checked })
+            onCheckedChange={(checked) =>
+              onSettingsChange({ paging: checked })
             }
           />
         </SettingsItem>
@@ -140,9 +147,9 @@ export function SettingsPanel({
         >
           <Checkbox
             checked={settings.hideDeleteButton}
-            onChange={(e) =>
+            onCheckedChange={(checked) =>
               onSettingsChange({
-                hideDeleteButton: e.target.checked,
+                hideDeleteButton: checked,
               })
             }
           />
@@ -167,7 +174,7 @@ export function SettingsPanel({
       <div className="flex justify-end">
         <Button onClick={onSave} disabled={isSaving}>
           {isSaving ? (
-            <Spinner size={16} className="mr-2" />
+            <Spinner size="sm" className="mr-2" />
           ) : null}
           {t('common.save')}
         </Button>

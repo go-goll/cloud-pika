@@ -2,9 +2,18 @@ import { useState } from 'react';
 import { MoreVertical, Pencil, Trash2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/Button';
-import { Dialog } from '@/components/ui/Dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from '@/components/ui/Dialog';
 import {
   DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
   DropdownMenuItem,
 } from '@/components/ui/DropdownMenu';
 import { getProviderOption } from '@/lib/provider';
@@ -79,8 +88,8 @@ export function AccountCard({
           onKeyDown={(e) => e.stopPropagation()}
           role="presentation"
         >
-          <DropdownMenu
-            trigger={
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
               <span
                 className={[
                   'flex h-7 w-7 items-center justify-center',
@@ -92,21 +101,22 @@ export function AccountCard({
               >
                 <MoreVertical size={14} />
               </span>
-            }
-          >
-            <DropdownMenuItem
-              onClick={() => onSelect(account.id)}
-            >
-              <Pencil size={14} />
-              {t('common.edit')}
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              danger
-              onClick={() => setConfirmOpen(true)}
-            >
-              <Trash2 size={14} />
-              {t('common.delete')}
-            </DropdownMenuItem>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
+              <DropdownMenuItem
+                onClick={() => onSelect(account.id)}
+              >
+                <Pencil size={14} />
+                {t('common.edit')}
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                danger
+                onClick={() => setConfirmOpen(true)}
+              >
+                <Trash2 size={14} />
+                {t('common.delete')}
+              </DropdownMenuItem>
+            </DropdownMenuContent>
           </DropdownMenu>
         </div>
       </div>
@@ -114,34 +124,37 @@ export function AccountCard({
       {/* 删除确认对话框 */}
       <Dialog
         open={confirmOpen}
-        onClose={() => setConfirmOpen(false)}
-        className="w-80"
+        onOpenChange={setConfirmOpen}
       >
-        <h3 className="text-sm font-semibold">
-          {t('login.deleteConfirmTitle')}
-        </h3>
-        <p className="mt-2 text-xs text-[var(--text-muted)]">
-          {t('login.deleteConfirmDesc', {
-            name: account.name,
-          })}
-        </p>
-        <div className="mt-4 flex justify-end gap-2">
-          <Button
-            variant="ghost"
-            onClick={() => setConfirmOpen(false)}
-          >
-            {t('common.cancel')}
-          </Button>
-          <Button
-            variant="danger"
-            onClick={() => {
-              onDelete(account.id);
-              setConfirmOpen(false);
-            }}
-          >
-            {t('common.delete')}
-          </Button>
-        </div>
+        <DialogContent className="w-80">
+          <DialogHeader>
+            <DialogTitle>
+              {t('login.deleteConfirmTitle')}
+            </DialogTitle>
+            <DialogDescription>
+              {t('login.deleteConfirmDesc', {
+                name: account.name,
+              })}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="ghost"
+              onClick={() => setConfirmOpen(false)}
+            >
+              {t('common.cancel')}
+            </Button>
+            <Button
+              variant="danger"
+              onClick={() => {
+                onDelete(account.id);
+                setConfirmOpen(false);
+              }}
+            >
+              {t('common.delete')}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
       </Dialog>
     </>
   );

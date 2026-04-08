@@ -195,18 +195,11 @@ export function AccountForm({
         </span>
         <Select
           value={form.provider}
-          onChange={(e) =>
-            handleProviderChange(
-              e.target.value as ProviderKey,
-            )
+          onChange={(value) =>
+            handleProviderChange(value as ProviderKey)
           }
-        >
-          {providerOptions.map((item) => (
-            <option key={item.value} value={item.value}>
-              {item.label}
-            </option>
-          ))}
-        </Select>
+          options={providerOptions}
+        />
       </label>
 
       {/* 别名 */}
@@ -334,8 +327,8 @@ export function AccountForm({
             >
               <Checkbox
                 checked={form.internal}
-                onChange={(e) =>
-                  updateField('internal', e.target.checked)
+                onCheckedChange={(checked) =>
+                  updateField('internal', checked)
                 }
               />
               {t('login.internal')}
@@ -352,7 +345,7 @@ export function AccountForm({
           disabled={isPending}
         >
           {isPending ? (
-            <Spinner size={16} className="mr-2" />
+            <Spinner size="sm" className="mr-2" />
           ) : null}
           {t('login.connect')}
         </Button>
