@@ -7,7 +7,8 @@ import { Spinner } from './Spinner';
 type Variant = 'primary' | 'secondary' | 'ghost' | 'danger';
 type Size = 'sm' | 'md' | 'lg';
 
-interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
+interface ButtonProps
+  extends ButtonHTMLAttributes<HTMLButtonElement> {
   /** 按钮风格 */
   variant?: Variant;
   /** 按钮尺寸 */
@@ -21,18 +22,25 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 /** 风格样式映射 */
 const variantClasses: Record<Variant, string> = {
   primary: [
-    'bg-[linear-gradient(135deg,var(--primary)_0%,var(--primary-soft)_100%)]',
-    'text-[var(--on-primary)]',
-    'shadow-[0_8px_30px_var(--primary-glow)]',
+    'signature-gradient text-white',
+    'ambient-shadow',
+    'hover:brightness-110',
   ].join(' '),
-  secondary: 'bg-[var(--surface-elevated)] text-[var(--text)]',
+  secondary: [
+    'ghost-border',
+    'bg-[var(--color-surface-container-lowest)]',
+    'text-[var(--color-on-surface)]',
+    'hover:bg-[var(--color-surface-container-low)]',
+  ].join(' '),
   ghost: [
-    'bg-transparent text-[var(--text-muted)]',
-    'hover:text-[var(--text)]',
+    'bg-transparent',
+    'text-[var(--color-on-surface-variant)]',
+    'hover:bg-[var(--color-surface-container-low)]',
+    'hover:text-[var(--color-on-surface)]',
   ].join(' '),
   danger: [
-    'bg-[color-mix(in_srgb,var(--danger)_84%,black)]',
-    'text-white',
+    'bg-[var(--color-danger)] text-white',
+    'hover:brightness-110',
   ].join(' '),
 };
 
@@ -76,13 +84,17 @@ export function Button({
       disabled={isDisabled}
       className={[
         'inline-flex items-center justify-center',
-        'rounded-[var(--radius)] font-medium transition-all duration-200',
-        'hover:brightness-110 hover:scale-[1.02]',
+        'rounded-lg font-medium',
+        'transition-all duration-200',
         'active:scale-[0.97]',
-        'disabled:cursor-not-allowed disabled:opacity-60',
-        'disabled:hover:scale-100 disabled:hover:brightness-100',
+        'disabled:cursor-not-allowed',
+        'disabled:opacity-60',
+        'disabled:hover:scale-100',
+        'disabled:hover:brightness-100',
         variantClasses[variant],
-        iconOnly ? iconOnlySizeClasses[size] : sizeClasses[size],
+        iconOnly
+          ? iconOnlySizeClasses[size]
+          : sizeClasses[size],
         className ?? '',
       ].join(' ')}
       {...rest}

@@ -90,6 +90,15 @@ const resources = {
         hideDelete: '隐藏删除按钮',
         paging: '分页模式',
       },
+      sidebar: {
+        collapse: '收起侧边栏',
+        expand: '展开侧边栏',
+        switchAccount: '切换账户',
+      },
+      header: {
+        toggleTheme: '切换主题',
+        toggleLanguage: '切换语言',
+      },
     },
   },
   'en-US': {
@@ -178,6 +187,15 @@ const resources = {
         https: 'Enable HTTPS',
         hideDelete: 'Hide Delete Action',
         paging: 'Paging Mode',
+      },
+      sidebar: {
+        collapse: 'Collapse Sidebar',
+        expand: 'Expand Sidebar',
+        switchAccount: 'Switch Account',
+      },
+      header: {
+        toggleTheme: 'Toggle Theme',
+        toggleLanguage: 'Switch Language',
       },
     },
   },
