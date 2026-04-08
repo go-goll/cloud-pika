@@ -6,7 +6,8 @@ import {
   type ReactNode,
 } from 'react';
 
-interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
+interface InputProps
+  extends InputHTMLAttributes<HTMLInputElement> {
   /** 左侧图标（如搜索图标） */
   icon?: ReactNode;
   /** 是否显示清除按钮 */
@@ -17,21 +18,34 @@ interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
 
 /** 输入框基础样式 */
 const baseClasses = [
-  'h-10 w-full rounded-[var(--radius)] border border-transparent',
-  'bg-[var(--surface-low)] text-sm text-[var(--text)]',
-  'placeholder:text-[var(--text-muted)]',
-  'focus:border-[color-mix(in_srgb,var(--primary)_40%,transparent)]',
-  'focus:outline-none',
-  'focus:shadow-[0_0_0_3px_var(--primary-glow)]',
+  'h-10 w-full rounded-lg',
+  'bg-[var(--color-surface-container-low)]',
+  'text-sm text-[var(--color-on-surface)]',
+  'ghost-border',
+  'placeholder:text-[var(--color-on-surface-variant)]',
+  'focus:ring-2 focus:ring-[var(--color-primary)]/20',
+  'focus:bg-[var(--color-surface-container-lowest)]',
+  'focus:outline-none transition-all',
 ].join(' ');
 
 /**
  * 增强输入框组件
  * 支持左侧图标、密码显隐切换、可清除内容
  */
-export const Input = forwardRef<HTMLInputElement, InputProps>(
+export const Input = forwardRef<
+  HTMLInputElement,
+  InputProps
+>(
   (
-    { icon, clearable, onClear, className, type, value, ...rest },
+    {
+      icon,
+      clearable,
+      onClear,
+      className,
+      type,
+      value,
+      ...rest
+    },
     ref,
   ) => {
     const [showPassword, setShowPassword] = useState(false);
@@ -39,7 +53,8 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
     const hasValue = value !== undefined && value !== '';
 
     /** 是否需要右侧操作按钮 */
-    const hasRightAction = isPassword || (clearable && hasValue);
+    const hasRightAction =
+      isPassword || (clearable && hasValue);
     /** 是否有左侧图标 */
     const hasLeftIcon = !!icon;
 
@@ -51,7 +66,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
             className={[
               'pointer-events-none absolute left-3',
               'top-1/2 -translate-y-1/2',
-              'text-[var(--text-muted)]',
+              'text-[var(--color-on-surface-variant)]',
             ].join(' ')}
           >
             {icon}
@@ -60,7 +75,9 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
 
         <input
           ref={ref}
-          type={isPassword && showPassword ? 'text' : type}
+          type={
+            isPassword && showPassword ? 'text' : type
+          }
           value={value}
           className={[
             baseClasses,
@@ -75,8 +92,8 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
         {hasRightAction && (
           <div
             className={[
-              'absolute right-1 top-1/2 -translate-y-1/2',
-              'flex items-center',
+              'absolute right-1 top-1/2',
+              '-translate-y-1/2 flex items-center',
             ].join(' ')}
           >
             {/* 清除按钮 */}
@@ -86,10 +103,10 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
                 onClick={onClear}
                 tabIndex={-1}
                 className={[
-                  'flex h-8 w-8 items-center justify-center',
-                  'rounded-[calc(var(--radius)-2px)]',
-                  'text-[var(--text-muted)]',
-                  'hover:text-[var(--text)]',
+                  'flex h-8 w-8 items-center',
+                  'justify-center rounded-md',
+                  'text-[var(--color-on-surface-variant)]',
+                  'hover:text-[var(--color-on-surface)]',
                   'transition-colors',
                 ].join(' ')}
               >
@@ -100,13 +117,15 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
             {isPassword && (
               <button
                 type="button"
-                onClick={() => setShowPassword((v) => !v)}
+                onClick={() =>
+                  setShowPassword((v) => !v)
+                }
                 tabIndex={-1}
                 className={[
-                  'flex h-8 w-8 items-center justify-center',
-                  'rounded-[calc(var(--radius)-2px)]',
-                  'text-[var(--text-muted)]',
-                  'hover:text-[var(--text)]',
+                  'flex h-8 w-8 items-center',
+                  'justify-center rounded-md',
+                  'text-[var(--color-on-surface-variant)]',
+                  'hover:text-[var(--color-on-surface)]',
                   'transition-colors',
                 ].join(' ')}
               >

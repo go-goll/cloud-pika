@@ -1,49 +1,98 @@
+/* Google Fonts：正文(Inter) + 标题(Manrope) + 中文(Noto Sans SC) */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Manrope:wght@400;500;600;700;800&family=Noto+Sans+SC:wght@400;500;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+/* ========================================
+   设计令牌 — 浅色主题（默认）
+   ======================================== */
 :root {
-  font-family: Inter, 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  --surface: #f7f9fb;
-  --surface-low: #f2f4f6;
-  --surface-high: #ffffff;
+  font-family: Inter, 'Noto Sans SC', -apple-system,
+    BlinkMacSystemFont, 'Segoe UI', sans-serif;
+
+  /* 表面色 */
+  --color-surface: #F7F9FB;
+  --color-surface-container-low: #F2F4F6;
+  --color-surface-container-lowest: #FFFFFF;
+
+  /* 文本色 */
+  --color-on-surface: #191C1E;
+  --color-on-surface-variant: #3D484E;
+
+  /* 边框与分割 */
+  --color-outline-variant: rgba(189, 200, 207, 0.15);
+
+  /* 主色 */
+  --color-primary: #006782;
+  --color-primary-container: #00A3CC;
+  --color-on-primary: #FFFFFF;
+
+  /* 语义色 */
+  --color-danger: #b3261e;
+  --color-success: #1d7b3e;
+
+  /* 圆角 */
+  --radius: 8px;
+
+  /* 兼容旧变量名（供未迁移组件使用） */
+  --surface: var(--color-surface);
+  --surface-low: var(--color-surface-container-low);
+  --surface-high: var(--color-surface-container-lowest);
   --surface-muted: #eceef0;
   --surface-elevated: #e0e3e5;
-  --text: #191c1e;
-  --text-muted: #3d484e;
-  --primary: #006782;
-  --primary-soft: #00a3cc;
+  --text: var(--color-on-surface);
+  --text-muted: var(--color-on-surface-variant);
+  --primary: var(--color-primary);
+  --primary-soft: var(--color-primary-container);
   --primary-glow: rgba(0, 103, 130, 0.2);
-  --on-primary: #ffffff;
-  --outline: rgba(109, 121, 127, 0.2);
-  --danger: #b3261e;
-  --success: #1d7b3e;
-  --radius: 12px;
-  --bg-pattern: radial-gradient(circle at 15% 10%, rgba(0, 163, 204, 0.08) 0, transparent 28%),
-    radial-gradient(circle at 80% 0%, rgba(0, 103, 130, 0.06) 0, transparent 35%),
-    linear-gradient(180deg, #f7f9fb 0%, #eef3f7 100%);
+  --on-primary: var(--color-on-primary);
+  --outline: var(--color-outline-variant);
+  --danger: var(--color-danger);
+  --success: var(--color-success);
 }
 
+/* ========================================
+   设计令牌 — 深色主题
+   ======================================== */
 :root[data-theme='dark'] {
-  --surface: #060e20;
-  --surface-low: #091328;
-  --surface-high: #141f38;
-  --surface-muted: #0f1930;
-  --surface-elevated: #192540;
-  --text: #dee5ff;
-  --text-muted: #a3aac4;
-  --primary: #6dddff;
-  --primary-soft: #00d2fd;
-  --primary-glow: rgba(109, 221, 255, 0.2);
-  --on-primary: #004c5e;
-  --outline: rgba(64, 72, 93, 0.35);
-  --danger: #ff716c;
-  --success: #49c878;
-  --bg-pattern: radial-gradient(circle at 10% 0%, rgba(0, 210, 253, 0.12) 0, transparent 30%),
-    radial-gradient(circle at 85% 5%, rgba(130, 163, 255, 0.1) 0, transparent 32%),
-    linear-gradient(180deg, #060e20 0%, #08142b 100%);
+  --color-surface: #0F1113;
+  --color-surface-container-low: #191C1E;
+  --color-surface-container-lowest: #1C2022;
+
+  --color-on-surface: #E1E2E5;
+  --color-on-surface-variant: #C1C7CE;
+
+  --color-outline-variant: rgba(255, 255, 255, 0.08);
+
+  --color-primary: #006782;
+  --color-primary-container: #00A3CC;
+  --color-on-primary: #FFFFFF;
+
+  --color-danger: #ff716c;
+  --color-success: #49c878;
+
+  /* 兼容旧变量名 */
+  --surface: var(--color-surface);
+  --surface-low: var(--color-surface-container-low);
+  --surface-high: var(--color-surface-container-lowest);
+  --surface-muted: #252830;
+  --surface-elevated: #2a2e38;
+  --text: var(--color-on-surface);
+  --text-muted: var(--color-on-surface-variant);
+  --primary: var(--color-primary);
+  --primary-soft: var(--color-primary-container);
+  --primary-glow: rgba(0, 103, 130, 0.2);
+  --on-primary: var(--color-on-primary);
+  --outline: var(--color-outline-variant);
+  --danger: var(--color-danger);
+  --success: var(--color-success);
 }
 
+/* ========================================
+   全局基础样式
+   ======================================== */
 * {
   box-sizing: border-box;
 }
@@ -51,8 +100,8 @@
 body {
   margin: 0;
   min-height: 100vh;
-  color: var(--text);
-  background: var(--bg-pattern);
+  color: var(--color-on-surface);
+  background-color: var(--color-surface);
 }
 
 #root {
@@ -66,25 +115,68 @@ textarea {
   font: inherit;
 }
 
-.glass {
-  background: color-mix(in srgb, var(--surface-elevated) 78%, transparent);
-  backdrop-filter: blur(20px);
+/* ========================================
+   全局主题过渡（不覆盖已有 transition-all）
+   ======================================== */
+*:not([class*='transition-all']),
+*::before,
+*::after {
+  transition: background-color 0.3s ease,
+    border-color 0.3s ease,
+    color 0.2s ease;
 }
 
+/* ========================================
+   工具类
+   ======================================== */
+
+/* 品牌渐变 */
+.signature-gradient {
+  background: linear-gradient(
+    135deg, #00A3CC 0%, #006782 100%
+  );
+}
+
+/* 环境阴影 */
+.ambient-shadow {
+  box-shadow:
+    0 32px 48px -4px rgba(0, 103, 130, 0.06),
+    0 8px 16px -2px rgba(0, 103, 130, 0.04);
+}
+
+/* 幽灵边框 */
+.ghost-border {
+  border: 1px solid var(--color-outline-variant);
+}
+
+/* 毛玻璃面板 */
+.glass-panel {
+  backdrop-filter: blur(24px);
+  background-color: color-mix(
+    in srgb,
+    var(--color-surface-container-lowest) 72%,
+    transparent
+  );
+}
+
+/* 兼容旧的 glass 类名 */
+.glass {
+  backdrop-filter: blur(24px);
+  background-color: color-mix(
+    in srgb,
+    var(--color-surface-container-lowest) 72%,
+    transparent
+  );
+}
+
+/* 兼容旧的 no-line 类名 */
 .no-line {
   border: 1px solid transparent;
 }
 
-/* 全局主题过渡动画（不覆盖已有 transition-all） */
-*:not([class*='transition-all']),
-*::before,
-*::after {
-  transition: background-color 0.2s ease,
-    border-color 0.2s ease,
-    color 0.15s ease;
-}
-
-/* 对话框进入动画 */
+/* ========================================
+   对话框动画关键帧
+   ======================================== */
 @keyframes fadeIn {
   from { opacity: 0; }
   to { opacity: 1; }
