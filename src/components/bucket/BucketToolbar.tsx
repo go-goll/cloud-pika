@@ -78,14 +78,17 @@ export function BucketToolbar({
       <div className="relative max-w-[360px] flex-1">
         <Search
           size={16}
-          className={
-            'pointer-events-none absolute left-3 '
-            + 'top-1/2 -translate-y-1/2 text-[var(--text-muted)]'
-          }
+          className={[
+            'pointer-events-none absolute left-3',
+            'top-1/2 -translate-y-1/2',
+            'text-on-surface-variant',
+          ].join(' ')}
         />
         <Input
           value={inputValue}
-          onChange={(e) => handleInputChange(e.target.value)}
+          onChange={(e) =>
+            handleInputChange(e.target.value)
+          }
           placeholder={t('common.search')}
           className="pl-9 pr-8"
         />
@@ -93,10 +96,12 @@ export function BucketToolbar({
           <button
             type="button"
             onClick={handleClear}
-            className={
-              'absolute right-2.5 top-1/2 -translate-y-1/2 '
-              + 'text-[var(--text-muted)] hover:text-[var(--text)]'
-            }
+            className={[
+              'absolute right-2.5 top-1/2',
+              '-translate-y-1/2',
+              'text-on-surface-variant',
+              'hover:text-on-surface',
+            ].join(' ')}
           >
             <X size={14} />
           </button>
@@ -107,29 +112,32 @@ export function BucketToolbar({
       <div className="flex items-center gap-2">
         {/* 选中数量提示 */}
         {selectedCount > 0 ? (
-          <span className="text-xs text-[var(--primary)]">
+          <span className="text-xs font-bold text-primary">
             {t('bucket.selectedCount', {
               count: selectedCount,
             })}
           </span>
         ) : null}
 
-        {/* 视图切换 */}
-        <div
-          className={
-            'flex overflow-hidden rounded-[var(--radius)] '
-            + 'bg-[var(--surface-low)]'
-          }
-        >
+        {/* 视图切换按钮组 */}
+        <div className="flex overflow-hidden rounded-lg ghost-border">
           <button
             type="button"
             onClick={() => onViewChange('table')}
             className={[
-              'flex items-center gap-1.5 px-3 py-2 text-xs',
-              'transition-colors',
+              'flex items-center gap-1.5 px-3 py-2',
+              'text-xs transition-colors',
               view === 'table'
-                ? 'bg-[var(--surface-elevated)] font-medium'
-                : 'text-[var(--text-muted)] hover:text-[var(--text)]',
+                ? [
+                    'bg-surface-container-lowest',
+                    'font-bold text-on-surface',
+                    'shadow-sm',
+                  ].join(' ')
+                : [
+                    'text-on-surface-variant',
+                    'hover:text-on-surface',
+                    'bg-surface-container-low',
+                  ].join(' '),
             ].join(' ')}
           >
             <LayoutList size={14} />
@@ -139,11 +147,19 @@ export function BucketToolbar({
             type="button"
             onClick={() => onViewChange('grid')}
             className={[
-              'flex items-center gap-1.5 px-3 py-2 text-xs',
-              'transition-colors',
+              'flex items-center gap-1.5 px-3 py-2',
+              'text-xs transition-colors',
               view === 'grid'
-                ? 'bg-[var(--surface-elevated)] font-medium'
-                : 'text-[var(--text-muted)] hover:text-[var(--text)]',
+                ? [
+                    'bg-surface-container-lowest',
+                    'font-bold text-on-surface',
+                    'shadow-sm',
+                  ].join(' ')
+                : [
+                    'text-on-surface-variant',
+                    'hover:text-on-surface',
+                    'bg-surface-container-low',
+                  ].join(' '),
             ].join(' ')}
           >
             <Grid3x3 size={14} />

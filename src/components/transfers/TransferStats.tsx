@@ -1,11 +1,47 @@
+import {
+  CheckCircle,
+  Clock,
+  PlayCircle,
+  XCircle,
+} from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/Button';
-import type { TransferTask, TransferStatus } from '@/types/cloud';
+import type {
+  TransferTask,
+  TransferStatus,
+} from '@/types/cloud';
 
 interface TransferStatsProps {
   tasks: TransferTask[];
   onClearCompleted?: () => void;
 }
+
+/** 统计项图标和颜色配置 */
+const statConfig: Record<
+  TransferStatus,
+  { icon: typeof PlayCircle; colorClass: string }
+> = {
+  running: {
+    icon: PlayCircle,
+    colorClass: 'text-primary',
+  },
+  queued: {
+    icon: Clock,
+    colorClass: 'text-on-surface-variant',
+  },
+  completed: {
+    icon: CheckCircle,
+    colorClass: 'text-success',
+  },
+  failed: {
+    icon: XCircle,
+    colorClass: 'text-danger',
+  },
+  canceled: {
+    icon: XCircle,
+    colorClass: 'text-on-surface-variant',
+  },
+};
 
 /** 传输任务统计栏 */
 export function TransferStats({
@@ -32,30 +68,44 @@ export function TransferStats({
   }> = [
     { key: 'running', labelKey: 'transfer.running' },
     { key: 'queued', labelKey: 'transfer.queued' },
-    { key: 'completed', labelKey: 'transfer.completed' },
+    {
+      key: 'completed',
+      labelKey: 'transfer.completed',
+    },
     { key: 'failed', labelKey: 'transfer.failed' },
   ];
 
   return (
     <div className="flex items-center justify-between">
-      <div className="flex flex-wrap gap-3 text-sm">
+      <div className="flex flex-wrap gap-4">
         {statItems.map((item) => {
           const count = counts[item.key] ?? 0;
           if (count === 0) return null;
+          const config = statConfig[item.key];
+          const Icon = config.icon;
           return (
-            <span
+            <div
               key={item.key}
-              className="text-[var(--text-muted)]"
+              className={[
+                'flex items-center gap-2',
+                'rounded-xl ghost-border px-4 py-2',
+              ].join(' ')}
             >
-              {t(item.labelKey)}{' '}
-              <span className="font-medium text-[var(--text)]">
+              <Icon
+                size={16}
+                className={config.colorClass}
+              />
+              <span className="text-sm text-on-surface-variant">
+                {t(item.labelKey)}
+              </span>
+              <span className="text-2xl font-headline font-bold text-on-surface">
                 {count}
               </span>
-            </span>
+            </div>
           );
         })}
         {tasks.length === 0 ? (
-          <span className="text-[var(--text-muted)]">
+          <span className="text-sm text-on-surface-variant">
             {t('transfer.noTransfers')}
           </span>
         ) : null}

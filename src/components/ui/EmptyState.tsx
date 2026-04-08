@@ -30,15 +30,15 @@ export function EmptyState({
       ].join(' ')}
     >
       {icon && (
-        <div className="mb-4 text-[var(--text-muted)] opacity-60">
+        <div className="mb-4 text-on-surface-variant opacity-60">
           {icon}
         </div>
       )}
-      <h3 className="text-base font-semibold text-[var(--text)]">
+      <h3 className="text-base font-semibold text-on-surface">
         {title}
       </h3>
       {description && (
-        <p className="mt-1.5 max-w-sm text-sm text-[var(--text-muted)]">
+        <p className="mt-1.5 max-w-sm text-sm text-on-surface-variant">
           {description}
         </p>
       )}

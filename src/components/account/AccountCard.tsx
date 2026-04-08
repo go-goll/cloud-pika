@@ -35,8 +35,9 @@ export function AccountCard({
   const [confirmOpen, setConfirmOpen] = useState(false);
   const provider = getProviderOption(account.provider);
 
-  const formattedDate = new Date(account.createdAt)
-    .toLocaleDateString();
+  const formattedDate = new Date(
+    account.createdAt,
+  ).toLocaleDateString();
 
   return (
     <>
@@ -49,20 +50,19 @@ export function AccountCard({
         }}
         className={[
           'group relative flex items-center gap-3',
-          'rounded-[var(--radius)] bg-[var(--surface-high)] p-3',
-          'cursor-pointer transition-all duration-200',
-          'hover:shadow-lg hover:-translate-y-0.5',
-          'border border-transparent',
-          'hover:border-[var(--outline)]',
+          'rounded-xl bg-surface-container-lowest p-3',
+          'ghost-border cursor-pointer',
+          'transition-all duration-200',
+          'hover:ambient-shadow hover:-translate-y-0.5',
         ].join(' ')}
       >
-        {/* 云厂商首字母图标 */}
+        {/* 云厂商首字母图标 — 渐变圆形 */}
         <div
           className={[
             'flex h-10 w-10 shrink-0 items-center',
             'justify-center rounded-full',
-            'bg-[color-mix(in_srgb,var(--primary)_12%,transparent)]',
-            'text-sm font-semibold text-[var(--primary)]',
+            'signature-gradient',
+            'text-sm font-bold text-white',
           ].join(' ')}
         >
           {provider.label.charAt(0).toUpperCase()}
@@ -70,13 +70,13 @@ export function AccountCard({
 
         {/* 账户信息 */}
         <div className="min-w-0 flex-1">
-          <p className="truncate text-sm font-medium">
+          <p className="truncate text-sm font-medium text-on-surface">
             {account.name}
           </p>
-          <p className="text-xs text-[var(--text-muted)]">
+          <p className="text-xs text-on-surface-variant">
             {provider.label}
           </p>
-          <p className="text-xs text-[var(--text-muted)]">
+          <p className="text-xs text-on-surface-variant">
             {formattedDate}
           </p>
         </div>
@@ -92,11 +92,12 @@ export function AccountCard({
             <DropdownMenuTrigger asChild>
               <span
                 className={[
-                  'flex h-7 w-7 items-center justify-center',
-                  'rounded-full text-[var(--text-muted)]',
+                  'flex h-7 w-7 items-center',
+                  'justify-center rounded-full',
+                  'text-on-surface-variant',
                   'opacity-0 transition-opacity',
                   'group-hover:opacity-100',
-                  'hover:bg-[var(--surface-elevated)]',
+                  'hover:bg-surface-container-low',
                 ].join(' ')}
               >
                 <MoreVertical size={14} />

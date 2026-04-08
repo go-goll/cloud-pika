@@ -8,8 +8,8 @@ export function Skeleton({
   return (
     <div
       className={[
-        'animate-pulse rounded-[var(--radius)]',
-        'bg-[var(--surface-elevated)]',
+        'animate-pulse rounded-xl',
+        'bg-surface-container-low',
         className ?? '',
       ].join(' ')}
       {...props}

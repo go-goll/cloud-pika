@@ -14,8 +14,12 @@ interface SettingsPanelProps {
   language: AppSettings['language'];
   isSaving?: boolean;
   onThemeModeChange: (mode: ThemeMode) => void;
-  onLocaleChange: (locale: AppSettings['language']) => void;
-  onSettingsChange: (patch: Partial<AppSettings>) => void;
+  onLocaleChange: (
+    locale: AppSettings['language'],
+  ) => void;
+  onSettingsChange: (
+    patch: Partial<AppSettings>,
+  ) => void;
   onSave: () => void;
 }
 
@@ -33,7 +37,7 @@ export function SettingsPanel({
   const { t } = useTranslation();
 
   return (
-    <div className="max-w-2xl space-y-6">
+    <div className="max-w-2xl space-y-8">
       {/* 外观组 */}
       <SettingsGroup title={t('settings.appearance')}>
         <SettingsItem
@@ -159,19 +163,19 @@ export function SettingsPanel({
       {/* 关于组 */}
       <SettingsGroup title={t('settings.about')}>
         <SettingsItem label={t('settings.appName')}>
-          <span className="text-sm text-[var(--text-muted)]">
+          <span className="text-sm text-on-surface-variant">
             Cloud Pika
           </span>
         </SettingsItem>
         <SettingsItem label={t('settings.version')}>
-          <span className="text-sm text-[var(--text-muted)]">
+          <span className="text-sm text-on-surface-variant">
             0.1.0
           </span>
         </SettingsItem>
       </SettingsGroup>
 
       {/* 保存按钮 */}
-      <div className="flex justify-end">
+      <div className="flex justify-end pt-4">
         <Button onClick={onSave} disabled={isSaving}>
           {isSaving ? (
             <Spinner size="sm" className="mr-2" />

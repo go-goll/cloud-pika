@@ -1,6 +1,14 @@
 import { Component } from 'react';
-import type { ErrorInfo, PropsWithChildren, ReactNode } from 'react';
-import { AlertTriangle, Home, RefreshCcw } from 'lucide-react';
+import type {
+  ErrorInfo,
+  PropsWithChildren,
+  ReactNode,
+} from 'react';
+import {
+  AlertTriangle,
+  Home,
+  RefreshCcw,
+} from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 
 interface ErrorBoundaryState {
@@ -21,15 +29,24 @@ export class ErrorBoundary extends Component<
     this.state = { hasError: false, message: '' };
   }
 
-  static getDerivedStateFromError(error: Error): ErrorBoundaryState {
+  static getDerivedStateFromError(
+    error: Error,
+  ): ErrorBoundaryState {
     return {
       hasError: true,
       message: error.message || '未知错误',
     };
   }
 
-  componentDidCatch(error: Error, info: ErrorInfo): void {
-    console.error('[ErrorBoundary]', error, info.componentStack);
+  componentDidCatch(
+    error: Error,
+    info: ErrorInfo,
+  ): void {
+    console.error(
+      '[ErrorBoundary]',
+      error,
+      info.componentStack,
+    );
   }
 
   handleRefresh = () => {
@@ -45,11 +62,13 @@ export class ErrorBoundary extends Component<
       return this.props.children;
     }
 
-    return <ErrorFallback
-      message={this.state.message}
-      onRefresh={this.handleRefresh}
-      onGoHome={this.handleGoHome}
-    />;
+    return (
+      <ErrorFallback
+        message={this.state.message}
+        onRefresh={this.handleRefresh}
+        onGoHome={this.handleGoHome}
+      />
+    );
   }
 }
 
@@ -68,31 +87,28 @@ function ErrorFallback({
   onGoHome: () => void;
 }) {
   return (
-    <div
-      className="flex min-h-screen items-center justify-center"
-      style={{ background: 'var(--bg-pattern)' }}
-    >
+    <div className="flex min-h-screen items-center justify-center bg-surface">
       <div className="flex max-w-md flex-col items-center gap-5 px-6 text-center">
-        <div
-          className="flex h-16 w-16 items-center justify-center rounded-full"
-          style={{ background: 'var(--surface-elevated)' }}
-        >
+        <div className="flex h-16 w-16 items-center justify-center rounded-full bg-surface-container-low">
           <AlertTriangle
             size={28}
-            className="text-[var(--danger)]"
+            className="text-danger"
           />
         </div>
 
-        <h2 className="font-display text-xl font-semibold text-[var(--text)]">
+        <h2 className="font-headline text-xl font-semibold text-on-surface">
           出错了 / Something went wrong
         </h2>
 
-        <p className="text-sm text-[var(--text-muted)]">
+        <p className="text-sm text-on-surface-variant">
           {message}
         </p>
 
         <div className="flex gap-3">
-          <Button variant="secondary" onClick={onRefresh}>
+          <Button
+            variant="secondary"
+            onClick={onRefresh}
+          >
             <RefreshCcw size={16} className="mr-2" />
             刷新页面
           </Button>

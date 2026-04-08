@@ -12,7 +12,9 @@ interface BreadcrumbNavProps {
 }
 
 /** 将prefix字符串解析为路径段数组 */
-function parsePrefixSegments(prefix: string): string[] {
+function parsePrefixSegments(
+  prefix: string,
+): string[] {
   if (!prefix) return [];
   return prefix
     .split('/')
@@ -36,42 +38,43 @@ export function BreadcrumbNav({
         type="button"
         onClick={() => onNavigate('')}
         className={[
-          'flex items-center gap-1.5 rounded-[var(--radius)]',
+          'flex items-center gap-1.5 rounded-lg',
           'px-2 py-1 transition-colors',
-          'hover:bg-[var(--surface-elevated)]',
+          'hover:bg-surface-container-low',
           segments.length === 0
-            ? 'font-medium text-[var(--text)]'
-            : 'text-[var(--text-muted)]',
+            ? 'font-headline font-bold text-on-surface'
+            : 'text-on-surface-variant',
         ].join(' ')}
       >
-        <Cloud size={14} className="text-[var(--primary)]" />
+        <Cloud size={14} className="text-primary" />
         <span>{bucket}</span>
       </button>
 
       {/* 路径段 */}
       {segments.map((segment, index) => {
         const isLast = index === segments.length - 1;
-        // 拼接到当前段的prefix路径
-        const targetPrefix = segments
-          .slice(0, index + 1)
-          .join('/') + '/';
+        const targetPrefix =
+          segments.slice(0, index + 1).join('/') + '/';
 
         return (
-          <div key={targetPrefix} className="flex items-center gap-1">
+          <div
+            key={targetPrefix}
+            className="flex items-center gap-1"
+          >
             <ChevronRight
               size={12}
-              className="text-[var(--text-muted)]"
+              className="text-on-surface-variant/50"
             />
             <button
               type="button"
               onClick={() => onNavigate(targetPrefix)}
               className={[
-                'rounded-[var(--radius)] px-2 py-1',
+                'rounded-lg px-2 py-1',
                 'transition-colors',
-                'hover:bg-[var(--surface-elevated)]',
+                'hover:bg-surface-container-low',
                 isLast
-                  ? 'font-medium text-[var(--text)]'
-                  : 'text-[var(--text-muted)]',
+                  ? 'font-headline font-bold text-on-surface'
+                  : 'text-on-surface-variant',
               ].join(' ')}
             >
               {segment}

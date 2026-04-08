@@ -22,39 +22,52 @@ interface CheckboxProps {
 export const Checkbox = forwardRef<
   ElementRef<typeof CheckboxPrimitive.Root>,
   CheckboxProps
->(({ label, checked, onCheckedChange, disabled, className }, ref) => (
-  <label
-    className={[
-      'inline-flex items-center gap-2 text-sm',
-      'text-[var(--text)]',
-      disabled ? 'cursor-not-allowed opacity-60' : 'cursor-pointer',
-      className ?? '',
-    ].join(' ')}
-  >
-    <CheckboxPrimitive.Root
-      ref={ref}
-      checked={checked}
-      onCheckedChange={onCheckedChange}
-      disabled={disabled}
+>(
+  (
+    {
+      label,
+      checked,
+      onCheckedChange,
+      disabled,
+      className,
+    },
+    ref,
+  ) => (
+    <label
       className={[
-        'flex h-[18px] w-[18px] shrink-0 items-center',
-        'justify-center rounded-[4px] border transition-colors',
-        'border-[var(--outline)] bg-[var(--surface-low)]',
-        'data-[state=checked]:border-transparent',
-        'data-[state=checked]:bg-[var(--primary)]',
-        'focus-visible:outline-none',
-        'focus-visible:shadow-[0_0_0_3px_var(--primary-glow)]',
-        'disabled:cursor-not-allowed disabled:opacity-60',
+        'inline-flex items-center gap-2 text-sm',
+        'text-on-surface',
+        disabled
+          ? 'cursor-not-allowed opacity-60'
+          : 'cursor-pointer',
+        className ?? '',
       ].join(' ')}
     >
-      <CheckboxPrimitive.Indicator>
-        <Check
-          className="h-3.5 w-3.5 text-[var(--on-primary)]"
-          strokeWidth={3}
-        />
-      </CheckboxPrimitive.Indicator>
-    </CheckboxPrimitive.Root>
-    {label && <span>{label}</span>}
-  </label>
-));
+      <CheckboxPrimitive.Root
+        ref={ref}
+        checked={checked}
+        onCheckedChange={onCheckedChange}
+        disabled={disabled}
+        className={[
+          'flex h-[18px] w-[18px] shrink-0 items-center',
+          'justify-center rounded-[4px] transition-colors',
+          'ghost-border bg-surface-container-low',
+          'data-[state=checked]:border-transparent',
+          'data-[state=checked]:bg-primary',
+          'focus-visible:outline-none',
+          'focus-visible:ring-2 focus-visible:ring-primary/20',
+          'disabled:cursor-not-allowed disabled:opacity-60',
+        ].join(' ')}
+      >
+        <CheckboxPrimitive.Indicator>
+          <Check
+            className="h-3.5 w-3.5 text-on-primary"
+            strokeWidth={3}
+          />
+        </CheckboxPrimitive.Indicator>
+      </CheckboxPrimitive.Root>
+      {label && <span>{label}</span>}
+    </label>
+  ),
+);
 Checkbox.displayName = 'Checkbox';

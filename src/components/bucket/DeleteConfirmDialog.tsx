@@ -25,50 +25,40 @@ export function DeleteConfirmDialog({
   const isBatch = keys.length > 1;
 
   return (
-    <Dialog.Root open={open} onOpenChange={(v) => !v && onCancel()}>
+    <Dialog.Root
+      open={open}
+      onOpenChange={(v) => !v && onCancel()}
+    >
       <Dialog.Portal>
-        <Dialog.Overlay
-          className={
-            'fixed inset-0 z-50 '
-            + 'bg-[rgba(0,0,0,0.4)] backdrop-blur-sm'
-          }
-        />
+        <Dialog.Overlay className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm" />
         <Dialog.Content
           className={[
             'fixed left-1/2 top-1/2 z-50 w-[420px]',
             '-translate-x-1/2 -translate-y-1/2',
-            'rounded-[calc(var(--radius)+2px)]',
-            'bg-[var(--surface-high)] p-6',
-            'shadow-2xl',
+            'rounded-xl bg-surface-container-lowest',
+            'p-6 ghost-border shadow-ambient',
           ].join(' ')}
         >
           {/* 标题 */}
-          <Dialog.Title
-            className="flex items-center gap-2 text-base font-semibold"
-          >
+          <Dialog.Title className="flex items-center gap-2 text-base font-semibold text-on-surface">
             <AlertTriangle
               size={18}
-              className="text-[var(--danger)]"
+              className="text-danger"
             />
             {t('bucket.confirmDelete')}
           </Dialog.Title>
 
           {/* 警告说明 */}
-          <div className="mt-3 text-sm text-[var(--text-muted)]">
+          <div className="mt-3 text-sm text-on-surface-variant">
             <p>{t('bucket.deleteWarning')}</p>
             {isBatch ? (
-              <p className="mt-2 font-medium text-[var(--text)]">
+              <p className="mt-2 font-medium text-on-surface">
                 {t('bucket.deleteCount', {
                   count: keys.length,
                 })}
               </p>
             ) : (
-              <p
-                className={
-                  'mt-2 truncate font-mono text-xs '
-                  + 'text-[var(--text)]'
-                }
-              >
+              <p className="mt-2 truncate font-mono text-xs text-on-surface">
                 {keys[0]}
               </p>
             )}
@@ -76,10 +66,16 @@ export function DeleteConfirmDialog({
 
           {/* 操作按钮 */}
           <div className="mt-5 flex justify-end gap-2">
-            <Button variant="secondary" onClick={onCancel}>
+            <Button
+              variant="secondary"
+              onClick={onCancel}
+            >
               {t('common.cancel')}
             </Button>
-            <Button variant="danger" onClick={onConfirm}>
+            <Button
+              variant="danger"
+              onClick={onConfirm}
+            >
               {t('bucket.delete')}
             </Button>
           </div>

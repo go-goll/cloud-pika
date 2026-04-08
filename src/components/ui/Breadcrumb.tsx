@@ -11,7 +11,10 @@ interface BreadcrumbProps {
 }
 
 /** 面包屑导航组件 */
-export function Breadcrumb({ items, className }: BreadcrumbProps) {
+export function Breadcrumb({
+  items,
+  className,
+}: BreadcrumbProps) {
   return (
     <nav
       aria-label="breadcrumb"
@@ -23,14 +26,17 @@ export function Breadcrumb({ items, className }: BreadcrumbProps) {
       {items.map((item, index) => {
         const isLast = index === items.length - 1;
         return (
-          <span key={index} className="flex items-center gap-1.5">
+          <span
+            key={index}
+            className="flex items-center gap-1.5"
+          >
             {index > 0 && (
-              <span className="text-[var(--text-muted)] select-none">
+              <span className="text-on-surface-variant/50 select-none">
                 ›
               </span>
             )}
             {isLast ? (
-              <span className="font-semibold text-[var(--text)]">
+              <span className="font-headline font-bold text-on-surface">
                 {item.label}
               </span>
             ) : (
@@ -38,8 +44,8 @@ export function Breadcrumb({ items, className }: BreadcrumbProps) {
                 type="button"
                 onClick={item.onClick}
                 className={[
-                  'text-[var(--text-muted)]',
-                  'hover:text-[var(--text)]',
+                  'text-on-surface-variant',
+                  'hover:text-on-surface',
                   'hover:underline underline-offset-2',
                   'transition-colors',
                 ].join(' ')}

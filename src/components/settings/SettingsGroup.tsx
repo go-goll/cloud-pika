@@ -11,15 +11,10 @@ export function SettingsGroup({
 }: PropsWithChildren<SettingsGroupProps>) {
   return (
     <div className="space-y-3">
-      <h3 className="text-xs font-semibold uppercase tracking-widest text-[var(--text-muted)]">
+      <h3 className="text-xs font-bold uppercase tracking-widest text-on-surface-variant ml-1">
         {title}
       </h3>
-      <div
-        className={[
-          'space-y-1 rounded-[var(--radius)]',
-          'bg-[var(--surface-low)] p-1',
-        ].join(' ')}
-      >
+      <div className="space-y-1 rounded-xl ghost-border p-1">
         {children}
       </div>
     </div>
