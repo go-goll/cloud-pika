@@ -22,6 +22,19 @@
   --bg-pattern: radial-gradient(circle at 15% 10%, rgba(0, 163, 204, 0.08) 0, transparent 28%),
     radial-gradient(circle at 80% 0%, rgba(0, 103, 130, 0.06) 0, transparent 35%),
     linear-gradient(180deg, #f7f9fb 0%, #eef3f7 100%);
+
+  /* 新变量名别名（组件和 Tailwind 使用） */
+  --color-surface: var(--surface);
+  --color-surface-container-low: var(--surface-low);
+  --color-surface-container-lowest: var(--surface-high);
+  --color-on-surface: var(--text);
+  --color-on-surface-variant: var(--text-muted);
+  --color-outline-variant: var(--outline);
+  --color-primary: var(--primary);
+  --color-primary-container: var(--primary-soft);
+  --color-on-primary: var(--on-primary);
+  --color-danger: var(--danger);
+  --color-success: var(--success);
 }
 
 :root[data-theme='dark'] {
@@ -42,6 +55,19 @@
   --bg-pattern: radial-gradient(circle at 10% 0%, rgba(0, 210, 253, 0.12) 0, transparent 30%),
     radial-gradient(circle at 85% 5%, rgba(130, 163, 255, 0.1) 0, transparent 32%),
     linear-gradient(180deg, #060e20 0%, #08142b 100%);
+
+  /* 新变量名别名（深色主题） */
+  --color-surface: var(--surface);
+  --color-surface-container-low: var(--surface-low);
+  --color-surface-container-lowest: var(--surface-high);
+  --color-on-surface: var(--text);
+  --color-on-surface-variant: var(--text-muted);
+  --color-outline-variant: var(--outline);
+  --color-primary: var(--primary);
+  --color-primary-container: var(--primary-soft);
+  --color-on-primary: var(--on-primary);
+  --color-danger: var(--danger);
+  --color-success: var(--success);
 }
 
 * {
@@ -73,6 +99,28 @@ textarea {
 
 .no-line {
   border: 1px solid transparent;
+}
+
+/* 签名渐变背景 */
+.signature-gradient {
+  background: linear-gradient(135deg, var(--primary-soft), var(--primary));
+}
+
+/* 细微边框 */
+.ghost-border {
+  border: 1px solid var(--outline);
+}
+
+/* 毛玻璃面板 */
+.glass-panel {
+  background: color-mix(in srgb, var(--surface-high) 72%, transparent);
+  backdrop-filter: blur(24px);
+}
+
+/* 环境阴影 */
+.ambient-shadow {
+  box-shadow: 0 32px 48px -4px rgba(0, 103, 130, 0.06),
+    0 8px 16px -2px rgba(0, 103, 130, 0.04);
 }
 
 /* 全局主题过渡动画（不影响 transform/opacity 动画） */

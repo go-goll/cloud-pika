@@ -5,42 +5,29 @@ export default {
   theme: {
     extend: {
       colors: {
-        /* 新设计系统颜色 */
         primary: 'var(--color-primary)',
-        'primary-container':
-          'var(--color-primary-container)',
+        'primary-container': 'var(--color-primary-container)',
+        'primary-foreground': 'var(--color-on-primary)',
         'on-primary': 'var(--color-on-primary)',
         surface: 'var(--color-surface)',
-        'surface-low':
-          'var(--color-surface-container-low)',
-        'surface-lowest':
-          'var(--color-surface-container-lowest)',
+        'surface-low': 'var(--color-surface-container-low)',
+        'surface-container-low': 'var(--color-surface-container-low)',
+        'surface-lowest': 'var(--color-surface-container-lowest)',
+        'surface-container-lowest': 'var(--color-surface-container-lowest)',
+        'surface-high': 'var(--surface-high)',
+        'surface-elevated': 'var(--surface-elevated)',
+        'surface-muted': 'var(--surface-muted)',
         'on-surface': 'var(--color-on-surface)',
-        'on-surface-variant':
-          'var(--color-on-surface-variant)',
-        'outline-variant':
-          'var(--color-outline-variant)',
+        'on-surface-variant': 'var(--color-on-surface-variant)',
+        outline: 'var(--outline)',
+        'outline-variant': 'var(--color-outline-variant)',
         danger: 'var(--color-danger)',
         success: 'var(--color-success)',
-
-        /* 兼容旧变量名 */
-        'primary-foreground': 'var(--on-primary)',
-        'surface-high': 'var(--surface-high)',
-        outline: 'var(--outline)',
       },
       fontFamily: {
-        display: [
-          'Manrope',
-          'Noto Sans SC',
-          'system-ui',
-          'sans-serif',
-        ],
-        body: [
-          'Inter',
-          'Noto Sans SC',
-          'system-ui',
-          'sans-serif',
-        ],
+        display: ['Manrope', 'Noto Sans SC', 'system-ui', 'sans-serif'],
+        headline: ['Manrope', 'Noto Sans SC', 'system-ui', 'sans-serif'],
+        body: ['Inter', 'Noto Sans SC', 'system-ui', 'sans-serif'],
       },
       borderRadius: {
         DEFAULT: '8px',
