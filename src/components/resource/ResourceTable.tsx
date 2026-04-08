@@ -385,10 +385,7 @@ export function ResourceTable({
                     {/* 更新时间 */}
                     <td className="px-3 py-2.5 text-[var(--text-muted)]">
                       {item.lastModified
-                        ? formatRelativeTime(
-                            item.lastModified,
-                            i18n.language,
-                          )
+                        ? formatRelativeTime(item.lastModified)
                         : '-'}
                     </td>
 
