@@ -151,20 +151,15 @@ const resources = {
         expand: '展开侧边栏',
         switchAccount: '切换账户',
       },
+      header: {
+        toggleTheme: '切换主题',
+        toggleLanguage: '切换语言',
+      },
       error: {
         title: '出错了',
         description: '应用遇到了一个错误，请尝试刷新页面',
         refresh: '刷新页面',
         goHome: '返回首页',
-      },
-      sidebar: {
-        collapse: '收起侧边栏',
-        expand: '展开侧边栏',
-        switchAccount: '切换账户',
-      },
-      header: {
-        toggleTheme: '切换主题',
-        toggleLanguage: '切换语言',
       },
     },
   },
@@ -326,20 +321,15 @@ const resources = {
         expand: 'Expand Sidebar',
         switchAccount: 'Switch Account',
       },
+      header: {
+        toggleTheme: 'Toggle Theme',
+        toggleLanguage: 'Switch Language',
+      },
       error: {
         title: 'Something went wrong',
         description: 'The app encountered an error. Please try refreshing.',
         refresh: 'Refresh Page',
         goHome: 'Go Home',
-      },
-      sidebar: {
-        collapse: 'Collapse Sidebar',
-        expand: 'Expand Sidebar',
-        switchAccount: 'Switch Account',
-      },
-      header: {
-        toggleTheme: 'Toggle Theme',
-        toggleLanguage: 'Switch Language',
       },
     },
   },
