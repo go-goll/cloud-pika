@@ -1,4 +1,9 @@
-import { Navigate, Route, Routes } from 'react-router-dom';
+import {
+  Navigate,
+  Route,
+  Routes,
+  useLocation,
+} from 'react-router-dom';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { BucketPage } from '@/pages/BucketPage';
 import { LoginPage } from '@/pages/LoginPage';
@@ -21,6 +26,8 @@ export default function App() {
     }
   }, [query.data, setAccounts]);
 
+  const location = useLocation();
+
   if (accounts.length === 0) {
     return (
       <>
@@ -31,6 +38,7 @@ export default function App() {
   }
 
   return (
+<<<<<<< HEAD
     <>
       <CommandPalette />
       <AppLayout>
@@ -51,5 +59,22 @@ export default function App() {
         </ErrorBoundary>
       </AppLayout>
     </>
+=======
+    <AppLayout>
+      {/* 路由切换时通过 key 触发淡入动画 */}
+      <div key={location.pathname} className="animate-page-in">
+        <Routes>
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/bucket" element={<BucketPage />} />
+          <Route path="/transfers" element={<TransfersPage />} />
+          <Route path="/settings" element={<SettingsPage />} />
+          <Route
+            path="*"
+            element={<Navigate to="/bucket" replace />}
+          />
+        </Routes>
+      </div>
+    </AppLayout>
+>>>>>>> worktree-agent-ae7d276e
   );
 }

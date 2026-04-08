@@ -485,7 +485,13 @@ export function BucketPage() {
     <div className="space-y-4" {...getRootProps()}>
       <input {...getInputProps()} />
 
-      <div className="grid gap-4 xl:grid-cols-[240px_1fr]">
+      <div
+        className={
+          'grid gap-4 '
+          + 'lg:grid-cols-[200px_1fr] '
+          + 'xl:grid-cols-[240px_1fr]'
+        }
+      >
         {/* 左侧：Bucket列表 */}
         <BucketSidebar
           buckets={buckets}

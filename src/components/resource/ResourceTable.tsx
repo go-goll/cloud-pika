@@ -233,6 +233,7 @@ export function ResourceTable({
   onRefresh,
 }: ResourceTableProps) {
 <<<<<<< HEAD
+<<<<<<< HEAD
   const { t } = useTranslation();
   const [sortCol, setSortCol] =
     useState<SortColumn | null>(null);
@@ -242,6 +243,10 @@ export function ResourceTable({
     null,
   );
 >>>>>>> worktree-agent-a58030ba
+=======
+  const { t } = useTranslation();
+  const [sortCol, setSortCol] = useState<SortColumn | null>(null);
+>>>>>>> worktree-agent-ae7d276e
   const [sortDir, setSortDir] = useState<SortDir>('asc');
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -476,7 +481,13 @@ export function ResourceTable({
                   dir={sortDir}
                 />
               </th>
+<<<<<<< HEAD
               <th className="px-6 py-4">MIME</th>
+=======
+              <th className="hidden px-3 lg:table-cell">
+                MIME
+              </th>
+>>>>>>> worktree-agent-ae7d276e
               <th
                 className={thClass}
                 onClick={() => toggleSort('lastModified')}
@@ -492,6 +503,7 @@ export function ResourceTable({
             </tr>
           </thead>
 <<<<<<< HEAD
+<<<<<<< HEAD
 
           {/* 表体 */}
           <tbody className="divide-y divide-outline-variant">
@@ -501,6 +513,12 @@ export function ResourceTable({
               );
               const isDir =
                 item.isDir || item.key.endsWith('/');
+=======
+          <tbody>
+            {sortedObjects.map((item, index) => {
+              const isSelected = selectedKeys.has(item.key);
+              const isDir = item.isDir || item.key.endsWith('/');
+>>>>>>> worktree-agent-ae7d276e
               const fileName = extractFileName(item.key);
 
               return (
@@ -519,11 +537,20 @@ export function ResourceTable({
                 >
                   <tr
                     className={[
+<<<<<<< HEAD
                       'group transition-all cursor-default',
+=======
+                      'animate-row-in',
+                      'rounded-[var(--radius)] transition-colors',
+                      'cursor-default',
+>>>>>>> worktree-agent-ae7d276e
                       isSelected
                         ? 'bg-primary/5'
                         : 'hover:bg-surface-container-low',
                     ].join(' ')}
+                    style={{
+                      animationDelay: `${index * 20}ms`,
+                    }}
                     onDoubleClick={() => {
                       if (isDir)
                         onNavigateFolder?.(item.key);
@@ -581,8 +608,19 @@ export function ResourceTable({
                         : formatFileSize(item.size)}
                     </td>
 
+<<<<<<< HEAD
                     {/* MIME */}
                     <td className="px-6 py-4 text-sm text-on-surface-variant">
+=======
+                    {/* MIME（窄窗口隐藏） */}
+                    <td
+                      className={
+                        'hidden px-3 py-2.5 '
+                        + 'text-[var(--text-muted)] '
+                        + 'lg:table-cell'
+                      }
+                    >
+>>>>>>> worktree-agent-ae7d276e
                       {item.mimeType ?? '-'}
                     </td>
 

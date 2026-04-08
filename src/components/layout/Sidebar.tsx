@@ -1,17 +1,27 @@
+<<<<<<< HEAD
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import {
   ChevronLeft,
   ChevronRight,
   Cloud,
+=======
+import { useEffect, useState } from 'react';
+import { Link, useLocation } from 'react-router-dom';
+import {
+>>>>>>> worktree-agent-ae7d276e
   FolderKanban,
   KeyRound,
   Settings2,
   Workflow,
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+<<<<<<< HEAD
 import { useAccountStore } from '@/stores/useAccountStore';
 import { providerOptions } from '@/lib/provider';
+=======
+import { SimpleTooltip } from '@/components/ui/Tooltip';
+>>>>>>> worktree-agent-ae7d276e
 
 /** localStorage 持久化键名 */
 const COLLAPSED_KEY = 'cloud-pika-sidebar-collapsed';
@@ -32,6 +42,7 @@ const navItems = [
   { to: '/settings', icon: Settings2, key: 'nav.settings' },
 ];
 
+<<<<<<< HEAD
 /** 获取云厂商显示名 */
 function getProviderLabel(provider: string): string {
   const option = providerOptions.find(
@@ -41,9 +52,26 @@ function getProviderLabel(provider: string): string {
 }
 
 /** 侧边栏组件，支持折叠/展开 */
+=======
+/** 窄窗口折叠阈值（px） */
+const COLLAPSE_WIDTH = 900;
+
+>>>>>>> worktree-agent-ae7d276e
 export function Sidebar() {
   const location = useLocation();
   const { t } = useTranslation();
+  const [collapsed, setCollapsed] = useState(
+    window.innerWidth < COLLAPSE_WIDTH,
+  );
+
+  // 监听窗口尺寸变化，自动折叠/展开
+  useEffect(() => {
+    const onResize = () => {
+      setCollapsed(window.innerWidth < COLLAPSE_WIDTH);
+    };
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
 
   /* 折叠状态 */
   const [collapsed, setCollapsed] = useState(() => {
@@ -105,6 +133,7 @@ export function Sidebar() {
 
   return (
 <<<<<<< HEAD
+<<<<<<< HEAD
     <aside
       className={[
         sidebarWidth,
@@ -128,16 +157,45 @@ export function Sidebar() {
         <h1 className="font-display text-xl font-semibold tracking-tight">Cloud Pika</h1>
         <p className="mt-1 text-xs text-[var(--text-muted)]">{t('sidebar.subtitle')}</p>
       </div>
+=======
+    <aside
+      className={[
+        'shrink-0 bg-[var(--surface-low)] p-3',
+        'transition-[width] duration-200',
+        collapsed ? 'w-[64px]' : 'w-[248px] p-4',
+      ].join(' ')}
+    >
+      {/* 标题区域：折叠时隐藏 */}
+      {!collapsed ? (
+        <div className="mb-6 px-2">
+          <h1
+            className={
+              'font-display text-xl font-semibold '
+              + 'tracking-tight'
+            }
+          >
+            Cloud Pika
+          </h1>
+          <p className="mt-1 text-xs text-[var(--text-muted)]">
+            Digital Obsidian Workspace
+          </p>
+        </div>
+      ) : null}
+
+>>>>>>> worktree-agent-ae7d276e
       <nav className="space-y-2">
         {navItems.map((item) => {
           const active = location.pathname.startsWith(item.to);
           const Icon = item.icon;
-          return (
+          const label = t(item.key);
+
+          const linkEl = (
             <Link
               key={item.to}
               to={item.to}
 >>>>>>> worktree-agent-a58030ba
               className={[
+<<<<<<< HEAD
                 'flex h-10 w-10 shrink-0',
                 'items-center justify-center',
                 'rounded-lg signature-gradient',
@@ -378,6 +436,41 @@ export function Sidebar() {
           )}
         </button>
       </div>
+=======
+                'flex items-center gap-3',
+                'rounded-[var(--radius)] px-3 py-2.5',
+                'text-sm transition-all',
+                collapsed ? 'justify-center' : '',
+                active
+                  ? 'bg-[var(--surface-elevated)] '
+                    + 'text-[var(--text)]'
+                  : 'text-[var(--text-muted)] '
+                    + 'hover:bg-[var(--surface-elevated)]/70 '
+                    + 'hover:text-[var(--text)]',
+              ].join(' ')}
+            >
+              <Icon size={16} />
+              {!collapsed ? <span>{label}</span> : null}
+            </Link>
+          );
+
+          // 折叠模式下 hover 显示 Tooltip
+          if (collapsed) {
+            return (
+              <SimpleTooltip
+                key={item.to}
+                content={label}
+                side="right"
+              >
+                {linkEl}
+              </SimpleTooltip>
+            );
+          }
+
+          return linkEl;
+        })}
+      </nav>
+>>>>>>> worktree-agent-ae7d276e
     </aside>
   );
 }
