@@ -26,3 +26,4 @@ sidecar/.cache/
 
 # Local cache
 .cache/
+.claude/
