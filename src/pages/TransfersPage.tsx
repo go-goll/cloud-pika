@@ -23,7 +23,7 @@ export function TransfersPage() {
       <Card>
         <h3 className="font-display text-2xl font-semibold">{t('transfer.title')}</h3>
         <p className="mt-1 text-sm text-[var(--text-muted)]">
-          Queue and historical events are synced by SSE + periodic polling.
+          {t('transfer.description')}
         </p>
       </Card>
       <TransferList tasks={transfers} onCancel={(id) => void cancelMutation.mutateAsync(id)} />

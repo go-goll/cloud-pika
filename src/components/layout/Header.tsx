@@ -28,7 +28,11 @@ export function Header() {
         <h2 className="font-display text-lg font-semibold">
           {t(titleMap[pathname] ?? 'nav.explorer')}
         </h2>
-        <p className="text-xs text-[var(--text-muted)]">{accounts.length} account(s) connected</p>
+        <p className="text-xs text-[var(--text-muted)]">
+          {t('header.connectedAccounts', {
+            count: accounts.length,
+          })}
+        </p>
       </div>
       <div className="flex items-center gap-2">
         {accounts.length > 0 ? (

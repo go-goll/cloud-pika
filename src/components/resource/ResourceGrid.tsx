@@ -5,6 +5,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
+  Eye,
   File,
   FileArchive,
   FileAudio,
@@ -17,24 +18,83 @@ import {
 } from 'lucide-react';
 import type { ObjectItem } from '@/types/cloud';
 import { Card } from '@/components/ui/Card';
+import { Skeleton } from '@/components/ui/Skeleton';
 import {
   extractFileName,
   formatFileSize,
   isImageKey,
 } from '@/lib/format';
+import { useThumbnail } from '@/hooks/useThumbnail';
 import { ResourceContextMenu } from '@/components/bucket/ResourceContextMenu';
 
 interface ResourceGridProps {
   objects: ObjectItem[];
   selectedKeys: Set<string>;
+  accountId: string;
+  bucket: string;
   onSelect: (key: string, shiftKey: boolean) => void;
   onCopyUrl?: (key: string) => void;
   onDelete?: (key: string) => void;
   onDownload?: (key: string) => void;
   onRename?: (key: string) => void;
+  onPreview?: (key: string) => void;
   onNavigateFolder?: (prefix: string) => void;
   onUpload?: () => void;
   onRefresh?: () => void;
+}
+
+/** 缩略图卡片图标区域（支持懒加载缩略图） */
+function ThumbnailArea({
+  objectKey,
+  mimeType,
+  isDir,
+  isImage,
+  accountId,
+  bucket,
+  onDoubleClick,
+}: {
+  objectKey: string;
+  mimeType?: string;
+  isDir: boolean;
+  isImage: boolean;
+  accountId: string;
+  bucket: string;
+  onDoubleClick?: () => void;
+}) {
+  const { url, loading, error, containerRef } = useThumbnail(
+    objectKey,
+    bucket,
+    accountId,
+    isImage,
+  );
+  const [imgError, setImgError] = useState(false);
+
+  return (
+    <div
+      ref={containerRef}
+      className={[
+        'flex h-24 items-center justify-center',
+        'rounded-[var(--radius)]',
+        isImage ? 'bg-[var(--surface-low)]' : '',
+      ].join(' ')}
+      onDoubleClick={onDoubleClick}
+    >
+      {/* 图片缩略图：加载中显示骨架屏 */}
+      {isImage && loading ? (
+        <Skeleton className="h-20 w-20" />
+      ) : isImage && url && !error && !imgError ? (
+        <img
+          src={url}
+          alt={objectKey}
+          loading="lazy"
+          className="h-20 w-20 rounded-[var(--radius)] object-cover"
+          onError={() => setImgError(true)}
+        />
+      ) : (
+        getFileIcon(objectKey, mimeType)
+      )}
+    </div>
+  );
 }
 
 /** 根据mimeType或文件名返回对应图标 */
@@ -75,19 +135,48 @@ function getFileIcon(key: string, mimeType?: string) {
 /** 卡片操作菜单 */
 function CardActionMenu({
   objectKey,
+  isImage,
   onCopyUrl,
   onDownload,
   onRename,
   onDelete,
+  onPreview,
 }: {
   objectKey: string;
+  isImage: boolean;
   onCopyUrl?: (key: string) => void;
   onDownload?: (key: string) => void;
   onRename?: (key: string) => void;
   onDelete?: (key: string) => void;
+  onPreview?: (key: string) => void;
 }) {
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
+
+  const menuItems = [
+    ...(isImage && onPreview
+      ? [{
+          label: t('bucket.preview'),
+          icon: <Eye size={12} />,
+          action: () => onPreview(objectKey),
+        }]
+      : []),
+    {
+      label: t('bucket.copyUrl'),
+      icon: null,
+      action: () => onCopyUrl?.(objectKey),
+    },
+    {
+      label: t('bucket.download'),
+      icon: null,
+      action: () => onDownload?.(objectKey),
+    },
+    {
+      label: t('bucket.rename'),
+      icon: null,
+      action: () => onRename?.(objectKey),
+    },
+  ];
 
   return (
     <div className="relative">
@@ -118,20 +207,7 @@ function CardActionMenu({
           ].join(' ')}
           onMouseLeave={() => setOpen(false)}
         >
-          {[
-            {
-              label: t('bucket.copyUrl'),
-              action: () => onCopyUrl?.(objectKey),
-            },
-            {
-              label: t('bucket.download'),
-              action: () => onDownload?.(objectKey),
-            },
-            {
-              label: t('bucket.rename'),
-              action: () => onRename?.(objectKey),
-            },
-          ].map((item) => (
+          {menuItems.map((item) => (
             <button
               key={item.label}
               type="button"
@@ -140,11 +216,12 @@ function CardActionMenu({
                 setOpen(false);
               }}
               className={[
-                'flex w-full items-center px-3 py-1.5',
+                'flex w-full items-center gap-1.5 px-3 py-1.5',
                 'text-xs rounded-[var(--radius)]',
                 'hover:bg-[var(--surface-elevated)]',
               ].join(' ')}
             >
+              {item.icon}
               {item.label}
             </button>
           ))}
@@ -173,11 +250,14 @@ function CardActionMenu({
 export function ResourceGrid({
   objects,
   selectedKeys,
+  accountId,
+  bucket,
   onSelect,
   onCopyUrl,
   onDelete,
   onDownload,
   onRename,
+  onPreview,
   onNavigateFolder,
   onUpload,
   onRefresh,
@@ -198,8 +278,9 @@ export function ResourceGrid({
           const isDir = item.isDir || item.key.endsWith('/');
           const fileName = extractFileName(item.key);
           const isImage =
-            isImageKey(item.key)
-            || item.mimeType?.startsWith('image/');
+            !isDir
+            && (isImageKey(item.key)
+              || Boolean(item.mimeType?.startsWith('image/')));
 
           return (
             <ResourceContextMenu
@@ -209,6 +290,9 @@ export function ResourceGrid({
                 onDownload: () => onDownload?.(item.key),
                 onRename: () => onRename?.(item.key),
                 onDelete: () => onDelete?.(item.key),
+                onPreview: isImage
+                  ? () => onPreview?.(item.key)
+                  : undefined,
               }}
             >
               <Card
@@ -250,28 +334,29 @@ export function ResourceGrid({
                 >
                   <CardActionMenu
                     objectKey={item.key}
+                    isImage={isImage}
                     onCopyUrl={onCopyUrl}
                     onDownload={onDownload}
                     onRename={onRename}
                     onDelete={onDelete}
+                    onPreview={onPreview}
                   />
                 </div>
 
                 {/* 缩略图/图标区域 */}
-                <div
-                  className={[
-                    'flex h-24 items-center justify-center',
-                    'rounded-[var(--radius)]',
-                    isImage
-                      ? 'bg-[var(--surface-low)]'
-                      : '',
-                  ].join(' ')}
-                  onDoubleClick={() => {
-                    if (isDir) onNavigateFolder?.(item.key);
-                  }}
-                >
-                  {getFileIcon(item.key, item.mimeType)}
-                </div>
+                <ThumbnailArea
+                  objectKey={item.key}
+                  mimeType={item.mimeType}
+                  isDir={isDir}
+                  isImage={isImage}
+                  accountId={accountId}
+                  bucket={bucket}
+                  onDoubleClick={
+                    isDir
+                      ? () => onNavigateFolder?.(item.key)
+                      : undefined
+                  }
+                />
 
                 {/* 文件信息 */}
                 <div className="mt-2">
@@ -282,7 +367,9 @@ export function ResourceGrid({
                     {fileName}
                   </p>
                   <p className="mt-1 text-xs text-[var(--text-muted)]">
-                    {isDir ? t('bucket.folder') : formatFileSize(item.size)}
+                    {isDir
+                      ? t('bucket.folder')
+                      : formatFileSize(item.size)}
                   </p>
                 </div>
               </Card>

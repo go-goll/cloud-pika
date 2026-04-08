@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import type { TransferTask } from '@/types/cloud';
@@ -7,23 +8,42 @@ interface TransferListProps {
   onCancel?: (id: string) => void;
 }
 
-export function TransferList({ tasks, onCancel }: TransferListProps) {
+export function TransferList({
+  tasks,
+  onCancel,
+}: TransferListProps) {
+  const { t } = useTranslation();
+
   return (
     <div className="space-y-3">
       {tasks.map((task) => (
-        <section key={task.id} className="rounded-[var(--radius)] bg-[var(--surface-high)] p-4 shadow-ambient">
+        <section
+          key={task.id}
+          className={[
+            'rounded-[var(--radius)]',
+            'bg-[var(--surface-high)] p-4 shadow-ambient',
+          ].join(' ')}
+        >
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium">
                 {task.bucket}/{task.key}
               </p>
-              <p className="mt-1 text-xs text-[var(--text-muted)]">{task.type}</p>
+              <p className="mt-1 text-xs text-[var(--text-muted)]">
+                {task.type}
+              </p>
             </div>
             <div className="flex items-center gap-2">
-              <Badge>{task.status}</Badge>
-              {task.status === 'queued' || task.status === 'running' ? (
-                <Button variant="secondary" onClick={() => onCancel?.(task.id)}>
-                  Cancel
+              <Badge>
+                {t(`transfer.${task.status}`)}
+              </Badge>
+              {task.status === 'queued'
+                || task.status === 'running' ? (
+                <Button
+                  variant="secondary"
+                  onClick={() => onCancel?.(task.id)}
+                >
+                  {t('transfer.cancel')}
                 </Button>
               ) : null}
             </div>
@@ -38,7 +58,7 @@ export function TransferList({ tasks, onCancel }: TransferListProps) {
       ))}
       {tasks.length === 0 ? (
         <p className="rounded-[var(--radius)] bg-[var(--surface-high)] p-4 text-sm text-[var(--text-muted)]">
-          No transfers yet.
+          {t('transfer.empty')}
         </p>
       ) : null}
     </div>

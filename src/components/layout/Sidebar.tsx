@@ -17,7 +17,7 @@ export function Sidebar() {
     <aside className="w-[78px] shrink-0 bg-[var(--surface-low)] p-3 sm:w-[248px] sm:p-4">
       <div className="mb-6 hidden px-2 sm:block">
         <h1 className="font-display text-xl font-semibold tracking-tight">Cloud Pika</h1>
-        <p className="mt-1 text-xs text-[var(--text-muted)]">Digital Obsidian Workspace</p>
+        <p className="mt-1 text-xs text-[var(--text-muted)]">{t('sidebar.subtitle')}</p>
       </div>
       <nav className="space-y-2">
         {navItems.map((item) => {
