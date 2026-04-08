@@ -7,6 +7,8 @@ import { SettingsPage } from '@/pages/SettingsPage';
 import { useAccountsQuery } from '@/hooks/useCloudApi';
 import { useAccountStore } from '@/stores/useAccountStore';
 import { useEffect } from 'react';
+import { CommandPalette } from '@/components/CommandPalette';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 
 export default function App() {
   const query = useAccountsQuery(true);
@@ -20,18 +22,34 @@ export default function App() {
   }, [query.data, setAccounts]);
 
   if (accounts.length === 0) {
-    return <LoginPage />;
+    return (
+      <>
+        <CommandPalette />
+        <LoginPage />
+      </>
+    );
   }
 
   return (
-    <AppLayout>
-      <Routes>
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/bucket" element={<BucketPage />} />
-        <Route path="/transfers" element={<TransfersPage />} />
-        <Route path="/settings" element={<SettingsPage />} />
-        <Route path="*" element={<Navigate to="/bucket" replace />} />
-      </Routes>
-    </AppLayout>
+    <>
+      <CommandPalette />
+      <AppLayout>
+        <ErrorBoundary>
+          <Routes>
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/bucket" element={<BucketPage />} />
+            <Route
+              path="/transfers"
+              element={<TransfersPage />}
+            />
+            <Route path="/settings" element={<SettingsPage />} />
+            <Route
+              path="*"
+              element={<Navigate to="/bucket" replace />}
+            />
+          </Routes>
+        </ErrorBoundary>
+      </AppLayout>
+    </>
   );
 }
