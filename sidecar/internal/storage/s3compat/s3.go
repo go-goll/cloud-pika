@@ -32,9 +32,10 @@ type EndpointResolver func(cfg model.Account) string
 
 // Options 控制 S3 兼容客户端初始化策略。
 type Options struct {
-	RequireEndpoint bool
-	ResolveEndpoint EndpointResolver
-	ForcePathStyle  bool
+	RequireEndpoint  bool
+	ResolveEndpoint  EndpointResolver
+	ForcePathStyle   bool
+	ForceVirtualHost bool
 }
 
 func New(provider string, features []string, options Options) *Provider {
@@ -74,6 +75,8 @@ func (p *Provider) Init(cfg model.Account) error {
 	}
 	if p.options.ForcePathStyle {
 		options.BucketLookup = minio.BucketLookupPath
+	} else if p.options.ForceVirtualHost {
+		options.BucketLookup = minio.BucketLookupDNS
 	}
 
 	client, err := minio.New(endpoint, options)

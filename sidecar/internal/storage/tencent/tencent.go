@@ -179,7 +179,7 @@ func (p *Provider) regionClient(
 	client := s3compat.New(
 		"tencent",
 		[]string{"urlUpload", "paging"},
-		s3compat.Options{},
+		s3compat.Options{ForceVirtualHost: true},
 	)
 	if err := client.Init(cfg); err != nil {
 		return nil, fmt.Errorf(
