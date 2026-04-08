@@ -512,25 +512,25 @@ export function BucketPage() {
 
           {/* 加载/错误/同步状态 */}
           {bucketsQuery.isLoading || objectsQuery.isLoading ? (
-            <p className="text-sm text-[var(--text-muted)]">
+            <p className="text-sm text-on-surface-variant">
               {t('common.loading')}
             </p>
           ) : null}
 
           {bucketsQuery.error ? (
-            <p className="text-sm text-[var(--danger)]">
+            <p className="text-sm text-danger">
               {(bucketsQuery.error as Error).message}
             </p>
           ) : null}
 
           {objectsQuery.error ? (
-            <p className="text-sm text-[var(--danger)]">
+            <p className="text-sm text-danger">
               {(objectsQuery.error as Error).message}
             </p>
           ) : null}
 
           {syncStatus === 'syncing' ? (
-            <p className="text-xs text-[var(--text-muted)]">
+            <p className="text-xs text-on-surface-variant">
               {t('bucket.syncing')}
             </p>
           ) : null}

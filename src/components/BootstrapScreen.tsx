@@ -20,32 +20,29 @@ export function BootstrapScreen({
   const { t } = useTranslation();
 
   return (
-    <div
-      className="flex min-h-screen items-center justify-center"
-      style={{ background: 'var(--bg-pattern)' }}
-    >
+    <div className="flex min-h-screen items-center justify-center bg-surface">
       <div className="flex flex-col items-center gap-6 px-6 text-center">
         {/* 品牌图标 + 名称 */}
         <div className="flex items-center gap-3">
           <Cloud
             size={36}
-            className="text-[var(--primary)]"
+            className="text-primary"
             strokeWidth={2}
           />
-          <h1 className="font-display text-3xl font-semibold tracking-tight text-[var(--text)]">
+          <h1 className="font-headline text-3xl font-bold tracking-tight text-on-surface">
             Cloud Pika
           </h1>
         </div>
 
         {/* 副标题 */}
-        <p className="text-sm text-[var(--text-muted)]">
+        <p className="text-sm text-on-surface-variant">
           {t('bootstrap.subtitle')}
         </p>
 
         {/* 错误状态 */}
         {error ? (
           <div className="flex flex-col items-center gap-4">
-            <div className="flex items-center gap-2 text-[var(--danger)]">
+            <div className="flex items-center gap-2 text-danger">
               <AlertCircle size={18} />
               <span className="text-sm">{error}</span>
             </div>
@@ -59,24 +56,17 @@ export function BootstrapScreen({
         {loading && !error ? (
           <div className="flex flex-col items-center gap-4">
             {/* 脉冲进度条 */}
-            <div
-              className="h-1 w-48 overflow-hidden rounded-full"
-              style={{
-                background: 'var(--surface-elevated)',
-              }}
-            >
+            <div className="h-1.5 w-48 overflow-hidden rounded-full bg-surface-container-low">
               <div
-                className="h-full animate-pulse rounded-full"
+                className="h-full signature-gradient rounded-full"
                 style={{
                   width: '60%',
-                  background:
-                    'linear-gradient(90deg, var(--primary), var(--primary-soft))',
                   animation:
                     'bootstrap-slide 1.5s ease-in-out infinite',
                 }}
               />
             </div>
-            <p className="text-xs text-[var(--text-muted)]">
+            <p className="text-xs text-on-surface-variant">
               {t('bootstrap.loading')}
             </p>
           </div>

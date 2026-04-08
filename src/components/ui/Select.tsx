@@ -63,19 +63,19 @@ const SelectTrigger = forwardRef<
     ref={ref}
     className={[
       'inline-flex h-10 w-full items-center justify-between',
-      'rounded-[var(--radius)] border border-transparent',
-      'bg-[var(--surface-low)] px-3 text-sm text-[var(--text)]',
-      'placeholder:text-[var(--text-muted)]',
-      'focus:border-[color-mix(in_srgb,var(--primary)_40%,transparent)]',
-      'focus:outline-none',
-      'focus:shadow-[0_0_0_3px_var(--primary-glow)]',
+      'rounded-xl ghost-border',
+      'bg-surface-container-low px-3 text-sm text-on-surface',
+      'placeholder:text-on-surface-variant',
+      'focus:ring-2 focus:ring-primary/20',
+      'focus:bg-surface-container-lowest',
+      'focus:outline-none transition-all',
       'disabled:cursor-not-allowed disabled:opacity-60',
       className ?? '',
     ].join(' ')}
   >
     <SelectPrimitive.Value placeholder={label} />
     <SelectPrimitive.Icon>
-      <ChevronDown className="h-4 w-4 text-[var(--text-muted)]" />
+      <ChevronDown className="h-4 w-4 text-on-surface-variant" />
     </SelectPrimitive.Icon>
   </SelectPrimitive.Trigger>
 ));
@@ -92,8 +92,8 @@ const SelectContent = forwardRef<
     sideOffset={4}
     className={[
       'z-50 max-h-60 min-w-[var(--radix-select-trigger-width)]',
-      'overflow-hidden rounded-[var(--radius)]',
-      'bg-[var(--surface-high)] p-1 shadow-ambient',
+      'overflow-hidden rounded-xl',
+      'bg-surface-container-lowest p-1 ghost-border shadow-ambient',
       'animate-[fadeIn_150ms_ease-out]',
       className ?? '',
     ].join(' ')}
@@ -115,9 +115,9 @@ const SelectItem = forwardRef<
     ref={ref}
     className={[
       'flex cursor-pointer select-none items-center',
-      'rounded-[calc(var(--radius)-4px)] px-3 py-2 text-sm',
-      'text-[var(--text)] outline-none',
-      'data-[highlighted]:bg-[var(--surface-elevated)]',
+      'rounded-lg px-3 py-2 text-sm',
+      'text-on-surface outline-none',
+      'data-[highlighted]:bg-surface-container-low',
       'data-[disabled]:pointer-events-none data-[disabled]:opacity-50',
       className ?? '',
     ].join(' ')}
@@ -125,7 +125,7 @@ const SelectItem = forwardRef<
   >
     <SelectPrimitive.ItemText>{children}</SelectPrimitive.ItemText>
     <SelectPrimitive.ItemIndicator className="ml-auto">
-      <Check className="h-4 w-4 text-[var(--primary)]" />
+      <Check className="h-4 w-4 text-primary" />
     </SelectPrimitive.ItemIndicator>
   </SelectPrimitive.Item>
 ));

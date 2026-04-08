@@ -21,7 +21,7 @@ export function Spinner({
     <div
       className={[
         'inline-block animate-spin rounded-full',
-        'border-[var(--primary)] border-t-transparent',
+        'border-primary border-t-transparent',
         sizeMap[size],
         className ?? '',
       ].join(' ')}

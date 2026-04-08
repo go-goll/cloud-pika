@@ -49,25 +49,17 @@ export function UrlDialog({
       }}
     >
       <Dialog.Portal>
-        <Dialog.Overlay
-          className={
-            'fixed inset-0 z-50 '
-            + 'bg-[rgba(0,0,0,0.4)] backdrop-blur-sm'
-          }
-        />
+        <Dialog.Overlay className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm" />
         <Dialog.Content
           className={[
             'fixed left-1/2 top-1/2 z-50 w-[480px]',
             '-translate-x-1/2 -translate-y-1/2',
-            'rounded-[calc(var(--radius)+2px)]',
-            'bg-[var(--surface-high)] p-6',
-            'shadow-2xl',
+            'rounded-xl bg-surface-container-lowest',
+            'p-6 ghost-border shadow-ambient',
           ].join(' ')}
         >
-          <Dialog.Title
-            className="flex items-center gap-2 text-base font-semibold"
-          >
-            <Link size={16} className="text-[var(--primary)]" />
+          <Dialog.Title className="flex items-center gap-2 text-base font-semibold text-on-surface">
+            <Link size={16} className="text-primary" />
             {t('bucket.copyUrl')}
           </Dialog.Title>
 
@@ -79,7 +71,9 @@ export function UrlDialog({
               className="flex-1 font-mono text-xs"
             />
             <Button
-              variant={copied ? 'secondary' : 'primary'}
+              variant={
+                copied ? 'secondary' : 'primary'
+              }
               onClick={() => void handleCopy()}
             >
               {copied ? (
@@ -92,7 +86,10 @@ export function UrlDialog({
 
           {/* 关闭 */}
           <div className="mt-5 flex justify-end">
-            <Button variant="secondary" onClick={onClose}>
+            <Button
+              variant="secondary"
+              onClick={onClose}
+            >
               {t('common.close')}
             </Button>
           </div>

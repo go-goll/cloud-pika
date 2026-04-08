@@ -19,12 +19,13 @@ export function Header() {
   return (
     <header
       className={[
-        'glass sticky top-0 z-30 flex h-16 items-center',
-        'justify-between border-b border-transparent px-6',
+        'glass-panel sticky top-0 z-30',
+        'flex h-16 items-center justify-between',
+        'border-b border-outline-variant px-6',
       ].join(' ')}
     >
       <div>
-        <h2 className="font-display text-lg font-semibold">
+        <h2 className="font-headline text-lg font-bold text-on-surface">
           {t(titleMap[pathname] ?? 'nav.explorer')}
         </h2>
       </div>

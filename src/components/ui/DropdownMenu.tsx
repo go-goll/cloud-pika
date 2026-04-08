@@ -22,8 +22,8 @@ const DropdownMenuContent = forwardRef<
       sideOffset={sideOffset}
       className={[
         'z-50 min-w-[180px] overflow-hidden',
-        'rounded-[var(--radius)] bg-[var(--surface-high)]',
-        'p-1 shadow-ambient',
+        'rounded-xl bg-surface-container-lowest',
+        'p-1 ghost-border shadow-ambient',
         'animate-[fadeIn_150ms_ease-out]',
         className ?? '',
       ].join(' ')}
@@ -34,7 +34,9 @@ const DropdownMenuContent = forwardRef<
 DropdownMenuContent.displayName = 'DropdownMenuContent';
 
 interface MenuItemProps
-  extends ComponentPropsWithoutRef<typeof DropdownPrimitive.Item> {
+  extends ComponentPropsWithoutRef<
+    typeof DropdownPrimitive.Item
+  > {
   /** 危险操作样式（红色文字） */
   danger?: boolean;
 }
@@ -48,12 +50,13 @@ const DropdownMenuItem = forwardRef<
     ref={ref}
     className={[
       'flex cursor-pointer select-none items-center',
-      'rounded-[calc(var(--radius)-4px)] px-3 py-2 text-sm',
+      'rounded-lg px-3 py-2 text-sm',
       'outline-none transition-colors',
       danger
-        ? 'text-[var(--danger)] focus:bg-[color-mix(in_srgb,var(--danger)_10%,transparent)]'
-        : 'text-[var(--text)] focus:bg-[var(--surface-elevated)]',
-      'data-[disabled]:pointer-events-none data-[disabled]:opacity-50',
+        ? 'text-danger focus:bg-danger/10'
+        : 'text-on-surface focus:bg-surface-container-low',
+      'data-[disabled]:pointer-events-none',
+      'data-[disabled]:opacity-50',
       className ?? '',
     ].join(' ')}
     {...props}
@@ -64,18 +67,21 @@ DropdownMenuItem.displayName = 'DropdownMenuItem';
 /** 下拉菜单分割线 */
 const DropdownMenuSeparator = forwardRef<
   ElementRef<typeof DropdownPrimitive.Separator>,
-  ComponentPropsWithoutRef<typeof DropdownPrimitive.Separator>
+  ComponentPropsWithoutRef<
+    typeof DropdownPrimitive.Separator
+  >
 >(({ className, ...props }, ref) => (
   <DropdownPrimitive.Separator
     ref={ref}
     className={[
-      'mx-1 my-1 h-px bg-[var(--outline)]',
+      'mx-1 my-1 h-px bg-outline-variant',
       className ?? '',
     ].join(' ')}
     {...props}
   />
 ));
-DropdownMenuSeparator.displayName = 'DropdownMenuSeparator';
+DropdownMenuSeparator.displayName =
+  'DropdownMenuSeparator';
 
 export {
   DropdownMenu,

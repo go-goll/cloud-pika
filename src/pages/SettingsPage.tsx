@@ -1,7 +1,6 @@
 import { useEffect } from 'react';
 import i18n from 'i18next';
 import { useTranslation } from 'react-i18next';
-import { Card } from '@/components/ui/Card';
 import { SettingsPanel } from '@/components/settings/SettingsPanel';
 import {
   useSaveSettingsMutation,
@@ -14,13 +13,15 @@ import {
 } from '@/lib/locale';
 import { toast } from '@/lib/toast';
 
-/** 设置页面，使用 Card 包裹 SettingsPanel */
+/** 设置页面，两列布局对齐 digital-obsidian */
 export function SettingsPage() {
   const { t } = useTranslation();
   const themeMode = useAppStore((s) => s.themeMode);
   const settings = useAppStore((s) => s.settings);
   const setLocale = useAppStore((s) => s.setLocale);
-  const setThemeMode = useAppStore((s) => s.setThemeMode);
+  const setThemeMode = useAppStore(
+    (s) => s.setThemeMode,
+  );
   const setSettings = useAppStore((s) => s.setSettings);
 
   const query = useSettingsQuery();
@@ -47,14 +48,19 @@ export function SettingsPage() {
   };
 
   return (
-    <div className="space-y-4">
-      <Card>
-        <h2 className="font-display text-2xl font-semibold">
+    <div className="max-w-4xl mx-auto space-y-8">
+      {/* 页面标题 */}
+      <div className="space-y-2">
+        <h1 className="text-3xl font-bold tracking-tight text-on-surface font-headline">
           {t('settings.title')}
-        </h2>
-      </Card>
+        </h1>
+        <p className="text-on-surface-variant text-lg">
+          {t('transfer.subtitle')}
+        </p>
+      </div>
 
-      <Card>
+      {/* 设置内容 */}
+      <div className="bg-surface-container-lowest rounded-2xl ghost-border p-8 shadow-sm">
         <SettingsPanel
           settings={settings}
           themeMode={themeMode}
@@ -87,7 +93,7 @@ export function SettingsPage() {
           }
           onSave={() => void handleSave()}
         />
-      </Card>
+      </div>
     </div>
   );
 }

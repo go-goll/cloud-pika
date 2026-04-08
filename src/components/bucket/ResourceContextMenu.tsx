@@ -18,14 +18,14 @@ import {
 /** 菜单项样式 */
 const itemClassName = [
   'flex items-center gap-2 px-3 py-2 text-sm',
-  'cursor-pointer rounded-[var(--radius)] outline-none',
-  'data-[highlighted]:bg-[var(--surface-elevated)]',
+  'cursor-pointer rounded-lg outline-none',
+  'data-[highlighted]:bg-surface-container-low',
   'transition-colors',
 ].join(' ');
 
 const dangerItemClassName = [
   itemClassName,
-  'text-[var(--danger)]',
+  'text-danger',
 ].join(' ');
 
 const disabledItemClassName = [
@@ -34,7 +34,7 @@ const disabledItemClassName = [
 ].join(' ');
 
 const separatorClassName =
-  'my-1 h-px bg-[var(--outline)]';
+  'my-1 h-px bg-outline-variant';
 
 /** 文件右键菜单的回调集合 */
 interface FileMenuActions {
@@ -73,12 +73,9 @@ export function ResourceContextMenu({
       <ContextMenu.Portal>
         <ContextMenu.Content
           className={[
-            'min-w-[180px] p-1.5',
-            'rounded-[calc(var(--radius)+2px)]',
-            'bg-[var(--surface-high)]',
-            'border border-[var(--outline)]',
-            'shadow-[0_8px_30px_rgba(0,0,0,0.12)]',
-            'z-50',
+            'min-w-[180px] p-1.5 rounded-xl',
+            'bg-surface-container-lowest',
+            'ghost-border shadow-ambient z-50',
           ].join(' ')}
         >
           {fileActions ? (

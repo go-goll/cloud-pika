@@ -7,7 +7,8 @@ import { Toaster as SonnerToaster } from 'sonner';
  */
 export function Toaster() {
   const isDark =
-    document.documentElement.getAttribute('data-theme') === 'dark';
+    document.documentElement.getAttribute('data-theme')
+    === 'dark';
 
   return (
     <SonnerToaster
@@ -16,10 +17,12 @@ export function Toaster() {
       theme={isDark ? 'dark' : 'light'}
       toastOptions={{
         style: {
-          background: 'var(--surface-high)',
-          color: 'var(--text)',
-          border: '1px solid var(--outline)',
-          borderRadius: 'var(--radius)',
+          background:
+            'var(--color-surface-container-lowest)',
+          color: 'var(--color-on-surface)',
+          border:
+            '1px solid var(--color-outline-variant)',
+          borderRadius: '12px',
         },
       }}
     />

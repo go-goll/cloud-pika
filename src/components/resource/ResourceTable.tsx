@@ -73,7 +73,11 @@ function RowActionMenu({
   );
 
   return (
-    <div className="relative" ref={menuRef} onBlur={handleBlur}>
+    <div
+      className="relative"
+      ref={menuRef}
+      onBlur={handleBlur}
+    >
       <button
         type="button"
         onClick={(e) => {
@@ -82,9 +86,10 @@ function RowActionMenu({
         }}
         className={[
           'flex h-7 w-7 items-center justify-center',
-          'rounded-[var(--radius)] transition-colors',
-          'hover:bg-[var(--surface-elevated)]',
-          'text-[var(--text-muted)]',
+          'rounded-lg transition-colors',
+          'hover:bg-surface-container-low',
+          'text-on-surface-variant',
+          'opacity-0 group-hover:opacity-100',
         ].join(' ')}
       >
         <MoreHorizontal size={15} />
@@ -93,11 +98,10 @@ function RowActionMenu({
       {open ? (
         <div
           className={[
-            'absolute right-0 top-8 z-30 min-w-[160px]',
-            'rounded-[calc(var(--radius)+2px)] p-1.5',
-            'bg-[var(--surface-high)]',
-            'border border-[var(--outline)]',
-            'shadow-[0_8px_30px_rgba(0,0,0,0.12)]',
+            'absolute right-0 top-8 z-30',
+            'min-w-[160px] rounded-xl p-1.5',
+            'bg-surface-container-lowest',
+            'ghost-border shadow-ambient',
           ].join(' ')}
         >
           <ActionItem
@@ -121,7 +125,7 @@ function RowActionMenu({
               setOpen(false);
             }}
           />
-          <div className="my-1 h-px bg-[var(--outline)]" />
+          <div className="my-1 h-px bg-outline-variant" />
           <ActionItem
             label={t('bucket.delete')}
             danger
@@ -152,9 +156,9 @@ function ActionItem({
       onClick={onClick}
       className={[
         'flex w-full items-center px-3 py-1.5 text-sm',
-        'rounded-[var(--radius)] transition-colors',
-        'hover:bg-[var(--surface-elevated)]',
-        danger ? 'text-[var(--danger)]' : '',
+        'rounded-lg transition-colors',
+        'hover:bg-surface-container-low',
+        danger ? 'text-danger' : '',
       ].join(' ')}
     >
       {label}
@@ -173,9 +177,11 @@ function SortIcon({
   dir: SortDir;
 }) {
   if (activeColumn !== column) return null;
-  return dir === 'asc'
-    ? <ArrowUp size={12} className="ml-1 inline" />
-    : <ArrowDown size={12} className="ml-1 inline" />;
+  return dir === 'asc' ? (
+    <ArrowUp size={12} className="ml-1 inline" />
+  ) : (
+    <ArrowDown size={12} className="ml-1 inline" />
+  );
 }
 
 export function ResourceTable({
@@ -191,15 +197,18 @@ export function ResourceTable({
   onUpload,
   onRefresh,
 }: ResourceTableProps) {
-  const { t, i18n } = useTranslation();
-  const [sortCol, setSortCol] = useState<SortColumn | null>(null);
+  const { t } = useTranslation();
+  const [sortCol, setSortCol] =
+    useState<SortColumn | null>(null);
   const [sortDir, setSortDir] = useState<SortDir>('asc');
 
   // 切换排序列
   const toggleSort = useCallback((col: SortColumn) => {
     setSortCol((prev) => {
       if (prev === col) {
-        setSortDir((d) => (d === 'asc' ? 'desc' : 'asc'));
+        setSortDir((d) =>
+          d === 'asc' ? 'desc' : 'asc',
+        );
         return col;
       }
       setSortDir('asc');
@@ -219,9 +228,11 @@ export function ResourceTable({
         cmp = a.size - b.size;
       } else if (sortCol === 'lastModified') {
         const ta = a.lastModified
-          ? new Date(a.lastModified).getTime() : 0;
+          ? new Date(a.lastModified).getTime()
+          : 0;
         const tb = b.lastModified
-          ? new Date(b.lastModified).getTime() : 0;
+          ? new Date(b.lastModified).getTime()
+          : 0;
         cmp = ta - tb;
       }
       return sortDir === 'asc' ? cmp : -cmp;
@@ -230,12 +241,12 @@ export function ResourceTable({
   }, [objects, sortCol, sortDir]);
 
   const allSelected =
-    objects.length > 0
-    && objects.every((o) => selectedKeys.has(o.key));
+    objects.length > 0 &&
+    objects.every((o) => selectedKeys.has(o.key));
 
   const thClass = [
-    'px-3 cursor-pointer select-none',
-    'hover:text-[var(--text)]',
+    'px-6 py-4 cursor-pointer select-none',
+    'hover:text-on-surface transition-colors',
   ].join(' ');
 
   return (
@@ -246,22 +257,18 @@ export function ResourceTable({
           : undefined
       }
     >
-      <div
-        className={
-          'rounded-[var(--radius)] '
-          + 'bg-[var(--surface-low)] p-3'
-        }
-      >
-        <table className="w-full border-separate border-spacing-y-1 text-sm">
-          <thead className="text-left text-xs text-[var(--text-muted)]">
-            <tr>
+      <div className="bg-surface-container-lowest rounded-xl overflow-hidden ghost-border shadow-sm">
+        <table className="w-full text-left border-collapse">
+          {/* 表头 */}
+          <thead>
+            <tr className="bg-surface-container-low/50 text-[10px] font-bold uppercase tracking-widest text-on-surface-variant/70 border-b border-outline-variant">
               {/* 全选Checkbox */}
-              <th className="w-10 px-3">
+              <th className="w-12 px-6 py-4">
                 <input
                   type="checkbox"
                   checked={allSelected}
                   onChange={onSelectAll}
-                  className="cursor-pointer accent-[var(--primary)]"
+                  className="cursor-pointer accent-primary"
                 />
               </th>
               <th
@@ -286,7 +293,7 @@ export function ResourceTable({
                   dir={sortDir}
                 />
               </th>
-              <th className="px-3">MIME</th>
+              <th className="px-6 py-4">MIME</th>
               <th
                 className={thClass}
                 onClick={() => toggleSort('lastModified')}
@@ -298,72 +305,83 @@ export function ResourceTable({
                   dir={sortDir}
                 />
               </th>
-              <th className="w-12 px-3" />
+              <th className="w-16 px-6 py-4" />
             </tr>
           </thead>
-          <tbody>
+
+          {/* 表体 */}
+          <tbody className="divide-y divide-outline-variant">
             {sortedObjects.map((item) => {
-              const isSelected = selectedKeys.has(item.key);
-              const isDir = item.isDir || item.key.endsWith('/');
+              const isSelected = selectedKeys.has(
+                item.key,
+              );
+              const isDir =
+                item.isDir || item.key.endsWith('/');
               const fileName = extractFileName(item.key);
 
               return (
                 <ResourceContextMenu
                   key={item.key}
                   fileActions={{
-                    onCopyUrl: () => onCopyUrl?.(item.key),
-                    onDownload: () => onDownload?.(item.key),
-                    onRename: () => onRename?.(item.key),
-                    onDelete: () => onDelete?.(item.key),
+                    onCopyUrl: () =>
+                      onCopyUrl?.(item.key),
+                    onDownload: () =>
+                      onDownload?.(item.key),
+                    onRename: () =>
+                      onRename?.(item.key),
+                    onDelete: () =>
+                      onDelete?.(item.key),
                   }}
                 >
                   <tr
                     className={[
-                      'rounded-[var(--radius)] transition-colors',
-                      'cursor-default',
+                      'group transition-all cursor-default',
                       isSelected
-                        ? 'bg-[color-mix(in_srgb,var(--primary)_10%,var(--surface-high))]'
-                        : 'bg-[var(--surface-high)] hover:bg-[var(--surface-elevated)]',
+                        ? 'bg-primary/5'
+                        : 'hover:bg-surface-container-low',
                     ].join(' ')}
                     onDoubleClick={() => {
-                      if (isDir) onNavigateFolder?.(item.key);
+                      if (isDir)
+                        onNavigateFolder?.(item.key);
                     }}
                   >
                     {/* Checkbox */}
-                    <td className="rounded-l-[var(--radius)] px-3 py-2">
+                    <td className="px-6 py-4">
                       <input
                         type="checkbox"
                         checked={isSelected}
                         onChange={(e) => {
                           onSelect(
                             item.key,
-                            (e.nativeEvent as MouseEvent).shiftKey,
+                            (
+                              e.nativeEvent as MouseEvent
+                            ).shiftKey,
                           );
                         }}
-                        className="cursor-pointer accent-[var(--primary)]"
+                        className="cursor-pointer accent-primary"
                       />
                     </td>
 
                     {/* 文件名 */}
-                    <td className="px-3 py-2.5">
-                      <div className="flex items-center gap-2">
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-3">
                         {isDir ? (
                           <Folder
-                            size={15}
-                            className="shrink-0 text-[var(--primary)]"
+                            size={20}
+                            className="shrink-0 text-primary"
                           />
                         ) : (
                           <File
-                            size={15}
-                            className="shrink-0 text-[var(--text-muted)]"
+                            size={20}
+                            className="shrink-0 text-on-surface-variant"
                           />
                         )}
                         <span
                           className={[
-                            'truncate',
+                            'truncate font-medium',
                             isDir
-                              ? 'font-medium text-[var(--primary)]'
-                              : '',
+                              ? 'text-primary'
+                              : 'text-on-surface',
                           ].join(' ')}
                           title={item.key}
                         >
@@ -373,24 +391,28 @@ export function ResourceTable({
                     </td>
 
                     {/* 大小 */}
-                    <td className="px-3 py-2.5 text-[var(--text-muted)]">
-                      {isDir ? '-' : formatFileSize(item.size)}
+                    <td className="px-6 py-4 text-sm text-on-surface-variant">
+                      {isDir
+                        ? '-'
+                        : formatFileSize(item.size)}
                     </td>
 
                     {/* MIME */}
-                    <td className="px-3 py-2.5 text-[var(--text-muted)]">
+                    <td className="px-6 py-4 text-sm text-on-surface-variant">
                       {item.mimeType ?? '-'}
                     </td>
 
                     {/* 更新时间 */}
-                    <td className="px-3 py-2.5 text-[var(--text-muted)]">
+                    <td className="px-6 py-4 text-sm text-on-surface-variant">
                       {item.lastModified
-                        ? formatRelativeTime(item.lastModified)
+                        ? formatRelativeTime(
+                            item.lastModified,
+                          )
                         : '-'}
                     </td>
 
                     {/* 操作 */}
-                    <td className="rounded-r-[var(--radius)] px-3 py-2.5">
+                    <td className="px-6 py-4 text-right">
                       <RowActionMenu
                         objectKey={item.key}
                         onCopyUrl={onCopyUrl}
@@ -408,7 +430,7 @@ export function ResourceTable({
               <tr>
                 <td
                   colSpan={6}
-                  className="px-3 py-8 text-center text-[var(--text-muted)]"
+                  className="px-6 py-8 text-center text-on-surface-variant"
                 >
                   {t('bucket.empty')}
                 </td>

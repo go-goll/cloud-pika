@@ -4,7 +4,10 @@ import { useTranslation } from 'react-i18next';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { TransferCard } from './TransferCard';
-import type { TransferTask, TransferStatus } from '@/types/cloud';
+import type {
+  TransferTask,
+  TransferStatus,
+} from '@/types/cloud';
 
 interface TransferListProps {
   tasks: TransferTask[];
@@ -36,17 +39,18 @@ export function TransferList({
     () =>
       [...tasks].sort(
         (a, b) =>
-          statusOrder[a.status] - statusOrder[b.status],
+          statusOrder[a.status] -
+          statusOrder[b.status],
       ),
     [tasks],
   );
 
   if (isLoading) {
     return (
-      <div className="space-y-3">
-        <Skeleton className="h-20 w-full" />
-        <Skeleton className="h-20 w-full" />
-        <Skeleton className="h-20 w-full" />
+      <div className="space-y-4">
+        <Skeleton className="h-24 w-full" />
+        <Skeleton className="h-24 w-full" />
+        <Skeleton className="h-24 w-full" />
       </div>
     );
   }
@@ -62,7 +66,7 @@ export function TransferList({
   }
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-4">
       {sortedTasks.map((task) => (
         <TransferCard
           key={task.id}

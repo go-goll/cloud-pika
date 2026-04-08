@@ -4,11 +4,15 @@ import {
   Link2,
   RotateCw,
   X,
+  Zap,
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
-import type { TransferTask, TransferStatus } from '@/types/cloud';
+import type {
+  TransferTask,
+  TransferStatus,
+} from '@/types/cloud';
 
 interface TransferCardProps {
   task: TransferTask;
@@ -29,8 +33,12 @@ const statusVariantMap: Record<
 };
 
 /** 任务类型图标 */
-function TypeIcon({ type }: { type: TransferTask['type'] }) {
-  const size = 16;
+function TypeIcon({
+  type,
+}: {
+  type: TransferTask['type'];
+}) {
+  const size = 24;
   switch (type) {
     case 'upload':
       return <ArrowUp size={size} />;
@@ -54,92 +62,105 @@ export function TransferCard({
   return (
     <div
       className={[
-        'rounded-[var(--radius)] bg-[var(--surface-high)]',
-        'p-4 shadow-ambient transition-all',
+        'bg-surface-container-lowest rounded-xl p-6',
+        'ghost-border hover:shadow-sm',
+        'transition-all duration-300',
       ].join(' ')}
     >
       {/* 头部：类型图标 + 文件信息 + 状态 + 操作 */}
-      <div className="flex items-start justify-between gap-3">
-        <div className="flex items-start gap-3">
-          {/* 类型图标 */}
-          <div
-            className={[
-              'flex h-8 w-8 shrink-0 items-center',
-              'justify-center rounded-full',
-              'bg-[color-mix(in_srgb,var(--primary)_10%,transparent)]',
-              'text-[var(--primary)]',
-            ].join(' ')}
-          >
-            <TypeIcon type={task.type} />
-          </div>
-
-          {/* 文件信息 */}
-          <div className="min-w-0">
-            <p className="truncate text-sm font-medium">
-              {task.bucket}/{task.key}
-            </p>
-            <p className="mt-0.5 text-xs text-[var(--text-muted)]">
-              {t(`transfer.${task.type}`)}
-            </p>
-          </div>
+      <div className="flex items-start gap-5">
+        {/* 类型图标 */}
+        <div
+          className={[
+            'flex h-12 w-12 shrink-0 items-center',
+            'justify-center rounded-xl',
+            'bg-primary/10 text-primary',
+          ].join(' ')}
+        >
+          <TypeIcon type={task.type} />
         </div>
 
-        {/* 状态和操作按钮 */}
-        <div className="flex shrink-0 items-center gap-2">
-          <Badge variant={statusVariantMap[task.status]}>
-            {t(`transfer.${task.status}`)}
-          </Badge>
+        {/* 文件信息和进度 */}
+        <div className="flex-1 min-w-0">
+          <div className="flex justify-between items-start mb-2">
+            <div>
+              <h4 className="font-bold text-on-surface truncate">
+                {task.bucket}/{task.key}
+              </h4>
+              <p className="text-xs text-on-surface-variant mt-0.5">
+                {t(`transfer.${task.type}`)}
+              </p>
+            </div>
 
-          {isActive ? (
-            <Button
-              variant="ghost"
-              className="h-7 px-2"
-              onClick={() => onCancel?.(task.id)}
-            >
-              <X size={14} />
-            </Button>
+            {/* 状态和操作按钮 */}
+            <div className="flex shrink-0 items-center gap-2">
+              <Badge
+                variant={statusVariantMap[task.status]}
+              >
+                {t(`transfer.${task.status}`)}
+              </Badge>
+
+              {isActive ? (
+                <Button
+                  variant="ghost"
+                  className="h-7 px-2"
+                  onClick={() => onCancel?.(task.id)}
+                >
+                  <X size={14} />
+                </Button>
+              ) : null}
+
+              {task.status === 'failed' ? (
+                <Button
+                  variant="ghost"
+                  className="h-7 px-2"
+                  onClick={() => onRetry?.(task.id)}
+                >
+                  <RotateCw size={14} />
+                  <span className="ml-1 text-xs">
+                    {t('transfer.retry')}
+                  </span>
+                </Button>
+              ) : null}
+            </div>
+          </div>
+
+          {/* 进度条（仅运行中显示） */}
+          {task.status === 'running' ? (
+            <>
+              <div className="h-2 w-full bg-surface-container-low rounded-full overflow-hidden mb-4">
+                <div
+                  className="h-full signature-gradient rounded-full transition-all"
+                  style={{
+                    width: `${task.progress}%`,
+                  }}
+                />
+              </div>
+
+              {/* 进度百分比 */}
+              <div className="flex items-center gap-6">
+                <div className="flex items-center gap-2">
+                  <Zap
+                    size={14}
+                    className="text-primary"
+                  />
+                  <span className="text-xs font-medium text-on-surface">
+                    {task.progress}%
+                  </span>
+                </div>
+              </div>
+            </>
           ) : null}
 
-          {task.status === 'failed' ? (
-            <Button
-              variant="ghost"
-              className="h-7 px-2"
-              onClick={() => onRetry?.(task.id)}
-            >
-              <RotateCw size={14} />
-              <span className="ml-1 text-xs">
-                {t('transfer.retry')}
-              </span>
-            </Button>
+          {/* 失败时显示错误信息 */}
+          {task.status === 'failed' &&
+          task.errorMessage ? (
+            <p className="mt-2 text-xs text-danger">
+              {task.errorMessage}
+            </p>
           ) : null}
         </div>
       </div>
-
-      {/* 进度条（仅运行中显示） */}
-      {task.status === 'running' ? (
-        <div
-          className={[
-            'mt-3 h-1.5 overflow-hidden rounded-full',
-            'bg-[var(--surface-elevated)]',
-          ].join(' ')}
-        >
-          <div
-            className={[
-              'h-full rounded-full transition-all',
-              'bg-[linear-gradient(90deg,var(--primary),var(--primary-soft))]',
-              'animate-shimmer',
-            ].join(' ')}
-            style={{ width: `${task.progress}%` }}
-          />
-        </div>
-      ) : null}
-
-      {/* 失败时显示错误信息 */}
-      {task.status === 'failed' && task.errorMessage ? (
-        <p className="mt-2 text-xs text-[var(--danger)]">
-          {task.errorMessage}
-        </p>
-      ) : null}
     </div>
   );
 }

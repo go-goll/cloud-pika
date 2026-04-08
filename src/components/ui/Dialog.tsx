@@ -46,8 +46,8 @@ const DialogContent = forwardRef<
       className={[
         'fixed left-1/2 top-1/2 z-50 w-full max-w-lg',
         '-translate-x-1/2 -translate-y-1/2',
-        'rounded-[var(--radius)] bg-[var(--surface-high)]',
-        'p-6 shadow-ambient',
+        'rounded-xl bg-surface-container-lowest',
+        'p-6 ghost-border shadow-ambient',
         'data-[state=open]:animate-[dialogIn_200ms_ease-out]',
         'data-[state=closed]:animate-[dialogOut_150ms_ease-in]',
         className ?? '',
@@ -58,10 +58,10 @@ const DialogContent = forwardRef<
       {/* 右上角关闭按钮 */}
       <DialogPrimitive.Close
         className={[
-          'absolute right-4 top-4 rounded-[var(--radius)]',
-          'p-1 text-[var(--text-muted)]',
-          'hover:bg-[var(--surface-elevated)]',
-          'hover:text-[var(--text)]',
+          'absolute right-4 top-4 rounded-lg',
+          'p-1 text-on-surface-variant',
+          'hover:bg-surface-container-low',
+          'hover:text-on-surface',
           'transition-colors',
         ].join(' ')}
       >
@@ -96,7 +96,7 @@ const DialogTitle = forwardRef<
   <DialogPrimitive.Title
     ref={ref}
     className={[
-      'text-lg font-semibold text-[var(--text)]',
+      'text-lg font-semibold text-on-surface',
       className ?? '',
     ].join(' ')}
     {...props}
@@ -107,12 +107,14 @@ DialogTitle.displayName = 'DialogTitle';
 /** 对话框描述文字 */
 const DialogDescription = forwardRef<
   ElementRef<typeof DialogPrimitive.Description>,
-  ComponentPropsWithoutRef<typeof DialogPrimitive.Description>
+  ComponentPropsWithoutRef<
+    typeof DialogPrimitive.Description
+  >
 >(({ className, ...props }, ref) => (
   <DialogPrimitive.Description
     ref={ref}
     className={[
-      'text-sm text-[var(--text-muted)]',
+      'text-sm text-on-surface-variant',
       className ?? '',
     ].join(' ')}
     {...props}

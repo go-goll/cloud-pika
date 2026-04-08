@@ -40,36 +40,70 @@ interface ResourceGridProps {
 /** 根据mimeType或文件名返回对应图标 */
 function getFileIcon(key: string, mimeType?: string) {
   if (key.endsWith('/')) {
-    return (
-      <Folder size={28} className="text-[var(--primary)]" />
-    );
+    return <Folder size={28} className="text-primary" />;
   }
-  if (isImageKey(key) || mimeType?.startsWith('image/')) {
+  if (
+    isImageKey(key) ||
+    mimeType?.startsWith('image/')
+  ) {
     return (
-      <Image size={28} className="text-[var(--primary-soft)]" />
+      <Image size={28} className="text-primary/70" />
     );
   }
   if (mimeType?.startsWith('video/')) {
-    return <FileVideo size={28} className="text-[var(--text-muted)]" />;
+    return (
+      <FileVideo
+        size={28}
+        className="text-on-surface-variant"
+      />
+    );
   }
   if (mimeType?.startsWith('audio/')) {
-    return <FileAudio size={28} className="text-[var(--text-muted)]" />;
+    return (
+      <FileAudio
+        size={28}
+        className="text-on-surface-variant"
+      />
+    );
   }
   if (mimeType?.startsWith('text/')) {
-    return <FileText size={28} className="text-[var(--text-muted)]" />;
+    return (
+      <FileText
+        size={28}
+        className="text-on-surface-variant"
+      />
+    );
   }
   // 压缩文件
   const ext = key.split('.').pop()?.toLowerCase() ?? '';
   if (['zip', 'tar', 'gz', 'rar', '7z'].includes(ext)) {
     return (
-      <FileArchive size={28} className="text-[var(--text-muted)]" />
+      <FileArchive
+        size={28}
+        className="text-on-surface-variant"
+      />
     );
   }
   // 代码文件
-  if (['js', 'ts', 'jsx', 'tsx', 'json', 'yml', 'yaml', 'xml', 'html', 'css'].includes(ext)) {
-    return <FileCode size={28} className="text-[var(--text-muted)]" />;
+  if (
+    [
+      'js', 'ts', 'jsx', 'tsx', 'json',
+      'yml', 'yaml', 'xml', 'html', 'css',
+    ].includes(ext)
+  ) {
+    return (
+      <FileCode
+        size={28}
+        className="text-on-surface-variant"
+      />
+    );
   }
-  return <File size={28} className="text-[var(--text-muted)]" />;
+  return (
+    <File
+      size={28}
+      className="text-on-surface-variant"
+    />
+  );
 }
 
 /** 卡片操作菜单 */
@@ -99,9 +133,9 @@ function CardActionMenu({
         }}
         className={[
           'flex h-6 w-6 items-center justify-center',
-          'rounded-[var(--radius)] transition-colors',
-          'hover:bg-[var(--surface-elevated)]',
-          'text-[var(--text-muted)]',
+          'rounded-lg transition-colors',
+          'hover:bg-surface-container-low',
+          'text-on-surface-variant',
         ].join(' ')}
       >
         <MoreHorizontal size={14} />
@@ -110,11 +144,10 @@ function CardActionMenu({
       {open ? (
         <div
           className={[
-            'absolute right-0 top-7 z-30 min-w-[140px]',
-            'rounded-[calc(var(--radius)+2px)] p-1',
-            'bg-[var(--surface-high)]',
-            'border border-[var(--outline)]',
-            'shadow-[0_8px_30px_rgba(0,0,0,0.12)]',
+            'absolute right-0 top-7 z-30',
+            'min-w-[140px] rounded-xl p-1',
+            'bg-surface-container-lowest',
+            'ghost-border shadow-ambient',
           ].join(' ')}
           onMouseLeave={() => setOpen(false)}
         >
@@ -141,14 +174,14 @@ function CardActionMenu({
               }}
               className={[
                 'flex w-full items-center px-3 py-1.5',
-                'text-xs rounded-[var(--radius)]',
-                'hover:bg-[var(--surface-elevated)]',
+                'text-xs rounded-lg',
+                'hover:bg-surface-container-low',
               ].join(' ')}
             >
               {item.label}
             </button>
           ))}
-          <div className="my-1 h-px bg-[var(--outline)]" />
+          <div className="my-1 h-px bg-outline-variant" />
           <button
             type="button"
             onClick={() => {
@@ -157,9 +190,8 @@ function CardActionMenu({
             }}
             className={[
               'flex w-full items-center px-3 py-1.5',
-              'text-xs text-[var(--danger)]',
-              'rounded-[var(--radius)]',
-              'hover:bg-[var(--surface-elevated)]',
+              'text-xs text-danger rounded-lg',
+              'hover:bg-surface-container-low',
             ].join(' ')}
           >
             {t('bucket.delete')}
@@ -195,27 +227,34 @@ export function ResourceGrid({
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4 xl:grid-cols-5">
         {objects.map((item) => {
           const isSelected = selectedKeys.has(item.key);
-          const isDir = item.isDir || item.key.endsWith('/');
+          const isDir =
+            item.isDir || item.key.endsWith('/');
           const fileName = extractFileName(item.key);
           const isImage =
-            isImageKey(item.key)
-            || item.mimeType?.startsWith('image/');
+            isImageKey(item.key) ||
+            item.mimeType?.startsWith('image/');
 
           return (
             <ResourceContextMenu
               key={item.key}
               fileActions={{
-                onCopyUrl: () => onCopyUrl?.(item.key),
-                onDownload: () => onDownload?.(item.key),
-                onRename: () => onRename?.(item.key),
-                onDelete: () => onDelete?.(item.key),
+                onCopyUrl: () =>
+                  onCopyUrl?.(item.key),
+                onDownload: () =>
+                  onDownload?.(item.key),
+                onRename: () =>
+                  onRename?.(item.key),
+                onDelete: () =>
+                  onDelete?.(item.key),
               }}
             >
               <Card
+                hoverable
                 className={[
-                  'group relative cursor-default transition-all',
+                  'group relative cursor-default',
+                  'transition-all duration-200',
                   isSelected
-                    ? 'ring-2 ring-[var(--primary)] bg-[color-mix(in_srgb,var(--primary)_5%,var(--surface-high))]'
+                    ? 'ring-2 ring-primary bg-primary/5'
                     : 'hover:shadow-lg',
                 ].join(' ')}
               >
@@ -227,11 +266,13 @@ export function ResourceGrid({
                     onChange={(e) => {
                       onSelect(
                         item.key,
-                        (e.nativeEvent as MouseEvent).shiftKey,
+                        (
+                          e.nativeEvent as MouseEvent
+                        ).shiftKey,
                       );
                     }}
                     className={[
-                      'cursor-pointer accent-[var(--primary)]',
+                      'cursor-pointer accent-primary',
                       isSelected
                         ? 'opacity-100'
                         : 'opacity-0 group-hover:opacity-100',
@@ -260,29 +301,35 @@ export function ResourceGrid({
                 {/* 缩略图/图标区域 */}
                 <div
                   className={[
-                    'flex h-24 items-center justify-center',
-                    'rounded-[var(--radius)]',
+                    'flex h-24 items-center',
+                    'justify-center rounded-lg',
                     isImage
-                      ? 'bg-[var(--surface-low)]'
+                      ? 'bg-surface-container-low'
                       : '',
                   ].join(' ')}
                   onDoubleClick={() => {
-                    if (isDir) onNavigateFolder?.(item.key);
+                    if (isDir)
+                      onNavigateFolder?.(item.key);
                   }}
                 >
-                  {getFileIcon(item.key, item.mimeType)}
+                  {getFileIcon(
+                    item.key,
+                    item.mimeType,
+                  )}
                 </div>
 
                 {/* 文件信息 */}
                 <div className="mt-2">
                   <p
-                    className="truncate text-sm font-medium"
+                    className="truncate text-sm font-medium text-on-surface"
                     title={item.key}
                   >
                     {fileName}
                   </p>
-                  <p className="mt-1 text-xs text-[var(--text-muted)]">
-                    {isDir ? t('bucket.folder') : formatFileSize(item.size)}
+                  <p className="mt-1 text-xs text-on-surface-variant">
+                    {isDir
+                      ? t('bucket.folder')
+                      : formatFileSize(item.size)}
                   </p>
                 </div>
               </Card>
@@ -291,7 +338,7 @@ export function ResourceGrid({
         })}
 
         {objects.length === 0 ? (
-          <p className="col-span-full py-8 text-center text-sm text-[var(--text-muted)]">
+          <p className="col-span-full py-8 text-center text-sm text-on-surface-variant">
             {t('bucket.empty')}
           </p>
         ) : null}

@@ -51,7 +51,8 @@ export function AccountForm({
   onSubmit,
 }: AccountFormProps) {
   const { t } = useTranslation();
-  const [form, setForm] = useState<FormState>(defaultForm);
+  const [form, setForm] =
+    useState<FormState>(defaultForm);
   const [nameTouched, setNameTouched] = useState(false);
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [submitError, setSubmitError] = useState('');
@@ -73,10 +74,12 @@ export function AccountForm({
 
   const showEndpoint =
     fieldIsRequired(providerMeta.endpointMode) ||
-    (providerMeta.endpointMode === 'optional' && showAdvanced);
+    (providerMeta.endpointMode === 'optional' &&
+      showAdvanced);
   const showRegion =
     fieldIsRequired(providerMeta.regionMode) ||
-    (providerMeta.regionMode === 'optional' && showAdvanced);
+    (providerMeta.regionMode === 'optional' &&
+      showAdvanced);
   const showInternal =
     providerMeta.showInternal && showAdvanced;
 
@@ -86,14 +89,18 @@ export function AccountForm({
     providerMeta.showInternal;
 
   /** 获取字段的本地化标签 */
-  const getFieldLabel = (field: LoginFieldKey): string => {
+  const getFieldLabel = (
+    field: LoginFieldKey,
+  ): string => {
     const map: Record<LoginFieldKey, string> = {
       name: t('login.alias'),
       accessKey: t(
-        providerMeta.accessKeyLabelKey ?? 'login.accessKey',
+        providerMeta.accessKeyLabelKey ??
+          'login.accessKey',
       ),
       secretKey: t(
-        providerMeta.secretKeyLabelKey ?? 'login.secretKey',
+        providerMeta.secretKeyLabelKey ??
+          'login.secretKey',
       ),
       serviceName: t('login.serviceName'),
       endpoint: t('login.endpoint'),
@@ -162,7 +169,9 @@ export function AccountForm({
     setForm((prev) => ({
       ...prev,
       provider: next,
-      name: nameTouched ? prev.name : nextMeta.defaultAlias,
+      name: nameTouched
+        ? prev.name
+        : nextMeta.defaultAlias,
       serviceName:
         nextMeta.serviceNameMode === 'hidden'
           ? ''
@@ -172,7 +181,9 @@ export function AccountForm({
           ? ''
           : prev.endpoint,
       region:
-        nextMeta.regionMode === 'hidden' ? '' : prev.region,
+        nextMeta.regionMode === 'hidden'
+          ? ''
+          : prev.region,
       internal: nextMeta.showInternal
         ? prev.internal
         : false,
@@ -180,17 +191,17 @@ export function AccountForm({
   };
 
   return (
-    <div className="grid gap-4">
-      <h1 className="font-display text-2xl font-semibold">
+    <div className="space-y-5">
+      <h1 className="font-headline text-2xl font-bold text-on-surface">
         {t('login.title')}
       </h1>
-      <p className="text-sm text-[var(--text-muted)]">
+      <p className="text-sm text-on-surface-variant">
         {t('login.subtitle')}
       </p>
 
       {/* 云厂商选择 */}
       <label className="text-sm">
-        <span className="mb-2 block text-[var(--text-muted)]">
+        <span className="mb-2 block text-xs font-bold uppercase tracking-widest text-on-surface-variant">
           {t('login.provider')}
         </span>
         <Select
@@ -204,7 +215,7 @@ export function AccountForm({
 
       {/* 别名 */}
       <label className="text-sm">
-        <span className="mb-2 block text-[var(--text-muted)]">
+        <span className="mb-2 block text-xs font-bold uppercase tracking-widest text-on-surface-variant">
           {t('login.alias')}
         </span>
         <Input
@@ -218,7 +229,7 @@ export function AccountForm({
 
       {/* AccessKey */}
       <label className="text-sm">
-        <span className="mb-2 block text-[var(--text-muted)]">
+        <span className="mb-2 block text-xs font-bold uppercase tracking-widest text-on-surface-variant">
           {t(
             providerMeta.accessKeyLabelKey ??
               'login.accessKey',
@@ -234,7 +245,7 @@ export function AccountForm({
 
       {/* SecretKey（密码模式） */}
       <label className="text-sm">
-        <span className="mb-2 block text-[var(--text-muted)]">
+        <span className="mb-2 block text-xs font-bold uppercase tracking-widest text-on-surface-variant">
           {t(
             providerMeta.secretKeyLabelKey ??
               'login.secretKey',
@@ -252,7 +263,7 @@ export function AccountForm({
       {/* 服务名称（仅部分厂商显示） */}
       {providerMeta.serviceNameMode !== 'hidden' ? (
         <label className="text-sm">
-          <span className="mb-2 block text-[var(--text-muted)]">
+          <span className="mb-2 block text-xs font-bold uppercase tracking-widest text-on-surface-variant">
             {t('login.serviceName')}
           </span>
           <Input
@@ -260,7 +271,9 @@ export function AccountForm({
             onChange={(e) =>
               updateField('serviceName', e.target.value)
             }
-            placeholder={t('login.serviceNamePlaceholder')}
+            placeholder={t(
+              'login.serviceNamePlaceholder',
+            )}
           />
         </label>
       ) : null}
@@ -271,7 +284,7 @@ export function AccountForm({
           type="button"
           className={[
             'flex w-fit items-center gap-1 text-xs',
-            'text-[var(--text-muted)]',
+            'text-on-surface-variant font-medium',
             'underline-offset-4 hover:underline',
           ].join(' ')}
           onClick={() => setShowAdvanced((v) => !v)}
@@ -289,40 +302,52 @@ export function AccountForm({
 
       {/* 高级配置区域 */}
       {showEndpoint || showRegion || showInternal ? (
-        <div className="grid gap-4 sm:grid-cols-2">
-          {showEndpoint ? (
-            <label className="text-sm">
-              <span className="mb-2 block text-[var(--text-muted)]">
-                {t('login.endpoint')}
-              </span>
-              <Input
-                value={form.endpoint}
-                onChange={(e) =>
-                  updateField('endpoint', e.target.value)
-                }
-                placeholder={t('login.endpointPlaceholder')}
-              />
-            </label>
-          ) : null}
-          {showRegion ? (
-            <label className="text-sm">
-              <span className="mb-2 block text-[var(--text-muted)]">
-                {t('login.region')}
-              </span>
-              <Input
-                value={form.region}
-                onChange={(e) =>
-                  updateField('region', e.target.value)
-                }
-                placeholder={t('login.regionPlaceholder')}
-              />
-            </label>
-          ) : null}
+        <div className="space-y-5 rounded-xl bg-surface-container-low p-4 ghost-border">
+          <div className="grid gap-5 sm:grid-cols-2">
+            {showEndpoint ? (
+              <label className="text-sm">
+                <span className="mb-2 block text-xs font-bold uppercase tracking-widest text-on-surface-variant">
+                  {t('login.endpoint')}
+                </span>
+                <Input
+                  value={form.endpoint}
+                  onChange={(e) =>
+                    updateField(
+                      'endpoint',
+                      e.target.value,
+                    )
+                  }
+                  placeholder={t(
+                    'login.endpointPlaceholder',
+                  )}
+                />
+              </label>
+            ) : null}
+            {showRegion ? (
+              <label className="text-sm">
+                <span className="mb-2 block text-xs font-bold uppercase tracking-widest text-on-surface-variant">
+                  {t('login.region')}
+                </span>
+                <Input
+                  value={form.region}
+                  onChange={(e) =>
+                    updateField(
+                      'region',
+                      e.target.value,
+                    )
+                  }
+                  placeholder={t(
+                    'login.regionPlaceholder',
+                  )}
+                />
+              </label>
+            ) : null}
+          </div>
           {showInternal ? (
             <label
               className={[
-                'col-span-full flex items-center gap-2',
-                'text-sm text-[var(--text-muted)]',
+                'flex items-center gap-2',
+                'text-sm text-on-surface-variant',
               ].join(' ')}
             >
               <Checkbox
@@ -350,7 +375,7 @@ export function AccountForm({
           {t('login.connect')}
         </Button>
         {submitError ? (
-          <p className="mt-2 text-xs text-[var(--danger)]">
+          <p className="mt-2 text-xs text-danger">
             {submitError}
           </p>
         ) : null}

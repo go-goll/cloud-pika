@@ -1,7 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Inbox } from 'lucide-react';
-import { Card } from '@/components/ui/Card';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { AccountCard } from '@/components/account/AccountCard';
@@ -31,9 +30,8 @@ export function LoginPage() {
 
   /** 创建账户并跳转到浏览器页面 */
   const handleSubmit = async (form: FormState) => {
-    const account = await createMutation.mutateAsync({
-      ...form,
-    });
+    const account =
+      await createMutation.mutateAsync({ ...form });
     setActiveAccountId(account.id);
     navigate('/bucket');
   };
@@ -61,16 +59,28 @@ export function LoginPage() {
     >
       <div className="grid w-full gap-6 lg:grid-cols-[1.2fr_1fr]">
         {/* 左侧：账户创建表单 */}
-        <Card className="bg-[var(--surface-high)] p-6">
+        <div
+          className={[
+            'rounded-2xl p-6',
+            'bg-surface-container-lowest',
+            'ghost-border shadow-sm',
+          ].join(' ')}
+        >
           <AccountForm
             isPending={createMutation.isPending}
             onSubmit={handleSubmit}
           />
-        </Card>
+        </div>
 
         {/* 右侧：已保存账户列表 */}
-        <Card className="bg-[var(--surface-low)] p-6">
-          <h2 className="font-display text-xl font-semibold">
+        <div
+          className={[
+            'rounded-2xl p-6',
+            'bg-surface-container-low',
+            'ghost-border',
+          ].join(' ')}
+        >
+          <h2 className="font-headline text-xl font-bold text-on-surface">
             {t('login.savedAccounts')}
           </h2>
 
@@ -85,7 +95,9 @@ export function LoginPage() {
               <EmptyState
                 icon={<Inbox size={32} />}
                 title={t('login.noAccounts')}
-                description={t('login.noAccountsDesc')}
+                description={t(
+                  'login.noAccountsDesc',
+                )}
               />
             ) : (
               accounts.map((item) => (
@@ -98,7 +110,7 @@ export function LoginPage() {
               ))
             )}
           </div>
-        </Card>
+        </div>
       </div>
     </div>
   );

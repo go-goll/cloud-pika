@@ -24,9 +24,9 @@ const TooltipContent = forwardRef<
     ref={ref}
     sideOffset={sideOffset}
     className={[
-      'z-50 rounded-[var(--radius)] px-3 py-1.5',
-      'bg-[var(--surface-elevated)] text-sm text-[var(--text)]',
-      'shadow-ambient',
+      'z-50 rounded-lg px-3 py-1.5',
+      'bg-surface-container-lowest ghost-border',
+      'text-sm text-on-surface shadow-ambient',
       'animate-[fadeIn_150ms_ease-out]',
       className ?? '',
     ].join(' ')}
@@ -49,8 +49,12 @@ export function SimpleTooltip({
 }: SimpleTooltipProps) {
   return (
     <Tooltip>
-      <TooltipTrigger asChild>{children}</TooltipTrigger>
-      <TooltipContent side={side}>{content}</TooltipContent>
+      <TooltipTrigger asChild>
+        {children}
+      </TooltipTrigger>
+      <TooltipContent side={side}>
+        {content}
+      </TooltipContent>
     </Tooltip>
   );
 }

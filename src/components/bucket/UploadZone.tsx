@@ -9,7 +9,9 @@ interface UploadZoneProps {
   isDragActive: boolean;
 }
 
-export function UploadZone({ isDragActive }: UploadZoneProps) {
+export function UploadZone({
+  isDragActive,
+}: UploadZoneProps) {
   const { t } = useTranslation();
 
   if (!isDragActive) return null;
@@ -19,25 +21,18 @@ export function UploadZone({ isDragActive }: UploadZoneProps) {
       className={[
         'fixed inset-0 z-40',
         'flex items-center justify-center',
-        'bg-[color-mix(in_srgb,var(--surface)_85%,transparent)]',
-        'backdrop-blur-md',
+        'glass-panel',
         'transition-opacity duration-200',
       ].join(' ')}
     >
       <div className="flex flex-col items-center gap-4">
-        <div
-          className={[
-            'flex h-20 w-20 items-center justify-center',
-            'rounded-full',
-            'bg-[color-mix(in_srgb,var(--primary)_15%,transparent)]',
-          ].join(' ')}
-        >
+        <div className="flex h-20 w-20 items-center justify-center rounded-full bg-primary/15">
           <UploadCloud
             size={36}
-            className="text-[var(--primary)]"
+            className="text-primary"
           />
         </div>
-        <p className="text-sm font-medium text-[var(--text)]">
+        <p className="text-sm font-medium text-on-surface">
           {t('bucket.dragUploadHint')}
         </p>
       </div>

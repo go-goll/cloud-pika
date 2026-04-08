@@ -24,7 +24,9 @@ interface RenameDialogProps {
  * 计算文件名中需要选中的范围
  * 选中文件名部分，不包含扩展名
  */
-function getSelectionRange(name: string): [number, number] {
+function getSelectionRange(
+  name: string,
+): [number, number] {
   const dotIndex = name.lastIndexOf('.');
   if (dotIndex > 0) return [0, dotIndex];
   return [0, name.length];
@@ -44,12 +46,12 @@ export function RenameDialog({
   useEffect(() => {
     if (open) {
       setValue(currentName);
-      // 延迟聚焦并选中文件名部分
       requestAnimationFrame(() => {
         const el = inputRef.current;
         if (!el) return;
         el.focus();
-        const [start, end] = getSelectionRange(currentName);
+        const [start, end] =
+          getSelectionRange(currentName);
         el.setSelectionRange(start, end);
       });
     }
@@ -73,24 +75,21 @@ export function RenameDialog({
   );
 
   return (
-    <Dialog.Root open={open} onOpenChange={(v) => !v && onCancel()}>
+    <Dialog.Root
+      open={open}
+      onOpenChange={(v) => !v && onCancel()}
+    >
       <Dialog.Portal>
-        <Dialog.Overlay
-          className={
-            'fixed inset-0 z-50 '
-            + 'bg-[rgba(0,0,0,0.4)] backdrop-blur-sm'
-          }
-        />
+        <Dialog.Overlay className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm" />
         <Dialog.Content
           className={[
             'fixed left-1/2 top-1/2 z-50 w-[400px]',
             '-translate-x-1/2 -translate-y-1/2',
-            'rounded-[calc(var(--radius)+2px)]',
-            'bg-[var(--surface-high)] p-6',
-            'shadow-2xl',
+            'rounded-xl bg-surface-container-lowest',
+            'p-6 ghost-border shadow-ambient',
           ].join(' ')}
         >
-          <Dialog.Title className="text-base font-semibold">
+          <Dialog.Title className="text-base font-semibold text-on-surface">
             {t('bucket.rename')}
           </Dialog.Title>
 
@@ -104,14 +103,17 @@ export function RenameDialog({
           </div>
 
           <div className="mt-5 flex justify-end gap-2">
-            <Button variant="secondary" onClick={onCancel}>
+            <Button
+              variant="secondary"
+              onClick={onCancel}
+            >
               {t('common.cancel')}
             </Button>
             <Button
               onClick={handleConfirm}
               disabled={
-                !value.trim()
-                || value.trim() === currentName
+                !value.trim() ||
+                value.trim() === currentName
               }
             >
               {t('common.confirm')}
