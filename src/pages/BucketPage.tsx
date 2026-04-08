@@ -35,6 +35,8 @@ import { UploadZone } from '@/components/bucket/UploadZone';
 import { UrlDialog } from '@/components/bucket/UrlDialog';
 import { ResourceTable } from '@/components/resource/ResourceTable';
 import { ResourceGrid } from '@/components/resource/ResourceGrid';
+import { ImagePreview } from '@/components/preview/ImagePreview';
+import { isImageKey, extractFileName } from '@/lib/format';
 
 export function BucketPage() {
   const { t } = useTranslation();
@@ -54,6 +56,10 @@ export function BucketPage() {
   const [renameTarget, setRenameTarget] = useState('');
   const [deleteTargets, setDeleteTargets] = useState<string[]>([]);
   const [urlDialogUrl, setUrlDialogUrl] = useState('');
+
+  // ---- 图片预览状态 ----
+  const [previewUrl, setPreviewUrl] = useState('');
+  const [previewFileName, setPreviewFileName] = useState('');
 
   // ---- 全局Store ----
   const accounts = useAccountStore((s) => s.accounts);
@@ -314,6 +320,35 @@ export function BucketPage() {
     [activeAccountId, activeBucket, generateUrl, settings.https],
   );
 
+  /** 预览图片：生成签名URL并打开预览 */
+  const onPreview = useCallback(
+    async (key: string) => {
+      if (!activeAccountId || !activeBucket) return;
+      // 判断是否为图片文件
+      const obj = objects.find((o) => o.key === key);
+      const isImage =
+        isImageKey(key)
+        || obj?.mimeType?.startsWith('image/');
+      if (!isImage) return;
+
+      const result = await generateUrl({
+        accountId: activeAccountId,
+        bucket: activeBucket,
+        key,
+        https: settings.https,
+      });
+      setPreviewUrl(result.url);
+      setPreviewFileName(extractFileName(key));
+    },
+    [
+      activeAccountId,
+      activeBucket,
+      generateUrl,
+      objects,
+      settings.https,
+    ],
+  );
+
   // ---- 批量操作 ----
   const handleBatchDelete = useCallback(() => {
     setDeleteTargets(Array.from(selectedKeys));
@@ -491,6 +526,7 @@ export function BucketPage() {
               onDelete={onRequestDelete}
               onDownload={(k) => void onDownload(k)}
               onRename={onRequestRename}
+              onPreview={(k) => void onPreview(k)}
               onNavigateFolder={navigateToFolder}
               onUpload={() => void onClickUpload()}
               onRefresh={handleRefresh}
@@ -499,11 +535,14 @@ export function BucketPage() {
             <ResourceGrid
               objects={objects}
               selectedKeys={selectedKeys}
+              accountId={activeAccountId}
+              bucket={activeBucket}
               onSelect={handleSelect}
               onCopyUrl={(k) => void onCopyUrl(k)}
               onDelete={onRequestDelete}
               onDownload={(k) => void onDownload(k)}
               onRename={onRequestRename}
+              onPreview={(k) => void onPreview(k)}
               onNavigateFolder={navigateToFolder}
               onUpload={() => void onClickUpload()}
               onRefresh={handleRefresh}
@@ -570,6 +609,17 @@ export function BucketPage() {
         open={urlDialogUrl !== ''}
         url={urlDialogUrl}
         onClose={() => setUrlDialogUrl('')}
+      />
+
+      {/* 图片预览 */}
+      <ImagePreview
+        open={previewUrl !== ''}
+        imageUrl={previewUrl}
+        fileName={previewFileName}
+        onClose={() => {
+          setPreviewUrl('');
+          setPreviewFileName('');
+        }}
       />
     </div>
   );

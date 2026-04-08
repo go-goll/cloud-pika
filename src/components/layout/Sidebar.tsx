@@ -104,6 +104,7 @@ export function Sidebar() {
   const sidebarWidth = collapsed ? 'w-16' : 'w-64';
 
   return (
+<<<<<<< HEAD
     <aside
       className={[
         sidebarWidth,
@@ -121,6 +122,21 @@ export function Sidebar() {
           >
             {/* 品牌渐变图标 */}
             <div
+=======
+    <aside className="w-[78px] shrink-0 bg-[var(--surface-low)] p-3 sm:w-[248px] sm:p-4">
+      <div className="mb-6 hidden px-2 sm:block">
+        <h1 className="font-display text-xl font-semibold tracking-tight">Cloud Pika</h1>
+        <p className="mt-1 text-xs text-[var(--text-muted)]">{t('sidebar.subtitle')}</p>
+      </div>
+      <nav className="space-y-2">
+        {navItems.map((item) => {
+          const active = location.pathname.startsWith(item.to);
+          const Icon = item.icon;
+          return (
+            <Link
+              key={item.to}
+              to={item.to}
+>>>>>>> worktree-agent-a58030ba
               className={[
                 'flex h-10 w-10 shrink-0',
                 'items-center justify-center',

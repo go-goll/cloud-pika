@@ -9,6 +9,7 @@ import * as ContextMenu from '@radix-ui/react-context-menu';
 import {
   Copy,
   Download,
+  Eye,
   Pencil,
   RefreshCcw,
   Trash2,
@@ -42,6 +43,8 @@ interface FileMenuActions {
   onDownload: () => void;
   onRename: () => void;
   onDelete: () => void;
+  /** 预览回调（仅图片文件可用） */
+  onPreview?: () => void;
 }
 
 /** 空白区域右键菜单的回调集合 */
@@ -80,6 +83,17 @@ export function ResourceContextMenu({
         >
           {fileActions ? (
             <>
+              {/* 预览（仅图片文件显示） */}
+              {fileActions.onPreview ? (
+                <ContextMenu.Item
+                  className={itemClassName}
+                  onSelect={fileActions.onPreview}
+                >
+                  <Eye size={14} />
+                  {t('bucket.preview')}
+                </ContextMenu.Item>
+              ) : null}
+
               {/* 文件操作菜单 */}
               <ContextMenu.Item
                 className={itemClassName}

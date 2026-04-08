@@ -55,6 +55,7 @@ export function Header() {
       ).matches);
 
   return (
+<<<<<<< HEAD
     <header
       className={[
         'glass-panel ghost-border',
@@ -74,6 +75,19 @@ export function Header() {
       </h2>
 
       {/* 右侧：操作按钮组 */}
+=======
+    <header className="glass sticky top-0 z-30 flex h-16 items-center justify-between border-b border-transparent px-6">
+      <div>
+        <h2 className="font-display text-lg font-semibold">
+          {t(titleMap[pathname] ?? 'nav.explorer')}
+        </h2>
+        <p className="text-xs text-[var(--text-muted)]">
+          {t('header.connectedAccounts', {
+            count: accounts.length,
+          })}
+        </p>
+      </div>
+>>>>>>> worktree-agent-a58030ba
       <div className="flex items-center gap-2">
         {/* 主题切换 */}
         <button
