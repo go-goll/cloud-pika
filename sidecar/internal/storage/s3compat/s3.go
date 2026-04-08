@@ -144,11 +144,15 @@ func (p *Provider) ListObjects(ctx context.Context, params model.ListParams) (mo
 			truncated = true
 			break
 		}
+		lastMod := ""
+		if !item.LastModified.IsZero() {
+			lastMod = item.LastModified.Format(time.RFC3339)
+		}
 		items = append(items, model.ObjectItem{
 			Key:          item.Key,
 			Size:         item.Size,
 			ETag:         item.ETag,
-			LastModified: item.LastModified.Format(time.RFC3339),
+			LastModified: lastMod,
 			IsDir:        strings.HasSuffix(item.Key, "/"),
 		})
 		marker = item.Key
