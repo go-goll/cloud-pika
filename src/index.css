@@ -75,13 +75,48 @@ textarea {
   border: 1px solid transparent;
 }
 
-/* 全局主题过渡动画（不覆盖已有 transition-all） */
-*:not([class*='transition-all']),
+/* 全局主题过渡动画（不影响 transform/opacity 动画） */
+*,
 *::before,
 *::after {
   transition: background-color 0.2s ease,
     border-color 0.2s ease,
     color 0.15s ease;
+}
+
+/* 页面切换淡入动画 */
+@keyframes pageFadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-page-in {
+  animation: pageFadeIn 0.25s ease-out both;
+}
+
+/* 列表项入场动画 */
+@keyframes rowFadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-row-in {
+  animation: rowFadeIn 0.2s ease both;
+}
+
+/* 进度条 shimmer 光效 */
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+.progress-shimmer {
+  background-image: linear-gradient(
+    90deg,
+    var(--primary) 0%,
+    #82a3ff 40%,
+    var(--primary-soft) 60%,
+    var(--primary) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 2s linear infinite;
 }
 
 /* 对话框进入动画 */

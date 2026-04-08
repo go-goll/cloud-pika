@@ -117,8 +117,19 @@ export function LoginPage() {
   };
 
   return (
-    <div className="mx-auto flex min-h-screen w-full max-w-6xl items-center justify-center px-6 py-8">
-      <div className="grid w-full gap-6 lg:grid-cols-[1.2fr_1fr]">
+    <div
+      className={
+        'mx-auto flex w-full max-w-6xl '
+        + 'items-start justify-center px-4 py-6 '
+        + 'sm:px-6 sm:py-8 lg:items-center lg:min-h-screen'
+      }
+    >
+      <div
+        className={
+          'grid w-full gap-6 '
+          + 'grid-cols-1 lg:grid-cols-[1.2fr_1fr]'
+        }
+      >
         <Card className="bg-[var(--surface-high)] p-6">
           <h1 className="font-display text-3xl font-semibold">{t('login.title')}</h1>
           <p className="mt-2 text-sm text-[var(--text-muted)]">{t('login.subtitle')}</p>

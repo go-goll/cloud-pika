@@ -191,7 +191,7 @@ export function ResourceTable({
   onUpload,
   onRefresh,
 }: ResourceTableProps) {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const [sortCol, setSortCol] = useState<SortColumn | null>(null);
   const [sortDir, setSortDir] = useState<SortDir>('asc');
 
@@ -286,7 +286,9 @@ export function ResourceTable({
                   dir={sortDir}
                 />
               </th>
-              <th className="px-3">MIME</th>
+              <th className="hidden px-3 lg:table-cell">
+                MIME
+              </th>
               <th
                 className={thClass}
                 onClick={() => toggleSort('lastModified')}
@@ -302,7 +304,7 @@ export function ResourceTable({
             </tr>
           </thead>
           <tbody>
-            {sortedObjects.map((item) => {
+            {sortedObjects.map((item, index) => {
               const isSelected = selectedKeys.has(item.key);
               const isDir = item.isDir || item.key.endsWith('/');
               const fileName = extractFileName(item.key);
@@ -319,12 +321,16 @@ export function ResourceTable({
                 >
                   <tr
                     className={[
+                      'animate-row-in',
                       'rounded-[var(--radius)] transition-colors',
                       'cursor-default',
                       isSelected
                         ? 'bg-[color-mix(in_srgb,var(--primary)_10%,var(--surface-high))]'
                         : 'bg-[var(--surface-high)] hover:bg-[var(--surface-elevated)]',
                     ].join(' ')}
+                    style={{
+                      animationDelay: `${index * 20}ms`,
+                    }}
                     onDoubleClick={() => {
                       if (isDir) onNavigateFolder?.(item.key);
                     }}
@@ -377,8 +383,14 @@ export function ResourceTable({
                       {isDir ? '-' : formatFileSize(item.size)}
                     </td>
 
-                    {/* MIME */}
-                    <td className="px-3 py-2.5 text-[var(--text-muted)]">
+                    {/* MIME（窄窗口隐藏） */}
+                    <td
+                      className={
+                        'hidden px-3 py-2.5 '
+                        + 'text-[var(--text-muted)] '
+                        + 'lg:table-cell'
+                      }
+                    >
                       {item.mimeType ?? '-'}
                     </td>
 
@@ -387,7 +399,6 @@ export function ResourceTable({
                       {item.lastModified
                         ? formatRelativeTime(
                             item.lastModified,
-                            i18n.language,
                           )
                         : '-'}
                     </td>
