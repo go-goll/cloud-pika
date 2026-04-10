@@ -1,5 +1,9 @@
 import { useEffect, useMemo, useState } from 'react';
-import { ChevronDown, ChevronUp } from 'lucide-react';
+import {
+  ArrowLeft,
+  ChevronDown,
+  ChevronUp,
+} from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { AxiosError } from 'axios';
 import { Button } from '@/components/ui/Button';
@@ -19,6 +23,7 @@ import type { ProviderKey } from '@/types/account';
 interface AccountFormProps {
   isPending: boolean;
   onSubmit: (form: FormState) => Promise<void>;
+  onBack?: () => void;
 }
 
 export interface FormState {
@@ -45,10 +50,14 @@ const defaultForm: FormState = {
   paging: false,
 };
 
+/** 步骤配置 */
+const STEPS = ['provider', 'credentials', 'advanced'] as const;
+
 /** 账户创建/连接表单 */
 export function AccountForm({
   isPending,
   onSubmit,
+  onBack,
 }: AccountFormProps) {
   const { t } = useTranslation();
   const [form, setForm] =
@@ -56,6 +65,7 @@ export function AccountForm({
   const [nameTouched, setNameTouched] = useState(false);
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [submitError, setSubmitError] = useState('');
+  const [activeStep, setActiveStep] = useState(0);
 
   const providerMeta = useMemo(
     () => getProviderOption(form.provider),
@@ -190,18 +200,77 @@ export function AccountForm({
     }));
   };
 
+  /** 步骤标签映射 */
+  const stepLabels = [
+    t('login.provider'),
+    t('login.accessKey'),
+    t('login.endpoint'),
+  ];
+
   return (
     <div className="space-y-5">
-      <h1 className="font-headline text-2xl font-bold text-on-surface">
-        {t('login.title')}
-      </h1>
-      <p className="text-sm text-on-surface-variant">
-        {t('login.subtitle')}
-      </p>
+      {/* 顶部标题栏 */}
+      <div className="flex items-center gap-3">
+        {onBack ? (
+          <button
+            type="button"
+            onClick={onBack}
+            className={[
+              'flex h-8 w-8 items-center justify-center',
+              'rounded-lg text-[var(--text-secondary)]',
+              'hover:bg-[var(--bg-raised)]',
+              'transition-colors',
+            ].join(' ')}
+          >
+            <ArrowLeft size={18} />
+          </button>
+        ) : null}
+        <div>
+          <h1 className="text-xl font-bold text-[var(--text)]">
+            {t('login.title')}
+          </h1>
+          <p className="text-sm text-[var(--text-secondary)]">
+            {t('login.subtitle')}
+          </p>
+        </div>
+      </div>
+
+      {/* 步骤指示器 */}
+      <div className="flex items-center gap-4">
+        {STEPS.map((_, idx) => (
+          <button
+            key={idx}
+            type="button"
+            onClick={() => setActiveStep(idx)}
+            className={[
+              'flex items-center gap-2 text-xs font-medium',
+              'transition-colors',
+              idx === activeStep
+                ? 'text-[var(--accent)]'
+                : 'text-[var(--text-secondary)]',
+            ].join(' ')}
+          >
+            <span
+              className={[
+                'flex h-6 w-6 items-center justify-center',
+                'rounded-full text-[10px] font-bold',
+                idx === activeStep
+                  ? 'bg-[var(--accent)] text-white'
+                  : 'bg-[var(--bg-raised)] text-[var(--text-secondary)]',
+              ].join(' ')}
+            >
+              {idx + 1}
+            </span>
+            <span className="hidden sm:inline">
+              {stepLabels[idx]}
+            </span>
+          </button>
+        ))}
+      </div>
 
       {/* 云厂商选择 */}
       <label className="text-sm">
-        <span className="mb-2 block text-xs font-bold uppercase tracking-widest text-on-surface-variant">
+        <span className="mb-2 block text-xs font-bold uppercase tracking-widest text-[var(--text-secondary)]">
           {t('login.provider')}
         </span>
         <Select
@@ -215,7 +284,7 @@ export function AccountForm({
 
       {/* 别名 */}
       <label className="text-sm">
-        <span className="mb-2 block text-xs font-bold uppercase tracking-widest text-on-surface-variant">
+        <span className="mb-2 block text-xs font-bold uppercase tracking-widest text-[var(--text-secondary)]">
           {t('login.alias')}
         </span>
         <Input
@@ -229,7 +298,7 @@ export function AccountForm({
 
       {/* AccessKey */}
       <label className="text-sm">
-        <span className="mb-2 block text-xs font-bold uppercase tracking-widest text-on-surface-variant">
+        <span className="mb-2 block text-xs font-bold uppercase tracking-widest text-[var(--text-secondary)]">
           {t(
             providerMeta.accessKeyLabelKey ??
               'login.accessKey',
@@ -245,7 +314,7 @@ export function AccountForm({
 
       {/* SecretKey（密码模式） */}
       <label className="text-sm">
-        <span className="mb-2 block text-xs font-bold uppercase tracking-widest text-on-surface-variant">
+        <span className="mb-2 block text-xs font-bold uppercase tracking-widest text-[var(--text-secondary)]">
           {t(
             providerMeta.secretKeyLabelKey ??
               'login.secretKey',
@@ -263,7 +332,7 @@ export function AccountForm({
       {/* 服务名称（仅部分厂商显示） */}
       {providerMeta.serviceNameMode !== 'hidden' ? (
         <label className="text-sm">
-          <span className="mb-2 block text-xs font-bold uppercase tracking-widest text-on-surface-variant">
+          <span className="mb-2 block text-xs font-bold uppercase tracking-widest text-[var(--text-secondary)]">
             {t('login.serviceName')}
           </span>
           <Input
@@ -284,7 +353,7 @@ export function AccountForm({
           type="button"
           className={[
             'flex w-fit items-center gap-1 text-xs',
-            'text-on-surface-variant font-medium',
+            'text-[var(--text-secondary)] font-medium',
             'underline-offset-4 hover:underline',
           ].join(' ')}
           onClick={() => setShowAdvanced((v) => !v)}
@@ -302,11 +371,11 @@ export function AccountForm({
 
       {/* 高级配置区域 */}
       {showEndpoint || showRegion || showInternal ? (
-        <div className="space-y-5 rounded-xl bg-surface-container-low p-4 ghost-border">
+        <div className="space-y-5 rounded-xl border border-[var(--border)] bg-[var(--bg-raised)] p-4">
           <div className="grid gap-5 sm:grid-cols-2">
             {showEndpoint ? (
               <label className="text-sm">
-                <span className="mb-2 block text-xs font-bold uppercase tracking-widest text-on-surface-variant">
+                <span className="mb-2 block text-xs font-bold uppercase tracking-widest text-[var(--text-secondary)]">
                   {t('login.endpoint')}
                 </span>
                 <Input
@@ -325,7 +394,7 @@ export function AccountForm({
             ) : null}
             {showRegion ? (
               <label className="text-sm">
-                <span className="mb-2 block text-xs font-bold uppercase tracking-widest text-on-surface-variant">
+                <span className="mb-2 block text-xs font-bold uppercase tracking-widest text-[var(--text-secondary)]">
                   {t('login.region')}
                 </span>
                 <Input
@@ -347,7 +416,7 @@ export function AccountForm({
             <label
               className={[
                 'flex items-center gap-2',
-                'text-sm text-on-surface-variant',
+                'text-sm text-[var(--text-secondary)]',
               ].join(' ')}
             >
               <Checkbox
@@ -365,7 +434,8 @@ export function AccountForm({
       {/* 提交按钮 */}
       <div className="pt-2">
         <Button
-          className="w-full"
+          className="w-full rounded-xl py-3"
+          size="lg"
           onClick={() => void handleSubmit()}
           disabled={isPending}
         >
@@ -375,7 +445,7 @@ export function AccountForm({
           {t('login.connect')}
         </Button>
         {submitError ? (
-          <p className="mt-2 text-xs text-danger">
+          <p className="mt-2 text-xs text-[var(--danger)]">
             {submitError}
           </p>
         ) : null}

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { MoreVertical, Pencil, Trash2 } from 'lucide-react';
+import { ChevronRight, Trash2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/Button';
 import {
@@ -10,12 +10,6 @@ import {
   DialogDescription,
   DialogFooter,
 } from '@/components/ui/Dialog';
-import {
-  DropdownMenu,
-  DropdownMenuTrigger,
-  DropdownMenuContent,
-  DropdownMenuItem,
-} from '@/components/ui/DropdownMenu';
 import { getProviderOption } from '@/lib/provider';
 import type { AccountSummary } from '@/types/account';
 
@@ -25,7 +19,7 @@ interface AccountCardProps {
   onDelete: (id: string) => void;
 }
 
-/** 已保存账户卡片，支持点击选中、编辑和删除 */
+/** 已保存账户卡片，支持点击选中和删除 */
 export function AccountCard({
   account,
   onSelect,
@@ -34,10 +28,6 @@ export function AccountCard({
   const { t } = useTranslation();
   const [confirmOpen, setConfirmOpen] = useState(false);
   const provider = getProviderOption(account.provider);
-
-  const formattedDate = new Date(
-    account.createdAt,
-  ).toLocaleDateString();
 
   return (
     <>
@@ -49,20 +39,19 @@ export function AccountCard({
           if (e.key === 'Enter') onSelect(account.id);
         }}
         className={[
-          'group relative flex items-center gap-3',
-          'rounded-xl bg-surface-container-lowest p-3',
-          'ghost-border cursor-pointer',
+          'group flex items-center gap-3',
+          'rounded-xl border border-[var(--border)] p-4',
+          'tonal-hover cursor-pointer',
           'transition-all duration-200',
-          'hover:ambient-shadow hover:-translate-y-0.5',
         ].join(' ')}
       >
-        {/* 云厂商首字母图标 — 渐变圆形 */}
+        {/* Provider 图标 */}
         <div
           className={[
             'flex h-10 w-10 shrink-0 items-center',
-            'justify-center rounded-full',
-            'signature-gradient',
-            'text-sm font-bold text-white',
+            'justify-center rounded-lg',
+            'bg-[var(--accent-soft)]',
+            'text-sm font-bold text-[var(--accent)]',
           ].join(' ')}
         >
           {provider.label.charAt(0).toUpperCase()}
@@ -70,56 +59,31 @@ export function AccountCard({
 
         {/* 账户信息 */}
         <div className="min-w-0 flex-1">
-          <p className="truncate text-sm font-medium text-on-surface">
+          <p className="truncate text-sm font-medium text-[var(--text)]">
             {account.name}
           </p>
-          <p className="text-xs text-on-surface-variant">
+          <p className="text-xs uppercase tracking-wider text-[var(--text-secondary)]">
             {provider.label}
-          </p>
-          <p className="text-xs text-on-surface-variant">
-            {formattedDate}
           </p>
         </div>
 
-        {/* 右上角菜单 */}
-        <div
-          className="absolute right-2 top-2"
-          onClick={(e) => e.stopPropagation()}
-          onKeyDown={(e) => e.stopPropagation()}
-          role="presentation"
+        {/* 删除按钮（hover 显示） */}
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            setConfirmOpen(true);
+          }}
+          className="shrink-0 opacity-0 group-hover:opacity-100 flex h-7 w-7 items-center justify-center rounded-lg text-[var(--text-secondary)] hover:bg-red-50 hover:text-[var(--danger)] transition-all"
         >
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <span
-                className={[
-                  'flex h-7 w-7 items-center',
-                  'justify-center rounded-full',
-                  'text-on-surface-variant',
-                  'opacity-0 transition-opacity',
-                  'group-hover:opacity-100',
-                  'hover:bg-surface-container-low',
-                ].join(' ')}
-              >
-                <MoreVertical size={14} />
-              </span>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent>
-              <DropdownMenuItem
-                onClick={() => onSelect(account.id)}
-              >
-                <Pencil size={14} />
-                {t('common.edit')}
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                danger
-                onClick={() => setConfirmOpen(true)}
-              >
-                <Trash2 size={14} />
-                {t('common.delete')}
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
+          <Trash2 size={14} />
+        </button>
+
+        {/* 右侧箭头 */}
+        <ChevronRight
+          size={16}
+          className="shrink-0 text-[var(--text-secondary)] transition-transform group-hover:translate-x-0.5"
+        />
       </div>
 
       {/* 删除确认对话框 */}
@@ -152,6 +116,7 @@ export function AccountCard({
                 setConfirmOpen(false);
               }}
             >
+              <Trash2 size={14} className="mr-1" />
               {t('common.delete')}
             </Button>
           </DialogFooter>

@@ -25,7 +25,7 @@ const DialogOverlay = forwardRef<
     ref={ref}
     className={[
       'fixed inset-0 z-50',
-      'bg-black/40 backdrop-blur-sm',
+      'bg-slate-900/30 backdrop-blur-sm',
       'data-[state=open]:animate-[fadeIn_150ms_ease-out]',
       'data-[state=closed]:animate-[fadeOut_100ms_ease-in]',
       className ?? '',
@@ -48,9 +48,9 @@ const DialogContent = forwardRef<
         'fixed left-1/2 top-1/2 z-50',
         'w-full max-w-lg',
         '-translate-x-1/2 -translate-y-1/2',
-        'rounded-xl bg-[var(--bg)]',
+        'rounded-2xl bg-[var(--bg-card)]',
         'p-6 border border-[var(--border)]',
-        'shadow-[var(--shadow-xl)]',
+        'shadow-xl',
         'data-[state=open]:animate-[dialogIn_200ms_ease-out]',
         'data-[state=closed]:animate-[dialogOut_150ms_ease-in]',
         className ?? '',

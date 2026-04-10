@@ -41,11 +41,17 @@ export function EmptyState({
           draggable={false}
         />
       ) : icon ? (
-        <div className="mb-4 text-[var(--text-secondary)] opacity-40">
+        <div
+          className={[
+            'mb-4 flex items-center justify-center',
+            'w-24 h-24 rounded-3xl bg-[var(--accent-soft)]',
+            'text-[var(--accent)]',
+          ].join(' ')}
+        >
           {icon}
         </div>
       ) : null}
-      <h3 className="font-display text-base font-semibold text-[var(--text)]">
+      <h3 className="font-display text-lg font-semibold text-[var(--text)]">
         {title}
       </h3>
       {description && (

@@ -1,4 +1,5 @@
 use crate::state::AppState;
+use tauri::image::Image;
 use tauri::menu::{Menu, MenuItem, PredefinedMenuItem};
 use tauri::tray::TrayIconBuilder;
 use tauri::{AppHandle, Emitter, Manager};
@@ -17,13 +18,12 @@ pub fn setup_tray(app: &AppHandle) -> Result<(), Box<dyn std::error::Error>> {
 
     menu.append_items(&[&show_item, &upload_item, &separator, &quit_item])?;
 
-    let icon = app
-        .default_window_icon()
-        .cloned()
-        .ok_or("missing app icon")?;
+    // 嵌入 tray 图标字节，避免运行时路径问题
+    let icon = Image::from_bytes(include_bytes!("../icons/tray-icon@2x.png"))?;
 
     TrayIconBuilder::with_id("cloud-pika-tray")
         .icon(icon)
+        .icon_as_template(true)
         .menu(&menu)
         .show_menu_on_left_click(true)
         .on_menu_event(|app, event| match event.id().as_ref() {

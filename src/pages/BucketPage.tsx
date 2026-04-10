@@ -30,7 +30,6 @@ import { cloudApi } from '@/lib/api-client';
 import { useAccountStore } from '@/stores/useAccountStore';
 import { useAppStore } from '@/stores/useAppStore';
 import { useBucketStore } from '@/stores/useBucketStore';
-import { BucketSidebar } from '@/components/bucket/BucketSidebar';
 import { BucketToolbar } from '@/components/bucket/BucketToolbar';
 import type { ViewMode } from '@/components/bucket/BucketToolbar';
 import { BreadcrumbNav } from '@/components/bucket/BreadcrumbNav';
@@ -196,6 +195,18 @@ export function BucketPage() {
       prevAccountIdRef.current = activeAccountId;
     }
   }, [activeAccountId, reset]);
+
+  // bucket 切换时重置目录、搜索和选中状态
+  const prevBucketRef = useRef(activeBucket);
+  useEffect(() => {
+    if (prevBucketRef.current !== activeBucket) {
+      setPrefix('');
+      setSearchKeyword('');
+      setSelectedKeys(new Set());
+      setPageMarker('');
+      prevBucketRef.current = activeBucket;
+    }
+  }, [activeBucket]);
 
   // prefix改变时清空选中和分页
   useEffect(() => {
@@ -634,16 +645,6 @@ export function BucketPage() {
     void refetchObjects();
   }, [refetchBuckets, refetchObjects]);
 
-  // ---- Bucket切换 ----
-  const handleBucketSelect = useCallback(
-    (name: string) => {
-      setActiveBucket(name);
-      setPrefix('');
-      setSearchKeyword('');
-      setSelectedKeys(new Set());
-    },
-    [setActiveBucket],
-  );
 
   // ---- 键盘导航 ----
   const { focusedIndex } = useKeyboardNavigation(objects, {
@@ -730,19 +731,11 @@ export function BucketPage() {
 
   // ---- 渲染 ----
   return (
-    <div className="flex h-full gap-4" {...getRootProps()}>
+    <div className="h-full" {...getRootProps()}>
       <input {...getInputProps()} />
 
-      {/* 左侧：Bucket列表 */}
-      <BucketSidebar
-        buckets={buckets}
-        activeBucket={activeBucket}
-        isLoading={bucketsQuery.isLoading}
-        onSelect={handleBucketSelect}
-      />
-
-      {/* 右侧：资源浏览区 */}
-      <section className="flex-1 min-w-0 space-y-3 overflow-auto">
+      {/* 资源浏览区 */}
+      <section className="h-full min-w-0 space-y-3 overflow-auto">
           {/* 面包屑导航 */}
           {activeBucket ? (
             <BreadcrumbNav

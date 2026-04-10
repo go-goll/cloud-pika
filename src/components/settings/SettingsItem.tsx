@@ -12,19 +12,13 @@ export function SettingsItem({
   children,
 }: PropsWithChildren<SettingsItemProps>) {
   return (
-    <div
-      className={[
-        'flex items-center justify-between gap-4',
-        'rounded-lg bg-surface-container-lowest',
-        'px-4 py-3',
-      ].join(' ')}
-    >
+    <div className="flex items-center justify-between gap-4 py-3">
       <div className="min-w-0 flex-1">
-        <p className="text-sm font-medium text-on-surface">
+        <p className="text-sm font-medium text-[var(--text)]">
           {label}
         </p>
         {description ? (
-          <p className="mt-0.5 text-xs text-on-surface-variant">
+          <p className="mt-0.5 text-xs text-[var(--text-secondary)]">
             {description}
           </p>
         ) : null}

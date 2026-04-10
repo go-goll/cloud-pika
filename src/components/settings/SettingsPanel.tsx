@@ -31,7 +31,19 @@ export function SettingsPanel({
   const { t } = useTranslation();
 
   return (
-    <div className="max-w-2xl space-y-8">
+    <div className="max-w-2xl space-y-6">
+      {/* 页面标题区 */}
+      <div className="mb-2">
+        <p className="text-lg font-semibold text-[var(--text)]">
+          {t('settings.title')}
+        </p>
+        <h2 className="text-2xl font-bold text-[var(--text)] mt-1">
+          {t('settings.workspacePreferences')}
+        </h2>
+        <p className="text-sm text-[var(--text-secondary)] mt-1">
+          {t('settings.workspacePreferencesDesc')}
+        </p>
+      </div>
       {/* 外观组 */}
       <SettingsGroup title={t('settings.appearance')}>
         <SettingsItem
@@ -157,12 +169,12 @@ export function SettingsPanel({
       {/* 关于组 */}
       <SettingsGroup title={t('settings.about')}>
         <SettingsItem label={t('settings.appName')}>
-          <span className="text-sm text-on-surface-variant">
+          <span className="text-sm text-[var(--text-secondary)]">
             Cloud Pika
           </span>
         </SettingsItem>
         <SettingsItem label={t('settings.version')}>
-          <span className="text-sm text-on-surface-variant">
+          <span className="text-sm text-[var(--text-secondary)]">
             0.1.0
           </span>
         </SettingsItem>

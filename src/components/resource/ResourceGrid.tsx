@@ -77,98 +77,74 @@ function ThumbnailArea({
   return (
     <div
       ref={containerRef}
-      className={[
-        'flex h-24 items-center justify-center',
-        'rounded-[var(--radius)]',
-        isImage ? 'bg-[var(--surface-low)]' : '',
-      ].join(' ')}
+      className="flex items-center justify-center py-3"
       onDoubleClick={onDoubleClick}
     >
       {/* 图片缩略图：加载中显示骨架屏 */}
       {isImage && loading ? (
-        <Skeleton className="h-20 w-20" />
+        <Skeleton className="h-20 w-20 rounded-xl" />
       ) : isImage && url && !error && !imgError ? (
         <img
           src={url}
           alt={objectKey}
           loading="lazy"
-          className="h-20 w-20 rounded-[var(--radius)] object-cover"
+          className="h-20 w-20 rounded-xl object-cover"
           onError={() => setImgError(true)}
         />
       ) : (
-        getFileIcon(objectKey, mimeType)
+        <div
+          className={[
+            'flex h-14 w-14 items-center justify-center rounded-xl',
+            getIconBg(objectKey, mimeType),
+          ].join(' ')}
+        >
+          {getFileIcon(objectKey, mimeType, 28)}
+        </div>
       )}
     </div>
   );
 }
 
-/** 根据mimeType或文件名返回对应图标 */
-function getFileIcon(key: string, mimeType?: string) {
-  if (key.endsWith('/')) {
-    return <Folder size={28} className="icon-folder" />;
+/** 文件类型对应的图标容器背景色 */
+function getIconBg(key: string, mimeType?: string): string {
+  if (key.endsWith('/')) return 'bg-blue-500/10';
+  if (isImageKey(key) || mimeType?.startsWith('image/')) return 'bg-emerald-500/10';
+  if (mimeType?.startsWith('video/')) return 'bg-purple-500/10';
+  if (mimeType?.startsWith('audio/')) return 'bg-amber-500/10';
+  if (mimeType?.startsWith('text/')) return 'bg-gray-500/10';
+  const ext = key.split('.').pop()?.toLowerCase() ?? '';
+  if (['zip', 'tar', 'gz', 'rar', '7z'].includes(ext)) return 'bg-violet-500/10';
+  if (['js', 'ts', 'jsx', 'tsx', 'json', 'yml', 'yaml', 'xml', 'html', 'css'].includes(ext)) {
+    return 'bg-cyan-500/10';
   }
-  if (
-    isImageKey(key) ||
-    mimeType?.startsWith('image/')
-  ) {
-    return (
-      <Image size={28} className="icon-image" />
-    );
+  return 'bg-gray-500/10';
+}
+
+/** 根据mimeType或文件名返回对应图标（大尺寸用于网格） */
+function getFileIcon(key: string, mimeType?: string, size = 28) {
+  if (key.endsWith('/')) {
+    return <Folder size={size} className="icon-folder" />;
+  }
+  if (isImageKey(key) || mimeType?.startsWith('image/')) {
+    return <Image size={size} className="icon-image" />;
   }
   if (mimeType?.startsWith('video/')) {
-    return (
-      <FileVideo
-        size={28}
-        className="icon-video"
-      />
-    );
+    return <FileVideo size={size} className="icon-video" />;
   }
   if (mimeType?.startsWith('audio/')) {
-    return (
-      <FileAudio
-        size={28}
-        className="icon-audio"
-      />
-    );
+    return <FileAudio size={size} className="icon-audio" />;
   }
   if (mimeType?.startsWith('text/')) {
-    return (
-      <FileText
-        size={28}
-        className="icon-text"
-      />
-    );
+    return <FileText size={size} className="icon-text" />;
   }
-  // 压缩文件
   const ext = key.split('.').pop()?.toLowerCase() ?? '';
   if (['zip', 'tar', 'gz', 'rar', '7z'].includes(ext)) {
-    return (
-      <FileArchive
-        size={28}
-        className="icon-archive"
-      />
-    );
+    return <FileArchive size={size} className="icon-archive" />;
   }
-  // 代码文件
-  if (
-    [
-      'js', 'ts', 'jsx', 'tsx', 'json',
-      'yml', 'yaml', 'xml', 'html', 'css',
-    ].includes(ext)
-  ) {
-    return (
-      <FileCode
-        size={28}
-        className="icon-code"
-      />
-    );
+  if (['js', 'ts', 'jsx', 'tsx', 'json', 'yml', 'yaml', 'xml', 'html', 'css'].includes(ext)) {
+    return <FileCode size={size} className="icon-code" />;
   }
-  return (
-    <File
-      size={28}
-      className="icon-file"
-    />
-  );
+  return <File size={size} className="icon-file" />;
 }
 
 /** 卡片操作菜单 */
@@ -319,8 +295,8 @@ export function ResourceGrid({
     >
       <div
         className={
-          'grid grid-cols-2 gap-3 '
-          + 'md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5'
+          'grid grid-cols-2 gap-4 '
+          + 'sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5'
         }
       >
         {objects.map((item, index) => {
@@ -352,17 +328,13 @@ export function ResourceGrid({
               <Card
                 hoverable
                 className={[
-                  'animate-row-in group relative',
-                  'cursor-default transition-all duration-200',
-                  'hover:-translate-y-[1px] hover:shadow-md',
+                  'animate-row-in group relative p-5',
+                  'cursor-default',
                   isSelected
-                    ? 'ring-2 ring-[var(--primary)] '
-                      + 'bg-[color-mix(in_srgb,'
-                      + 'var(--primary)_5%,'
-                      + 'var(--surface-high))]'
+                    ? 'ring-2 ring-[var(--accent)] ring-offset-2'
                     : '',
                   index === focusedIndex && !isSelected
-                    ? 'ring-2 ring-[var(--primary)]/50'
+                    ? 'ring-1 ring-[var(--accent)]/30'
                     : '',
                 ].join(' ')}
                 style={{
@@ -427,13 +399,10 @@ export function ResourceGrid({
                 />
 
                 {/* 文件信息 */}
-                <div className="mt-2">
+                <div className="mt-3">
                   <div className="flex items-center gap-1">
-                <p
-                      className={[
-                        'truncate text-sm font-medium',
-                        'text-[var(--text)]',
-                      ].join(' ')}
+                    <p
+                      className="truncate text-sm font-medium text-[var(--text)]"
                       title={item.key}
                     >
                       {fileName}
@@ -449,9 +418,9 @@ export function ResourceGrid({
                           'ml-auto shrink-0 flex h-5 w-5',
                           'items-center justify-center',
                           'rounded-lg transition-all',
-                          'hover:bg-[var(--surface-elevated)]',
-                          'text-[var(--text-muted)]',
-                          'hover:text-[var(--primary)]',
+                          'hover:bg-[var(--accent-soft)]',
+                          'text-[var(--text-secondary)]',
+                          'hover:text-[var(--accent)]',
                           'opacity-0 group-hover:opacity-100',
                         ].join(' ')}
                         title={t('bucket.quickCopy')}
@@ -460,7 +429,7 @@ export function ResourceGrid({
                       </button>
                     ) : null}
                   </div>
-                  <p className="mt-1 text-xs text-[var(--text-muted)]">
+                  <p className="mt-1 text-xs text-[var(--text-secondary)]">
                     {isDir
                       ? t('bucket.folder')
                       : formatFileSize(item.size)}

@@ -300,8 +300,9 @@ export function ResourceTable({
     objects.every((o) => selectedKeys.has(o.key));
 
   const thClass = [
-    'px-3 py-2.5 cursor-pointer select-none text-xs',
-    'font-medium tracking-wide uppercase',
+    'px-4 py-3 cursor-pointer select-none',
+    'text-[10px] uppercase tracking-[0.05em]',
+    'text-[var(--text-secondary)] font-bold',
     'hover:text-[var(--text)] transition-colors',
   ].join(' ');
 
@@ -341,23 +342,20 @@ export function ResourceTable({
         <tr
           style={style}
           className={[
-            'group transition-all duration-150',
-            'cursor-default border-l-2',
+            'group rounded-xl transition-colors duration-150',
+            'cursor-default',
             isFocused
-              ? 'border-l-[var(--accent)] bg-[var(--accent-soft)]'
+              ? 'ring-1 ring-[var(--accent)]/30 bg-[var(--accent-soft)]'
               : isSelected
-                ? 'border-l-[var(--accent)] bg-[var(--accent-soft)]'
-                : [
-                    'border-l-transparent',
-                    'hover:bg-[var(--bg-raised)]',
-                  ].join(' '),
+                ? 'bg-[var(--accent-soft)]'
+                : 'hover:bg-[rgba(234,239,242,0.4)]',
           ].join(' ')}
           onDoubleClick={() => {
             if (isDir) onNavigateFolder?.(item.key);
           }}
         >
           {/* Checkbox */}
-          <td className="w-8 px-2 py-1.5">
+          <td className="w-8 px-4 py-3.5">
             <input
               type="checkbox"
               checked={isSelected}
@@ -373,24 +371,24 @@ export function ResourceTable({
           </td>
 
           {/* 文件名 */}
-          <td className="px-2 py-1.5">
-            <div className="flex items-center gap-1.5 w-full">
+          <td className="px-4 py-3.5">
+            <div className="flex items-center gap-2 w-full">
               {isDir ? (
                 <Folder
-                  size={14}
+                  size={24}
                   className="shrink-0 icon-folder"
                 />
               ) : (
                 <File
-                  size={14}
+                  size={24}
                   className="shrink-0 icon-file"
                 />
               )}
               <span
                 className={[
-                  'truncate text-[13px]',
+                  'truncate text-sm font-medium',
                   isDir
-                    ? 'font-medium text-[var(--accent)]'
+                    ? 'text-[var(--accent)]'
                     : '',
                 ].join(' ')}
                 title={item.key}
@@ -408,7 +406,7 @@ export function ResourceTable({
                     'ml-auto shrink-0 flex h-5 w-5',
                     'items-center justify-center',
                     'rounded transition-colors',
-                    'hover:bg-[var(--bg-raised)]',
+                    'hover:bg-[var(--accent-soft)]',
                     'text-[var(--text-secondary)]',
                     'hover:text-[var(--accent)]',
                     'opacity-0 group-hover:opacity-100',
@@ -422,19 +420,19 @@ export function ResourceTable({
           </td>
 
           {/* 大小 */}
-          <td className="px-2 py-1.5 text-xs text-[var(--text-secondary)]">
+          <td className="px-4 py-3.5 text-sm text-[var(--text-secondary)]">
             {isDir ? '-' : formatFileSize(item.size)}
           </td>
 
           {/* 更新时间 */}
-          <td className="px-2 py-1.5 text-xs text-[var(--text-secondary)]">
+          <td className="px-4 py-3.5 text-sm text-[var(--text-secondary)]">
             {item.lastModified
               ? formatRelativeTime(item.lastModified)
               : '-'}
           </td>
 
           {/* 操作 */}
-          <td className="px-2 py-1.5">
+          <td className="px-4 py-3.5">
             <RowActionMenu
               objectKey={item.key}
               isImage={Boolean(itemIsImage) && !isDir}
@@ -461,23 +459,21 @@ export function ResourceTable({
       <div
         ref={scrollRef}
         className={[
-          'rounded-lg',
+          'rounded-xl',
           useVirtual ? 'max-h-[70vh] overflow-auto' : '',
         ].join(' ')}
       >
         <table className="w-full text-[13px]">
           <thead
             className={[
-              'text-left text-xs',
-              'text-[var(--text-secondary)]',
-              'border-b border-[var(--border)]',
+              'text-left',
               'sticky top-0 z-10',
               'bg-[var(--bg)]',
             ].join(' ')}
           >
             <tr>
               {/* 全选Checkbox */}
-              <th className="w-8 px-2 py-2">
+              <th className="w-8 px-4 py-3">
                 <input
                   type="checkbox"
                   checked={allSelected}
@@ -518,7 +514,7 @@ export function ResourceTable({
                   dir={sortDir}
                 />
               </th>
-              <th className="w-10 px-2 py-2" />
+              <th className="w-10 px-4 py-3" />
             </tr>
           </thead>
 
@@ -559,7 +555,7 @@ export function ResourceTable({
                 <tr>
                   <td
                     colSpan={5}
-                    className="px-2 py-8 text-center text-xs text-[var(--text-secondary)]"
+                    className="px-4 py-8 text-center text-sm text-[var(--text-secondary)]"
                   >
                     {t('bucket.empty')}
                   </td>

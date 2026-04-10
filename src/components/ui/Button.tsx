@@ -17,24 +17,19 @@ interface ButtonProps
 
 const variantClasses: Record<Variant, string> = {
   primary: [
-    'bg-[var(--accent)] text-[var(--accent-text)]',
-    'hover:bg-[var(--accent-hover)]',
+    'gradient-primary text-white',
+    'hover:shadow-[0_0_15px_rgba(0,122,255,0.3)]',
     'active:scale-[0.97]',
-    'shadow-[var(--shadow-sm)]',
-    'hover:shadow-[var(--shadow-md)]',
   ].join(' '),
   secondary: [
-    'border border-[var(--border)]',
-    'bg-[var(--bg)]',
-    'text-[var(--text)]',
-    'hover:bg-[var(--bg-raised)]',
-    'hover:border-[var(--text-secondary)]',
+    'bg-[var(--bg-raised)] text-[var(--accent)]',
+    'hover:bg-[var(--bg-raised)]/80',
     'active:scale-[0.97]',
   ].join(' '),
   ghost: [
     'bg-transparent',
     'text-[var(--text-secondary)]',
-    'hover:bg-[var(--bg-raised)]',
+    'hover:bg-[rgba(234,239,242,0.4)] dark:hover:bg-[rgba(255,255,255,0.06)]',
     'hover:text-[var(--text)]',
     'active:scale-[0.97]',
   ].join(' '),
@@ -42,7 +37,6 @@ const variantClasses: Record<Variant, string> = {
     'bg-[var(--danger)] text-white',
     'hover:brightness-110',
     'active:scale-[0.97]',
-    'shadow-[var(--shadow-sm)]',
   ].join(' '),
 };
 
@@ -84,8 +78,8 @@ export function Button({
       disabled={isDisabled}
       className={[
         'inline-flex items-center justify-center',
-        'rounded-md font-medium',
-        'transition-all duration-150',
+        'rounded-xl font-medium',
+        'transition-all duration-150 ease-out',
         'disabled:cursor-not-allowed',
         'disabled:opacity-50',
         'focus-visible:ring-2',

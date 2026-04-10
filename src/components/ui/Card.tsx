@@ -17,17 +17,12 @@ export function Card({
     <section
       style={style}
       className={[
-        'rounded-lg p-4',
-        'bg-[var(--bg-raised)]',
+        'rounded-2xl p-4',
+        'bg-[var(--bg-card)]',
         'border border-[var(--border)]',
-        'shadow-[var(--shadow-xs)]',
+        'shadow-sm',
         hoverable
-          ? [
-              'transition-all duration-200',
-              'hover:-translate-y-[2px]',
-              'hover:shadow-[var(--shadow-md)]',
-              'hover:border-[var(--accent)]/20',
-            ].join(' ')
+          ? 'bento-card transition-all duration-250'
           : '',
         className ?? '',
       ].join(' ')}

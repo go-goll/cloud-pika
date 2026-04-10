@@ -8,6 +8,7 @@ import {
   Moon,
   RefreshCcw,
   Rocket,
+  Search,
   Settings2,
   Sun,
   Workflow,
@@ -60,45 +61,53 @@ export function CommandPalette() {
     <div className="fixed inset-0 z-50">
       {/* 遮罩 */}
       <div
-        className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+        className="absolute inset-0 bg-slate-900/30 backdrop-blur-sm"
         onClick={() => setOpen(false)}
       />
 
-      {/* 命令面板 */}
+      {/* 居中面板 */}
       <div className="flex items-start justify-center pt-[20vh]">
         <Command
           className={[
             'relative w-full max-w-lg',
-            'overflow-hidden rounded-xl',
-            'bg-surface-container-lowest',
-            'ghost-border shadow-ambient',
+            'overflow-hidden rounded-2xl',
+            'bg-[var(--bg-card)] shadow-xl',
+            'border border-[var(--border)]',
           ].join(' ')}
           onKeyDown={(e) => {
             if (e.key === 'Escape') setOpen(false);
           }}
         >
-          {/* 搜索框 */}
-          <Command.Input
-            placeholder={t('command.placeholder')}
-            className={[
-              'w-full border-b',
-              'border-outline-variant',
-              'bg-transparent px-4 py-3 text-base',
-              'text-on-surface',
-              'placeholder:text-on-surface-variant',
-              'focus:outline-none',
-            ].join(' ')}
-          />
+          {/* 搜索区域 */}
+          <div className="flex items-center gap-3 px-4 border-b border-[var(--border)]">
+            <Search
+              size={20}
+              className="shrink-0 text-[var(--text-secondary)]"
+            />
+            <Command.Input
+              placeholder={t('command.placeholder')}
+              className={[
+                'flex-1 bg-transparent py-3 text-base',
+                'text-[var(--text)]',
+                'placeholder:text-[var(--text-secondary)]',
+                'border-none focus:outline-none',
+              ].join(' ')}
+            />
+            <kbd className="shrink-0 text-[10px] uppercase tracking-wider bg-[var(--bg-raised)] text-[var(--text-secondary)] rounded px-1.5 py-0.5">
+              ESC
+            </kbd>
+          </div>
 
-          <Command.List className="max-h-72 overflow-y-auto p-2">
-            <Command.Empty className="py-6 text-center text-sm text-on-surface-variant">
+          {/* 结果区域 */}
+          <Command.List className="max-h-72 overflow-y-auto py-2">
+            <Command.Empty className="py-6 text-center text-sm text-[var(--text-secondary)]">
               {t('common.search')} ...
             </Command.Empty>
 
             {/* 导航分组 */}
             <Command.Group
               heading={t('command.navigation')}
-              className="[&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:py-1.5 [&_[cmdk-group-heading]]:text-xs [&_[cmdk-group-heading]]:text-on-surface-variant"
+              className="[&_[cmdk-group-heading]]:text-[10px] [&_[cmdk-group-heading]]:uppercase [&_[cmdk-group-heading]]:tracking-[0.05em] [&_[cmdk-group-heading]]:font-bold [&_[cmdk-group-heading]]:text-[var(--text-secondary)] [&_[cmdk-group-heading]]:px-4 [&_[cmdk-group-heading]]:py-2"
             >
               <CommandItem
                 icon={<KeyRound size={16} />}
@@ -133,7 +142,7 @@ export function CommandPalette() {
             {/* 操作分组 */}
             <Command.Group
               heading={t('command.actions')}
-              className="[&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:py-1.5 [&_[cmdk-group-heading]]:text-xs [&_[cmdk-group-heading]]:text-on-surface-variant"
+              className="[&_[cmdk-group-heading]]:text-[10px] [&_[cmdk-group-heading]]:uppercase [&_[cmdk-group-heading]]:tracking-[0.05em] [&_[cmdk-group-heading]]:font-bold [&_[cmdk-group-heading]]:text-[var(--text-secondary)] [&_[cmdk-group-heading]]:px-4 [&_[cmdk-group-heading]]:py-2"
             >
               <CommandItem
                 icon={<Rocket size={16} />}
@@ -174,6 +183,28 @@ export function CommandPalette() {
               />
             </Command.Group>
           </Command.List>
+
+          {/* 底部工具栏 */}
+          <div className="flex items-center gap-4 border-t border-[var(--border)] px-4 py-2.5 text-[var(--text-secondary)]">
+            <span className="flex items-center gap-1.5 text-xs">
+              <kbd className="text-[10px] bg-[var(--bg-raised)] rounded px-1.5 py-0.5">
+                &uarr;&darr;
+              </kbd>
+              {t('command.hintNavigate', '导航')}
+            </span>
+            <span className="flex items-center gap-1.5 text-xs">
+              <kbd className="text-[10px] bg-[var(--bg-raised)] rounded px-1.5 py-0.5">
+                &crarr;
+              </kbd>
+              {t('command.hintOpen', '打开')}
+            </span>
+            <span className="flex items-center gap-1.5 text-xs">
+              <kbd className="text-[10px] bg-[var(--bg-raised)] rounded px-1.5 py-0.5">
+                ESC
+              </kbd>
+              {t('command.hintClose', '关闭')}
+            </span>
+          </div>
         </Command>
       </div>
     </div>
@@ -195,12 +226,13 @@ function CommandItem({
       onSelect={onSelect}
       className={[
         'flex cursor-pointer items-center gap-3',
-        'rounded-lg px-3 py-2 text-sm text-on-surface',
-        'aria-selected:bg-surface-container-low',
-        'hover:bg-surface-container-low',
+        'mx-2 rounded-xl px-4 py-2.5 text-sm',
+        'text-[var(--text)]',
+        'aria-selected:bg-[var(--accent-soft)] aria-selected:text-[var(--accent)]',
+        'hover:bg-[var(--accent-soft)] hover:text-[var(--accent)]',
       ].join(' ')}
     >
-      <span className="text-on-surface-variant">
+      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[var(--accent-soft)]">
         {icon}
       </span>
       {label}

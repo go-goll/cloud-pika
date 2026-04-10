@@ -63,11 +63,12 @@ const SelectTrigger = forwardRef<
     ref={ref}
     className={[
       'inline-flex h-10 w-full items-center justify-between',
-      'rounded-xl ghost-border',
-      'bg-surface-container-low px-3 text-sm text-on-surface',
-      'placeholder:text-on-surface-variant',
-      'focus:ring-2 focus:ring-primary/20',
-      'focus:bg-surface-container-lowest',
+      'rounded-xl border border-[var(--border)]',
+      'bg-[var(--bg)] px-3 text-sm text-[var(--text)]',
+      'placeholder:text-[var(--text-secondary)]',
+      'hover:border-[var(--accent)]/30',
+      'focus:border-[var(--accent)]',
+      'focus:shadow-[0_0_0_3px_var(--accent-soft)]',
       'focus:outline-none transition-all',
       'disabled:cursor-not-allowed disabled:opacity-60',
       className ?? '',
@@ -75,7 +76,7 @@ const SelectTrigger = forwardRef<
   >
     <SelectPrimitive.Value placeholder={label} />
     <SelectPrimitive.Icon>
-      <ChevronDown className="h-4 w-4 text-on-surface-variant" />
+      <ChevronDown className="h-4 w-4 text-[var(--text-secondary)]" />
     </SelectPrimitive.Icon>
   </SelectPrimitive.Trigger>
 ));
@@ -93,7 +94,7 @@ const SelectContent = forwardRef<
     className={[
       'z-50 max-h-60 min-w-[var(--radix-select-trigger-width)]',
       'overflow-hidden rounded-xl',
-      'bg-surface-container-lowest p-1 ghost-border shadow-ambient',
+      'bg-[var(--bg-card)] p-1 border border-[var(--border)] shadow-lg',
       'animate-[fadeIn_150ms_ease-out]',
       className ?? '',
     ].join(' ')}
@@ -116,8 +117,8 @@ const SelectItem = forwardRef<
     className={[
       'flex cursor-pointer select-none items-center',
       'rounded-lg px-3 py-2 text-sm',
-      'text-on-surface outline-none',
-      'data-[highlighted]:bg-surface-container-low',
+      'text-[var(--text)] outline-none',
+      'data-[highlighted]:bg-[rgba(234,239,242,0.4)] dark:data-[highlighted]:bg-[rgba(255,255,255,0.06)]',
       'data-[disabled]:pointer-events-none data-[disabled]:opacity-50',
       className ?? '',
     ].join(' ')}
@@ -125,7 +126,7 @@ const SelectItem = forwardRef<
   >
     <SelectPrimitive.ItemText>{children}</SelectPrimitive.ItemText>
     <SelectPrimitive.ItemIndicator className="ml-auto">
-      <Check className="h-4 w-4 text-primary" />
+      <Check className="h-4 w-4 text-[var(--accent)]" />
     </SelectPrimitive.ItemIndicator>
   </SelectPrimitive.Item>
 ));

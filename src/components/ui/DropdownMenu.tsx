@@ -22,8 +22,8 @@ const DropdownMenuContent = forwardRef<
       sideOffset={sideOffset}
       className={[
         'z-50 min-w-[180px] overflow-hidden',
-        'rounded-xl bg-surface-container-lowest',
-        'p-1 ghost-border shadow-ambient',
+        'rounded-xl bg-[var(--bg-card)]',
+        'p-1 border border-[var(--border)] shadow-lg',
         'animate-[fadeIn_150ms_ease-out]',
         className ?? '',
       ].join(' ')}
@@ -54,7 +54,7 @@ const DropdownMenuItem = forwardRef<
       'outline-none transition-colors',
       danger
         ? 'text-danger focus:bg-danger/10'
-        : 'text-on-surface focus:bg-surface-container-low',
+        : 'text-[var(--text)] focus:bg-[rgba(234,239,242,0.4)] dark:focus:bg-[rgba(255,255,255,0.06)]',
       'data-[disabled]:pointer-events-none',
       'data-[disabled]:opacity-50',
       className ?? '',
@@ -74,7 +74,7 @@ const DropdownMenuSeparator = forwardRef<
   <DropdownPrimitive.Separator
     ref={ref}
     className={[
-      'mx-1 my-1 h-px bg-outline-variant',
+      'mx-1 my-1 h-px bg-[var(--border)]',
       className ?? '',
     ].join(' ')}
     {...props}

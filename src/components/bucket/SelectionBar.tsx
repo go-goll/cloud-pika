@@ -1,6 +1,6 @@
 /**
  * SelectionBar - 批量操作浮动栏组件
- * 当有文件被选中时从底部滑入，毛玻璃效果
+ * 当有文件被选中时从底部滑入，pill 形毛玻璃效果
  */
 import { useTranslation } from 'react-i18next';
 import {
@@ -10,7 +10,6 @@ import {
   Trash2,
   X,
 } from 'lucide-react';
-import { Button } from '@/components/ui/Button';
 import { SimpleTooltip } from '@/components/ui/Tooltip';
 
 interface SelectionBarProps {
@@ -37,104 +36,113 @@ export function SelectionBar({
   return (
     <div
       className={[
-        'fixed bottom-5 left-1/2 z-40',
-        '-translate-x-1/2',
-        'flex items-center gap-2 sm:gap-3',
-        'rounded-xl',
-        'glass-panel',
-        'px-4 py-2.5 sm:px-5 sm:py-3',
-        'shadow-[var(--shadow-xl)]',
+        'fixed bottom-6 left-1/2 -translate-x-1/2 z-50',
+        'flex items-center gap-3',
+        'rounded-full glass',
+        'px-5 py-2.5',
+        'shadow-xl',
         'border border-[var(--border)]',
         'animate-[slideUp_0.25s_ease-out]',
       ].join(' ')}
     >
-      {/* 选中数量 */}
+      {/* 选中计数 badge */}
       <span
         className={[
-          'whitespace-nowrap text-sm font-semibold',
-          'text-[var(--accent)]',
+          'bg-[var(--accent)] text-white',
+          'rounded-full px-3 py-1',
+          'text-sm font-medium whitespace-nowrap',
         ].join(' ')}
       >
         {t('bucket.selectedCount', { count })}
       </span>
 
-      {/* 分隔线 */}
-      <div className="h-5 w-px bg-[var(--border)]" />
-
-      {/* 批量操作 */}
+      {/* 操作按钮 */}
       <SimpleTooltip content={t('bucket.copyUrl')}>
-        <Button
-          variant="ghost"
-          size="sm"
+        <button
+          type="button"
           onClick={onBatchCopyUrl}
-          className="gap-1.5"
+          className={[
+            'flex items-center gap-1.5',
+            'text-sm text-[var(--text-secondary)]',
+            'hover:text-[var(--text)]',
+            'transition-colors px-2 py-1.5 rounded-full',
+          ].join(' ')}
         >
           <Copy size={14} />
           <span className="hidden sm:inline">
             {t('bucket.copyUrl')}
           </span>
-        </Button>
+        </button>
       </SimpleTooltip>
 
       {onBatchRefreshCDN ? (
         <SimpleTooltip content={t('bucket.refreshCDN')}>
-          <Button
-            variant="ghost"
-            size="sm"
+          <button
+            type="button"
             onClick={onBatchRefreshCDN}
-            className="gap-1.5"
+            className={[
+              'flex items-center gap-1.5',
+              'text-sm text-[var(--text-secondary)]',
+              'hover:text-[var(--text)]',
+              'transition-colors px-2 py-1.5 rounded-full',
+            ].join(' ')}
           >
             <RefreshCcw size={14} />
             <span className="hidden sm:inline">
               {t('bucket.refreshCDN')}
             </span>
-          </Button>
+          </button>
         </SimpleTooltip>
       ) : null}
 
       <SimpleTooltip content={t('bucket.download')}>
-        <Button
-          variant="ghost"
-          size="sm"
+        <button
+          type="button"
           onClick={onBatchDownload}
-          className="gap-1.5"
+          className={[
+            'flex items-center gap-1.5',
+            'text-sm text-[var(--text-secondary)]',
+            'hover:text-[var(--text)]',
+            'transition-colors px-2 py-1.5 rounded-full',
+          ].join(' ')}
         >
           <Download size={14} />
           <span className="hidden sm:inline">
             {t('bucket.download')}
           </span>
-        </Button>
+        </button>
       </SimpleTooltip>
 
       {onBatchDelete ? (
         <SimpleTooltip content={t('bucket.delete')}>
-          <Button
-            variant="ghost"
-            size="sm"
+          <button
+            type="button"
             onClick={onBatchDelete}
-            className="gap-1.5 text-[var(--danger)]"
+            className={[
+              'flex items-center gap-1.5',
+              'text-sm text-[var(--danger)]',
+              'hover:text-[var(--danger)]',
+              'transition-colors px-2 py-1.5 rounded-full',
+            ].join(' ')}
           >
             <Trash2 size={14} />
             <span className="hidden sm:inline">
               {t('bucket.delete')}
             </span>
-          </Button>
+          </button>
         </SimpleTooltip>
       ) : null}
 
-      {/* 分隔线 */}
-      <div className="h-5 w-px bg-[var(--border)]" />
-
-      {/* 取消选择 */}
+      {/* 关闭/清除按钮 */}
       <button
         type="button"
         onClick={onClearSelection}
         className={[
+          'ml-1 p-1.5 rounded-full',
           'text-[var(--text-secondary)]',
           'hover:text-[var(--text)]',
-          'transition-all duration-150',
           'hover:bg-[var(--bg-raised)]',
-          'rounded-md p-1',
+          'transition-all duration-150',
           'active:scale-90',
         ].join(' ')}
       >

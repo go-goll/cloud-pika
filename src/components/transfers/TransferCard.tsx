@@ -38,7 +38,7 @@ function TypeIcon({
 }: {
   type: TransferTask['type'];
 }) {
-  const size = 24;
+  const size = 20;
   switch (type) {
     case 'upload':
       return <ArrowUp size={size} />;
@@ -62,19 +62,18 @@ export function TransferCard({
   return (
     <div
       className={[
-        'bg-surface-container-lowest rounded-xl p-6',
-        'ghost-border hover:shadow-sm',
+        'rounded-xl bg-[var(--bg)] p-4',
         'transition-all duration-300',
       ].join(' ')}
     >
       {/* 头部：类型图标 + 文件信息 + 状态 + 操作 */}
-      <div className="flex items-start gap-5">
-        {/* 类型图标 */}
+      <div className="flex items-start gap-3">
+        {/* 文件类型图标 */}
         <div
           className={[
-            'flex h-12 w-12 shrink-0 items-center',
-            'justify-center rounded-xl',
-            'bg-primary/10 text-primary',
+            'flex h-10 w-10 shrink-0 items-center',
+            'justify-center rounded-lg',
+            'bg-[var(--accent)]/10 text-[var(--accent)]',
           ].join(' ')}
         >
           <TypeIcon type={task.type} />
@@ -82,18 +81,18 @@ export function TransferCard({
 
         {/* 文件信息和进度 */}
         <div className="flex-1 min-w-0">
-          <div className="flex justify-between items-start mb-2">
-            <div>
-              <h4 className="font-bold text-on-surface truncate">
+          <div className="flex justify-between items-start mb-1">
+            <div className="min-w-0">
+              <h4 className="text-sm font-medium text-[var(--text)] truncate">
                 {task.bucket}/{task.key}
               </h4>
-              <p className="text-xs text-on-surface-variant mt-0.5">
+              <p className="text-xs text-[var(--text-secondary)] mt-0.5">
                 {t(`transfer.${task.type}`)}
               </p>
             </div>
 
             {/* 状态和操作按钮 */}
-            <div className="flex shrink-0 items-center gap-2">
+            <div className="flex shrink-0 items-center gap-2 ml-2">
               <Badge
                 variant={statusVariantMap[task.status]}
               >
@@ -127,35 +126,43 @@ export function TransferCard({
 
           {/* 进度条（仅运行中显示） */}
           {task.status === 'running' ? (
-            <>
-              <div className="h-2 w-full bg-surface-container-low rounded-full overflow-hidden mb-4">
-                <div
-                  className="h-full signature-gradient rounded-full transition-all"
-                  style={{
-                    width: `${task.progress}%`,
-                  }}
-                />
-              </div>
-
-              {/* 进度百分比 */}
-              <div className="flex items-center gap-6">
-                <div className="flex items-center gap-2">
+            <div className="mt-2">
+              <div className="flex items-center justify-between mb-1">
+                <div className="flex items-center gap-1.5">
                   <Zap
-                    size={14}
-                    className="text-primary"
+                    size={12}
+                    className="text-[var(--accent)]"
                   />
-                  <span className="text-xs font-medium text-on-surface">
-                    {task.progress}%
+                  <span className="text-xs text-[var(--text-secondary)]">
+                    {t('transfer.progress')}
                   </span>
                 </div>
+                <span className="text-sm font-semibold text-[var(--accent)]">
+                  {task.progress}%
+                </span>
               </div>
-            </>
+              <div
+                className={[
+                  'h-1.5 w-full overflow-hidden rounded-full',
+                  'bg-[var(--bg-raised)]',
+                ].join(' ')}
+              >
+                <div
+                  className={[
+                    'h-full rounded-full',
+                    'bg-[var(--accent)]',
+                    'transition-all duration-300',
+                  ].join(' ')}
+                  style={{ width: `${task.progress}%` }}
+                />
+              </div>
+            </div>
           ) : null}
 
           {/* 失败时显示错误信息 */}
           {task.status === 'failed' &&
           task.errorMessage ? (
-            <p className="mt-2 text-xs text-danger">
+            <p className="mt-2 text-xs text-red-500">
               {task.errorMessage}
             </p>
           ) : null}

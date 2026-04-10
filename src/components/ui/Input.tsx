@@ -18,15 +18,14 @@ interface InputProps
 
 /** 输入框基础样式 */
 const baseClasses = [
-  'h-10 w-full rounded-lg',
-  'bg-[var(--color-surface-container-low)]',
-  'text-sm text-[var(--color-on-surface)]',
-  'ghost-border',
-  'placeholder:text-[var(--color-on-surface-variant)]/60',
-  'focus:ring-2 focus:ring-[var(--accent)]/20',
-  'focus:border-[var(--accent)]/40',
-  'focus:bg-[var(--color-surface-container-lowest)]',
-  'focus:shadow-[var(--shadow-sm)]',
+  'h-10 w-full rounded-xl',
+  'bg-[var(--bg)]',
+  'text-sm text-[var(--text)]',
+  'border border-[var(--border)]',
+  'placeholder:text-[var(--text-secondary)]/60',
+  'hover:border-[var(--accent)]/30',
+  'focus-within:border-[var(--accent)]',
+  'focus-within:shadow-[0_0_0_3px_var(--accent-soft)]',
   'focus:outline-none transition-all duration-200',
 ].join(' ');
 

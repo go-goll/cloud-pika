@@ -79,18 +79,10 @@ export function BucketToolbar({
   /** 视图切换按钮样式 */
   const viewBtnClass = (active: boolean) => [
     'flex items-center gap-1.5 px-3 py-2',
-    'text-xs transition-all duration-200',
+    'text-xs rounded-lg transition-all duration-200',
     active
-      ? [
-          'bg-[var(--bg)]',
-          'font-semibold text-[var(--text)]',
-          'shadow-[var(--shadow-sm)]',
-        ].join(' ')
-      : [
-          'text-[var(--text-secondary)]',
-          'hover:text-[var(--text)]',
-          'bg-[var(--bg-raised)]',
-        ].join(' '),
+      ? 'bg-[var(--bg-card)] font-semibold text-[var(--text)] shadow-sm'
+      : 'text-[var(--text-secondary)] hover:text-[var(--text)]',
   ].join(' ');
 
   return (
@@ -116,7 +108,7 @@ export function BucketToolbar({
             handleInputChange(e.target.value)
           }
           placeholder={t('common.search')}
-          className="pl-9 pr-8"
+          className="rounded-xl bg-[var(--bg-raised)] pl-9 pr-8"
         />
         {inputValue ? (
           <button
@@ -157,7 +149,7 @@ export function BucketToolbar({
         <div
           className={[
             'flex overflow-hidden rounded-lg',
-            'ghost-border',
+            'bg-[var(--bg-raised)] p-0.5',
           ].join(' ')}
         >
           <button
@@ -180,7 +172,11 @@ export function BucketToolbar({
 
         {/* 远程抓取 */}
         {onFetchUrl ? (
-          <Button variant="ghost" onClick={onFetchUrl}>
+          <Button
+            variant="ghost"
+            className="rounded-xl"
+            onClick={onFetchUrl}
+          >
             <Link2 size={15} className="mr-1.5" />
             {t('bucket.fetchUrl')}
           </Button>
@@ -190,13 +186,14 @@ export function BucketToolbar({
         <Button
           variant="ghost"
           iconOnly
+          className="rounded-xl"
           onClick={onRefresh}
         >
           <RefreshCcw size={15} />
         </Button>
 
         {/* 上传按钮 - 品牌色 */}
-        <Button onClick={onUpload}>
+        <Button className="gradient-primary rounded-xl" onClick={onUpload}>
           <UploadCloud size={15} className="mr-1.5" />
           {t('bucket.upload')}
         </Button>

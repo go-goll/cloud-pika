@@ -6,36 +6,35 @@
   font-family: 'Inter', 'Noto Sans SC', -apple-system,
     BlinkMacSystemFont, 'Segoe UI', sans-serif;
 
-  /* ── 核心调色板 ── */
-  --bg:             #fafafa;
-  --bg-raised:      #f0f0f2;
-  --border:         #e2e2e5;
-  --text:           #111113;
-  --text-secondary: #6b6b6e;
-  --accent:         #2563eb;
-  --accent-hover:   #1d4ed8;
-  --accent-soft:    rgba(37, 99, 235, 0.08);
+  /* ── Cirrus Ether 核心调色板 ── */
+  --bg:             #F7F9FB;
+  --bg-raised:      #EFF2F5;
+  --bg-card:        #FFFFFF;
+  --border:         rgba(172, 179, 183, 0.15);
+  --text:           #2C3437;
+  --text-secondary: #6B7680;
+  --accent:         #007AFF;
+  --accent-hover:   #005BC2;
+  --accent-soft:    rgba(0, 122, 255, 0.08);
   --accent-text:    #ffffff;
   --danger:         #dc2626;
   --success:        #16a34a;
   --warning:        #f59e0b;
-  --radius:         8px;
+  --radius:         12px;
 
-  /* ── 阴影层级 ── */
-  --shadow-xs:  0 1px 2px rgba(0,0,0,0.04);
-  --shadow-sm:  0 2px 6px -1px rgba(0,0,0,0.06),
-                0 1px 2px rgba(0,0,0,0.04);
-  --shadow-md:  0 4px 12px -2px rgba(0,0,0,0.08),
-                0 2px 4px rgba(0,0,0,0.04);
-  --shadow-lg:  0 8px 24px -4px rgba(0,0,0,0.10),
-                0 4px 8px -2px rgba(0,0,0,0.05);
-  --shadow-xl:  0 16px 48px -8px rgba(0,0,0,0.12),
-                0 8px 16px -4px rgba(0,0,0,0.06);
+  /* ── 阴影层级（主色辉光） ── */
+  --shadow-xs:  0 1px 2px rgba(0,0,0,0.03);
+  --shadow-sm:  0 2px 8px -2px rgba(0,122,255,0.06);
+  --shadow-md:  0 8px 24px -4px rgba(0,122,255,0.08);
+  --shadow-lg:  0 16px 48px -8px rgba(0,0,0,0.08),
+                0 0 8px rgba(0,122,255,0.04);
+  --shadow-xl:  0 24px 64px -12px rgba(0,0,0,0.10),
+                0 0 12px rgba(0,122,255,0.06);
 
   /* ── 兼容别名（供 Tailwind extend 和旧组件过渡） ── */
   --surface:      var(--bg);
   --surface-low:  var(--bg-raised);
-  --surface-high: var(--bg);
+  --surface-high: var(--bg-card);
   --surface-muted: var(--bg-raised);
   --surface-elevated: var(--bg-raised);
   --text-muted:   var(--text-secondary);
@@ -47,7 +46,7 @@
 
   --color-surface: var(--bg);
   --color-surface-container-low: var(--bg-raised);
-  --color-surface-container-lowest: var(--bg);
+  --color-surface-container-lowest: var(--bg-card);
   --color-on-surface: var(--text);
   --color-on-surface-variant: var(--text-secondary);
   --color-outline-variant: var(--border);
@@ -59,34 +58,36 @@
 }
 
 :root[data-theme='dark'] {
-  --bg:             #0c0c0e;
-  --bg-raised:      #18181b;
-  --border:         #27272a;
-  --text:           #ededef;
-  --text-secondary: #8b8b8e;
-  --accent:         #3b82f6;
-  --accent-hover:   #60a5fa;
-  --accent-soft:    rgba(59, 130, 246, 0.12);
+  --bg:             #0C0E12;
+  --bg-raised:      #14171C;
+  --bg-card:        #1A1D23;
+  --border:         rgba(255, 255, 255, 0.08);
+  --text:           #E8EAED;
+  --text-secondary: #8B9098;
+  --accent:         #3B8AFF;
+  --accent-hover:   #60A0FF;
+  --accent-soft:    rgba(59, 138, 255, 0.12);
   --accent-text:    #ffffff;
   --danger:         #ef4444;
   --success:        #22c55e;
   --warning:        #fbbf24;
 
+  /* 深色阴影（更强蓝色辉光） */
   --shadow-xs:  0 1px 2px rgba(0,0,0,0.20);
-  --shadow-sm:  0 2px 6px -1px rgba(0,0,0,0.30),
-                0 1px 2px rgba(0,0,0,0.20);
-  --shadow-md:  0 4px 12px -2px rgba(0,0,0,0.35),
-                0 2px 4px rgba(0,0,0,0.20);
-  --shadow-lg:  0 8px 24px -4px rgba(0,0,0,0.40),
-                0 4px 8px -2px rgba(0,0,0,0.25);
-  --shadow-xl:  0 16px 48px -8px rgba(0,0,0,0.50),
-                0 8px 16px -4px rgba(0,0,0,0.30);
+  --shadow-sm:  0 2px 8px -2px rgba(0,0,0,0.25),
+                0 0 4px rgba(59,138,255,0.06);
+  --shadow-md:  0 8px 24px -4px rgba(0,0,0,0.30),
+                0 0 8px rgba(59,138,255,0.08);
+  --shadow-lg:  0 16px 48px -8px rgba(0,0,0,0.35),
+                0 0 12px rgba(59,138,255,0.10);
+  --shadow-xl:  0 24px 64px -12px rgba(0,0,0,0.40),
+                0 0 16px rgba(59,138,255,0.12);
 
   --surface:      var(--bg);
   --surface-low:  var(--bg-raised);
-  --surface-high: var(--bg-raised);
+  --surface-high: var(--bg-card);
   --surface-muted: var(--bg-raised);
-  --surface-elevated: #27272a;
+  --surface-elevated: var(--bg-card);
   --text-muted:   var(--text-secondary);
   --primary:      var(--accent);
   --primary-soft: var(--accent);
@@ -96,7 +97,7 @@
 
   --color-surface: var(--bg);
   --color-surface-container-low: var(--bg-raised);
-  --color-surface-container-lowest: var(--bg-raised);
+  --color-surface-container-lowest: var(--bg-card);
   --color-on-surface: var(--text);
   --color-on-surface-variant: var(--text-secondary);
   --color-outline-variant: var(--border);
@@ -189,20 +190,45 @@ select:focus-visible {
 
 /* 毛玻璃顶栏 */
 .glass {
-  background: color-mix(in srgb, var(--bg) 80%, transparent);
-  backdrop-filter: blur(16px) saturate(180%);
-  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  background: color-mix(in srgb, var(--bg) 70%, transparent);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
 }
 
 .glass-panel {
-  background: color-mix(in srgb, var(--bg) 75%, transparent);
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  background: color-mix(in srgb, var(--bg) 65%, transparent);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
 }
 
 /* 阴影：仅弹窗/浮层使用 */
 .ambient-shadow {
   box-shadow: var(--shadow-lg);
+}
+
+/* Bento 卡片交互 */
+.bento-card {
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+.bento-card:hover {
+  transform: scale(1.01);
+  box-shadow: var(--shadow-xl);
+}
+
+/* 色调悬停 */
+.tonal-hover {
+  transition: background 0.15s ease;
+}
+.tonal-hover:hover {
+  background: rgba(234, 239, 242, 0.4);
+}
+:root[data-theme='dark'] .tonal-hover:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+/* 主色渐变按钮 */
+.gradient-primary {
+  background: linear-gradient(135deg, var(--accent), var(--accent-hover));
 }
 
 /* ── 动画 ── */
@@ -281,6 +307,11 @@ select:focus-visible {
   }
 }
 
+@keyframes scaleUp {
+  from { transform: scale(0.95); }
+  to { transform: scale(1); }
+}
+
 @keyframes breathe {
   0%, 100% { opacity: 0.4; }
   50% { opacity: 0.8; }
@@ -301,7 +332,7 @@ select:focus-visible {
 
 /* ── 文件类型图标颜色 ── */
 
-.icon-folder { color: #2563eb; }
+.icon-folder { color: #007AFF; }
 .icon-image  { color: #059669; }
 .icon-video  { color: #7c3aed; }
 .icon-audio  { color: #d97706; }

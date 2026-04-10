@@ -1,6 +1,6 @@
 /**
  * UploadZone - 拖拽上传遮罩组件
- * 正常状态不可见，拖拽文件进入时显示品牌色脉冲边框和上传提示
+ * 全屏毛玻璃遮罩 + 居中卡片 + 虚线边框
  */
 import { useTranslation } from 'react-i18next';
 import { UploadCloud } from 'lucide-react';
@@ -19,54 +19,37 @@ export function UploadZone({
   return (
     <div
       className={[
-        'fixed inset-0 z-40',
+        'fixed inset-0 z-50',
         'flex items-center justify-center',
-        'bg-[var(--bg)]/80 backdrop-blur-md',
-        'transition-all duration-200',
-        'animate-fade-in',
+        'backdrop-blur-md bg-[var(--bg)]/60',
+        'animate-[fadeIn_0.2s_ease-out]',
       ].join(' ')}
     >
-      {/* 脉冲边框容器 */}
+      {/* 居中卡片 */}
       <div
         className={[
-          'flex flex-col items-center gap-5 p-12',
-          'rounded-2xl',
-          'border-2 border-dashed',
-          'border-[var(--accent)]',
-          'bg-[var(--accent-soft)]',
-          'animate-pulse-glow',
+          'rounded-2xl bg-[var(--bg-card)] shadow-xl',
+          'p-8 text-center max-w-sm w-full mx-4',
+          'border-2 border-dashed border-[var(--accent)]/30',
         ].join(' ')}
+        style={{
+          animation: 'fadeIn 0.2s ease-out, scaleUp 0.2s ease-out',
+        }}
       >
-        <div
-          className={[
-            'flex h-20 w-20 items-center',
-            'justify-center rounded-full',
-            'bg-[var(--accent)]/15',
-          ].join(' ')}
-        >
-          <UploadCloud
-            size={36}
-            className="text-[var(--accent)] animate-float"
-          />
-        </div>
-        <div className="text-center">
-          <p
-            className={[
-              'text-base font-semibold',
-              'text-[var(--text)]',
-            ].join(' ')}
-          >
-            {t('bucket.dragUploadHint')}
-          </p>
-          <p
-            className={[
-              'mt-1 text-sm',
-              'text-[var(--text-secondary)]',
-            ].join(' ')}
-          >
-            {t('bucket.upload')}
-          </p>
-        </div>
+        {/* 大文件图标 */}
+        <UploadCloud
+          className="text-[var(--accent)] w-16 h-16 mx-auto"
+        />
+
+        {/* 标题 */}
+        <p className="text-lg font-semibold text-[var(--text)] mt-4">
+          {t('bucket.dragUploadHint')}
+        </p>
+
+        {/* 副标题 */}
+        <p className="text-sm text-[var(--text-secondary)] mt-2">
+          {t('bucket.upload')}
+        </p>
       </div>
     </div>
   );

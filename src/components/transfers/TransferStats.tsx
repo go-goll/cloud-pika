@@ -23,23 +23,23 @@ const statConfig: Record<
 > = {
   running: {
     icon: PlayCircle,
-    colorClass: 'text-primary',
+    colorClass: 'text-[var(--accent)]',
   },
   queued: {
     icon: Clock,
-    colorClass: 'text-on-surface-variant',
+    colorClass: 'text-[var(--text-secondary)]',
   },
   completed: {
     icon: CheckCircle,
-    colorClass: 'text-success',
+    colorClass: 'text-green-500',
   },
   failed: {
     icon: XCircle,
-    colorClass: 'text-danger',
+    colorClass: 'text-red-500',
   },
   canceled: {
     icon: XCircle,
-    colorClass: 'text-on-surface-variant',
+    colorClass: 'text-[var(--text-secondary)]',
   },
 };
 
@@ -87,25 +87,34 @@ export function TransferStats({
             <div
               key={item.key}
               className={[
-                'flex items-center gap-2',
-                'rounded-xl ghost-border px-4 py-2',
+                'flex items-center gap-3',
+                'rounded-2xl bg-[var(--bg-card)]',
+                'border border-[var(--border)] p-5',
               ].join(' ')}
             >
               <Icon
                 size={16}
                 className={config.colorClass}
               />
-              <span className="text-sm text-on-surface-variant">
-                {t(item.labelKey)}
-              </span>
-              <span className="text-2xl font-headline font-bold text-on-surface">
-                {count}
-              </span>
+              <div>
+                <span
+                  className={[
+                    'block text-[10px] uppercase',
+                    'tracking-[0.05em] font-bold',
+                    'text-[var(--text-secondary)]',
+                  ].join(' ')}
+                >
+                  {t(item.labelKey)}
+                </span>
+                <span className="text-2xl font-bold text-[var(--text)]">
+                  {count}
+                </span>
+              </div>
             </div>
           );
         })}
         {tasks.length === 0 ? (
-          <span className="text-sm text-on-surface-variant">
+          <span className="text-sm text-[var(--text-secondary)]">
             {t('transfer.noTransfers')}
           </span>
         ) : null}

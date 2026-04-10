@@ -1,22 +1,34 @@
-import type { PropsWithChildren } from 'react';
+import type { PropsWithChildren, ReactNode } from 'react';
 
 interface SettingsGroupProps {
   title: string;
+  icon?: ReactNode;
 }
 
-/** 设置分组容器，带标题和分隔线 */
+/** 设置分组容器，带图标标题和卡片边框 */
 export function SettingsGroup({
   title,
+  icon,
   children,
 }: PropsWithChildren<SettingsGroupProps>) {
   return (
-    <div className="space-y-3">
-      <h3 className="text-xs font-bold uppercase tracking-widest text-on-surface-variant ml-1">
-        {title}
-      </h3>
-      <div className="space-y-1 rounded-xl ghost-border p-1">
-        {children}
+    <div
+      className={[
+        'rounded-2xl',
+        'bg-[var(--bg-card)]',
+        'border border-[var(--border)]',
+        'p-6',
+      ].join(' ')}
+    >
+      <div className="flex items-center gap-2 mb-4">
+        {icon ? (
+          <span className="text-[var(--accent)]">{icon}</span>
+        ) : null}
+        <h3 className="text-base font-semibold text-[var(--text)]">
+          {title}
+        </h3>
       </div>
+      <div className="space-y-1">{children}</div>
     </div>
   );
 }

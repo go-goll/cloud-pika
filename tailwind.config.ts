@@ -24,33 +24,22 @@ export default {
         'outline-variant': 'var(--color-outline-variant)',
         danger: 'var(--color-danger)',
         success: 'var(--color-success)',
+        'bg-card': 'var(--bg-card)',
       },
       fontFamily: {
-        display: [
-          'DM Sans', 'Noto Sans SC',
-          'system-ui', 'sans-serif',
-        ],
-        headline: [
-          'DM Sans', 'Noto Sans SC',
-          'system-ui', 'sans-serif',
-        ],
-        body: [
-          'Inter', 'Noto Sans SC',
-          'system-ui', 'sans-serif',
-        ],
+        display: ['Inter', 'Noto Sans SC', 'system-ui', 'sans-serif'],
+        headline: ['Inter', 'Noto Sans SC', 'system-ui', 'sans-serif'],
+        body: ['Inter', 'Noto Sans SC', 'system-ui', 'sans-serif'],
       },
       borderRadius: {
-        DEFAULT: '8px',
-        soft: '12px',
+        DEFAULT: '12px',
+        soft: '16px',
+        bento: '24px',
       },
       boxShadow: {
-        ambient: [
-          '0 32px 48px -4px rgba(0,103,130,0.06)',
-          '0 8px 16px -2px rgba(0,103,130,0.04)',
-        ].join(', '),
-        'glow-sm':
-          '0 0 12px -2px var(--accent-soft)',
-        glow: '0 0 20px -4px var(--accent-soft)',
+        ambient: '0 24px 64px -12px rgba(0,0,0,0.08), 0 0 12px rgba(0,122,255,0.06)',
+        'glow-sm': '0 0 15px rgba(0,122,255,0.15)',
+        glow: '0 0 30px rgba(0,122,255,0.2)',
       },
       keyframes: {
         shimmer: {
