@@ -3,10 +3,6 @@ import { Link, useLocation } from 'react-router-dom';
 import {
   Database,
   FolderOpen,
-  HelpCircle,
-  Share2,
-  Star,
-  Trash2,
   Upload,
   ChevronLeft,
   ChevronRight,
@@ -15,12 +11,9 @@ import { useTranslation } from 'react-i18next';
 import { SimpleTooltip } from '@/components/ui/Tooltip';
 import { useBucketStore } from '@/stores/useBucketStore';
 
-/** 导航菜单项配置 */
+/** 导航菜单项配置（仅保留已实现的路由） */
 const navItems = [
   { to: '/bucket', icon: FolderOpen, key: 'nav.explorer' },
-  { to: '/shared', icon: Share2, key: 'nav.shared' },
-  { to: '/starred', icon: Star, key: 'nav.starred' },
-  { to: '/trash', icon: Trash2, key: 'nav.trash' },
 ];
 
 /** 窄窗口折叠阈值（px） */
@@ -181,62 +174,12 @@ export function Sidebar() {
         </div>
       )}
 
-      {/* 底部区域 */}
+      {/* 底部：折叠切换 */}
       <div className="mt-auto px-4 pb-4">
-        {/* 存储状态 */}
-        {!collapsed && (
-          <div className="mb-3">
-            <p className="mb-2 text-[10px] font-medium uppercase tracking-[0.1em] text-[var(--text-secondary)]">
-              {t('sidebar.storageStatus')}
-            </p>
-            <div className="h-1.5 w-full overflow-hidden rounded-full bg-[var(--bg-raised)]">
-              <div
-                className="h-full rounded-full bg-[var(--accent)] transition-all"
-                style={{ width: '35%' }}
-              />
-            </div>
-            <p className="mt-1 text-[11px] text-[var(--text-secondary)]">
-              {t('sidebar.storageUsed', { percent: 35 })}
-            </p>
-            <button
-              type="button"
-              className="mt-2 w-full rounded-xl border border-[var(--border)] px-3 py-1.5 text-xs text-[var(--text-secondary)] transition-colors hover:bg-[var(--bg-raised)]"
-            >
-              {t('sidebar.upgradeStorage')}
-            </button>
-          </div>
-        )}
-
-        {/* 分隔线 */}
-        <div className="mb-2 border-t border-[var(--border)]/30" />
-
-        {/* Support */}
-        {(() => {
-          const content = (
-            <button
-              type="button"
-              className={[
-                'flex w-full items-center gap-3 rounded-xl px-3 py-2 text-sm transition-all',
-                'text-[var(--text-secondary)] hover:bg-[rgba(234,239,242,0.4)] dark:hover:bg-[rgba(255,255,255,0.06)]',
-                collapsed ? 'justify-center' : '',
-              ].join(' ')}
-            >
-              <HelpCircle size={16} />
-              {!collapsed && <span>{t('nav.support')}</span>}
-            </button>
-          );
-          return collapsed ? (
-            <SimpleTooltip content={t('nav.support')} side="right">
-              {content}
-            </SimpleTooltip>
-          ) : content;
-        })()}
-
-        {/* 折叠切换按钮 */}
         <button
           type="button"
           onClick={() => setCollapsed((prev) => !prev)}
-          className="mt-2 flex w-full items-center justify-center rounded-xl py-1.5 text-[var(--text-secondary)] transition-colors hover:bg-[var(--bg-raised)]"
+          className="flex w-full items-center justify-center rounded-xl py-1.5 text-[var(--text-secondary)] transition-colors hover:bg-[var(--bg-raised)]"
         >
           {collapsed ? (
             <ChevronRight size={16} />

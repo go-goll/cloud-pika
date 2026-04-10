@@ -56,9 +56,6 @@ export function BootstrapScreen({
             >
               {t('bootstrap.retry', 'Retry')}
             </button>
-            <button className="mt-2 text-xs text-[var(--text-secondary)] hover:text-[var(--text)]">
-              {t('bootstrap.viewLogs', 'View Logs')}
-            </button>
           </div>
         ) : null}
 
