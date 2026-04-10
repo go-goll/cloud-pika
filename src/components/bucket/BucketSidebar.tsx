@@ -1,6 +1,6 @@
 /**
  * BucketSidebar - 左侧Bucket列表组件
- * 显示所有存储空间名称，支持点击切换和加载骨架屏
+ * 显示所有存储空间名称，支持点击切换、加载骨架屏、进入动画
  */
 import { useTranslation } from 'react-i18next';
 import { Database } from 'lucide-react';
@@ -17,8 +17,18 @@ interface BucketSidebarProps {
 function SkeletonItem() {
   return (
     <div className="flex items-center gap-3 px-3 py-2.5">
-      <div className="h-4 w-4 animate-pulse rounded bg-surface-container-low" />
-      <div className="h-4 flex-1 animate-pulse rounded bg-surface-container-low" />
+      <div
+        className={[
+          'h-4 w-4 rounded',
+          'bg-[var(--bg-raised)] animate-pulse',
+        ].join(' ')}
+      />
+      <div
+        className={[
+          'h-4 flex-1 rounded',
+          'bg-[var(--bg-raised)] animate-pulse',
+        ].join(' ')}
+      />
     </div>
   );
 }
@@ -32,13 +42,32 @@ export function BucketSidebar({
   const { t } = useTranslation();
 
   return (
-    <div className="rounded-xl bg-surface-container-lowest ghost-border p-3">
+    <div
+      className={[
+        'w-[220px] shrink-0 rounded-xl',
+        'bg-[var(--bg)] ghost-border',
+        'p-3 overflow-y-auto',
+        'shadow-[var(--shadow-xs)]',
+      ].join(' ')}
+    >
       {/* 标题和数量统计 */}
       <div className="flex items-center justify-between px-2 pb-2">
-        <h3 className="font-headline text-sm font-semibold text-on-surface">
+        <h3
+          className={[
+            'font-display text-sm font-semibold',
+            'text-[var(--text)]',
+          ].join(' ')}
+        >
           {t('bucket.title')}
         </h3>
-        <span className="text-xs text-on-surface-variant">
+        <span
+          className={[
+            'text-xs font-medium',
+            'text-[var(--text-secondary)]',
+            'bg-[var(--bg-raised)]',
+            'px-1.5 py-0.5 rounded-md',
+          ].join(' ')}
+        >
           {buckets.length}
         </span>
       </div>
@@ -52,8 +81,9 @@ export function BucketSidebar({
             <SkeletonItem />
           </>
         ) : (
-          buckets.map((bucket) => {
-            const isActive = activeBucket === bucket.name;
+          buckets.map((bucket, index) => {
+            const isActive =
+              activeBucket === bucket.name;
             return (
               <button
                 key={bucket.name}
@@ -63,30 +93,45 @@ export function BucketSidebar({
                   'flex w-full items-center gap-2.5',
                   'rounded-lg px-3 py-2',
                   'text-left text-sm transition-all',
+                  'duration-150',
+                  'animate-slide-in-up',
                   isActive
                     ? [
-                        'bg-primary/10 font-medium',
-                        'border-l-2 border-primary',
+                        'bg-[var(--accent-soft)]',
+                        'text-[var(--accent)]',
+                        'font-medium',
+                        'shadow-[var(--shadow-xs)]',
                       ].join(' ')
                     : [
-                        'hover:bg-surface-container-low',
-                        'border-l-2 border-transparent',
+                        'hover:bg-[var(--bg-raised)]',
+                        'text-[var(--text-secondary)]',
+                        'hover:text-[var(--text)]',
                       ].join(' '),
                 ].join(' ')}
+                style={{
+                  animationDelay: `${index * 30}ms`,
+                }}
               >
                 <Database
                   size={14}
                   className={
                     isActive
-                      ? 'text-primary'
-                      : 'text-on-surface-variant'
+                      ? 'text-[var(--accent)]'
+                      : 'text-[var(--text-secondary)]'
                   }
                 />
                 <span className="flex-1 truncate">
                   {bucket.name}
                 </span>
                 {bucket.location ? (
-                  <span className="text-xs text-on-surface-variant">
+                  <span
+                    className={[
+                      'text-[10px]',
+                      'text-[var(--text-secondary)]',
+                      'bg-[var(--bg-raised)]',
+                      'px-1.5 py-0.5 rounded',
+                    ].join(' ')}
+                  >
                     {bucket.location}
                   </span>
                 ) : null}
@@ -97,7 +142,12 @@ export function BucketSidebar({
 
         {/* 空状态 */}
         {!isLoading && buckets.length === 0 ? (
-          <p className="px-3 py-4 text-center text-xs text-on-surface-variant">
+          <p
+            className={[
+              'px-3 py-4 text-center text-xs',
+              'text-[var(--text-secondary)]',
+            ].join(' ')}
+          >
             {t('bucket.empty')}
           </p>
         ) : null}

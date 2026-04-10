@@ -5,6 +5,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
+  Copy,
   Eye,
   File,
   FileArchive,
@@ -39,8 +40,12 @@ interface ResourceGridProps {
   onRename?: (key: string) => void;
   onPreview?: (key: string) => void;
   onNavigateFolder?: (prefix: string) => void;
+  onQuickCopy?: (key: string) => void;
+  onRefreshCDN?: (key: string) => void;
   onUpload?: () => void;
   onRefresh?: () => void;
+  onFetchUrl?: () => void;
+  focusedIndex?: number;
 }
 
 /** 缩略图卡片图标区域（支持懒加载缩略图） */
@@ -100,21 +105,21 @@ function ThumbnailArea({
 /** 根据mimeType或文件名返回对应图标 */
 function getFileIcon(key: string, mimeType?: string) {
   if (key.endsWith('/')) {
-    return <Folder size={28} className="text-primary" />;
+    return <Folder size={28} className="icon-folder" />;
   }
   if (
     isImageKey(key) ||
     mimeType?.startsWith('image/')
   ) {
     return (
-      <Image size={28} className="text-primary/70" />
+      <Image size={28} className="icon-image" />
     );
   }
   if (mimeType?.startsWith('video/')) {
     return (
       <FileVideo
         size={28}
-        className="text-on-surface-variant"
+        className="icon-video"
       />
     );
   }
@@ -122,7 +127,7 @@ function getFileIcon(key: string, mimeType?: string) {
     return (
       <FileAudio
         size={28}
-        className="text-on-surface-variant"
+        className="icon-audio"
       />
     );
   }
@@ -130,7 +135,7 @@ function getFileIcon(key: string, mimeType?: string) {
     return (
       <FileText
         size={28}
-        className="text-on-surface-variant"
+        className="icon-text"
       />
     );
   }
@@ -140,7 +145,7 @@ function getFileIcon(key: string, mimeType?: string) {
     return (
       <FileArchive
         size={28}
-        className="text-on-surface-variant"
+        className="icon-archive"
       />
     );
   }
@@ -154,14 +159,14 @@ function getFileIcon(key: string, mimeType?: string) {
     return (
       <FileCode
         size={28}
-        className="text-on-surface-variant"
+        className="icon-code"
       />
     );
   }
   return (
     <File
       size={28}
-      className="text-on-surface-variant"
+      className="icon-file"
     />
   );
 }
@@ -258,21 +263,25 @@ function CardActionMenu({
               {item.label}
             </button>
           ))}
-          <div className="my-1 h-px bg-outline-variant" />
-          <button
-            type="button"
-            onClick={() => {
-              onDelete?.(objectKey);
-              setOpen(false);
-            }}
-            className={[
-              'flex w-full items-center px-3 py-1.5',
-              'text-xs text-danger rounded-lg',
-              'hover:bg-surface-container-low',
-            ].join(' ')}
-          >
-            {t('bucket.delete')}
-          </button>
+          {onDelete ? (
+            <>
+              <div className="my-1 h-px bg-outline-variant" />
+              <button
+                type="button"
+                onClick={() => {
+                  onDelete(objectKey);
+                  setOpen(false);
+                }}
+                className={[
+                  'flex w-full items-center px-3 py-1.5',
+                  'text-xs text-danger rounded-lg',
+                  'hover:bg-surface-container-low',
+                ].join(' ')}
+              >
+                {t('bucket.delete')}
+              </button>
+            </>
+          ) : null}
         </div>
       ) : null}
     </div>
@@ -291,8 +300,12 @@ export function ResourceGrid({
   onRename,
   onPreview,
   onNavigateFolder,
+  onQuickCopy,
+  onRefreshCDN,
   onUpload,
   onRefresh,
+  onFetchUrl,
+  focusedIndex,
 }: ResourceGridProps) {
   const { t } = useTranslation();
 
@@ -300,7 +313,7 @@ export function ResourceGrid({
     <ResourceContextMenu
       blankActions={
         onUpload && onRefresh
-          ? { onUpload, onRefresh }
+          ? { onUpload, onRefresh, onFetchUrl }
           : undefined
       }
     >
@@ -331,6 +344,9 @@ export function ResourceGrid({
                 onPreview: isImage
                   ? () => onPreview?.(item.key)
                   : undefined,
+                onRefreshCDN: onRefreshCDN
+                  ? () => onRefreshCDN(item.key)
+                  : undefined,
               }}
             >
               <Card
@@ -344,6 +360,9 @@ export function ResourceGrid({
                       + 'bg-[color-mix(in_srgb,'
                       + 'var(--primary)_5%,'
                       + 'var(--surface-high))]'
+                    : '',
+                  index === focusedIndex && !isSelected
+                    ? 'ring-2 ring-[var(--primary)]/50'
                     : '',
                 ].join(' ')}
                 style={{
@@ -409,12 +428,38 @@ export function ResourceGrid({
 
                 {/* 文件信息 */}
                 <div className="mt-2">
-                  <p
-                    className="truncate text-sm font-medium text-on-surface"
-                    title={item.key}
-                  >
-                    {fileName}
-                  </p>
+                  <div className="flex items-center gap-1">
+                <p
+                      className={[
+                        'truncate text-sm font-medium',
+                        'text-[var(--text)]',
+                      ].join(' ')}
+                      title={item.key}
+                    >
+                      {fileName}
+                    </p>
+                    {!isDir && onQuickCopy ? (
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onQuickCopy(item.key);
+                        }}
+                        className={[
+                          'ml-auto shrink-0 flex h-5 w-5',
+                          'items-center justify-center',
+                          'rounded-lg transition-all',
+                          'hover:bg-[var(--surface-elevated)]',
+                          'text-[var(--text-muted)]',
+                          'hover:text-[var(--primary)]',
+                          'opacity-0 group-hover:opacity-100',
+                        ].join(' ')}
+                        title={t('bucket.quickCopy')}
+                      >
+                        <Copy size={12} />
+                      </button>
+                    ) : null}
+                  </div>
                   <p className="mt-1 text-xs text-[var(--text-muted)]">
                     {isDir
                       ? t('bucket.folder')

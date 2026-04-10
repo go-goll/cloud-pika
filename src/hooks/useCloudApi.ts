@@ -188,23 +188,53 @@ export function useDeleteObjectsMutation() {
   });
 }
 
-/** 生成签名URL，成功后自动复制到剪贴板 */
+/** 生成签名URL */
 export function useGenerateUrlMutation() {
   const { t } = useTranslation();
   return useMutation({
     mutationFn: (payload: SignedURLParams) =>
       cloudApi.generateURL(payload),
-    onSuccess: async (data) => {
-      try {
-        if (tauriApi.isTauriEnv()) {
-          await tauriApi.writeClipboardText(data.url);
-        } else {
-          await navigator.clipboard.writeText(data.url);
-        }
-        toast.success(t('toast.urlCopied'));
-      } catch {
-        // 复制失败时不阻断流程
-      }
+    onError: (err: Error) => {
+      toast.error(err.message || t('toast.operationFailed'));
+    },
+  });
+}
+
+/** 查询 provider 支持的功能列表 */
+export function useProviderFeaturesQuery(
+  accountId: string,
+  enabled: boolean,
+) {
+  return useQuery({
+    queryKey: ['features', accountId],
+    queryFn: () => cloudApi.getProviderFeatures(accountId),
+    enabled,
+    staleTime: Infinity,
+  });
+}
+
+/** 查询 bucket 绑定的自定义域名列表 */
+export function useDomainsQuery(
+  accountId: string,
+  bucket: string,
+  enabled: boolean,
+) {
+  return useQuery({
+    queryKey: ['domains', accountId, bucket],
+    queryFn: () => cloudApi.listDomains(accountId, bucket),
+    enabled,
+    staleTime: 5 * 60 * 1000,
+  });
+}
+
+/** 刷新 CDN 缓存 */
+export function useRefreshCDNMutation() {
+  const { t } = useTranslation();
+  return useMutation({
+    mutationFn: (payload: { accountId: string; urls: string[] }) =>
+      cloudApi.refreshCDN(payload),
+    onSuccess: () => {
+      toast.success(t('toast.cdnRefreshed'));
     },
     onError: (err: Error) => {
       toast.error(err.message || t('toast.operationFailed'));

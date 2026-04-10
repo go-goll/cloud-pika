@@ -24,9 +24,9 @@ const TooltipContent = forwardRef<
     ref={ref}
     sideOffset={sideOffset}
     className={[
-      'z-50 rounded-lg px-3 py-1.5',
-      'bg-surface-container-lowest ghost-border',
-      'text-sm text-on-surface shadow-ambient',
+      'z-50 rounded-md px-2.5 py-1',
+      'bg-[var(--bg-raised)] border border-[var(--border)]',
+      'text-xs text-[var(--text)] shadow-md',
       'animate-[fadeIn_150ms_ease-out]',
       className ?? '',
     ].join(' ')}

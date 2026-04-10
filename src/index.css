@@ -3,72 +3,111 @@
 @tailwind utilities;
 
 :root {
-  font-family: Inter, 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  --surface: #f7f9fb;
-  --surface-low: #f2f4f6;
-  --surface-high: #ffffff;
-  --surface-muted: #eceef0;
-  --surface-elevated: #e0e3e5;
-  --text: #191c1e;
-  --text-muted: #3d484e;
-  --primary: #006782;
-  --primary-soft: #00a3cc;
-  --primary-glow: rgba(0, 103, 130, 0.2);
-  --on-primary: #ffffff;
-  --outline: rgba(109, 121, 127, 0.2);
-  --danger: #b3261e;
-  --success: #1d7b3e;
-  --radius: 12px;
-  --bg-pattern: radial-gradient(circle at 15% 10%, rgba(0, 163, 204, 0.08) 0, transparent 28%),
-    radial-gradient(circle at 80% 0%, rgba(0, 103, 130, 0.06) 0, transparent 35%),
-    linear-gradient(180deg, #f7f9fb 0%, #eef3f7 100%);
+  font-family: 'Inter', 'Noto Sans SC', -apple-system,
+    BlinkMacSystemFont, 'Segoe UI', sans-serif;
 
-  /* 新变量名别名（组件和 Tailwind 使用） */
-  --color-surface: var(--surface);
-  --color-surface-container-low: var(--surface-low);
-  --color-surface-container-lowest: var(--surface-high);
+  /* ── 核心调色板 ── */
+  --bg:             #fafafa;
+  --bg-raised:      #f0f0f2;
+  --border:         #e2e2e5;
+  --text:           #111113;
+  --text-secondary: #6b6b6e;
+  --accent:         #2563eb;
+  --accent-hover:   #1d4ed8;
+  --accent-soft:    rgba(37, 99, 235, 0.08);
+  --accent-text:    #ffffff;
+  --danger:         #dc2626;
+  --success:        #16a34a;
+  --warning:        #f59e0b;
+  --radius:         8px;
+
+  /* ── 阴影层级 ── */
+  --shadow-xs:  0 1px 2px rgba(0,0,0,0.04);
+  --shadow-sm:  0 2px 6px -1px rgba(0,0,0,0.06),
+                0 1px 2px rgba(0,0,0,0.04);
+  --shadow-md:  0 4px 12px -2px rgba(0,0,0,0.08),
+                0 2px 4px rgba(0,0,0,0.04);
+  --shadow-lg:  0 8px 24px -4px rgba(0,0,0,0.10),
+                0 4px 8px -2px rgba(0,0,0,0.05);
+  --shadow-xl:  0 16px 48px -8px rgba(0,0,0,0.12),
+                0 8px 16px -4px rgba(0,0,0,0.06);
+
+  /* ── 兼容别名（供 Tailwind extend 和旧组件过渡） ── */
+  --surface:      var(--bg);
+  --surface-low:  var(--bg-raised);
+  --surface-high: var(--bg);
+  --surface-muted: var(--bg-raised);
+  --surface-elevated: var(--bg-raised);
+  --text-muted:   var(--text-secondary);
+  --primary:      var(--accent);
+  --primary-soft: var(--accent);
+  --primary-glow: var(--accent-soft);
+  --on-primary:   var(--accent-text);
+  --outline:      var(--border);
+
+  --color-surface: var(--bg);
+  --color-surface-container-low: var(--bg-raised);
+  --color-surface-container-lowest: var(--bg);
   --color-on-surface: var(--text);
-  --color-on-surface-variant: var(--text-muted);
-  --color-outline-variant: var(--outline);
-  --color-primary: var(--primary);
-  --color-primary-container: var(--primary-soft);
-  --color-on-primary: var(--on-primary);
+  --color-on-surface-variant: var(--text-secondary);
+  --color-outline-variant: var(--border);
+  --color-primary: var(--accent);
+  --color-primary-container: var(--accent);
+  --color-on-primary: var(--accent-text);
   --color-danger: var(--danger);
   --color-success: var(--success);
 }
 
 :root[data-theme='dark'] {
-  --surface: #060e20;
-  --surface-low: #091328;
-  --surface-high: #141f38;
-  --surface-muted: #0f1930;
-  --surface-elevated: #192540;
-  --text: #dee5ff;
-  --text-muted: #a3aac4;
-  --primary: #6dddff;
-  --primary-soft: #00d2fd;
-  --primary-glow: rgba(109, 221, 255, 0.2);
-  --on-primary: #004c5e;
-  --outline: rgba(64, 72, 93, 0.35);
-  --danger: #ff716c;
-  --success: #49c878;
-  --bg-pattern: radial-gradient(circle at 10% 0%, rgba(0, 210, 253, 0.12) 0, transparent 30%),
-    radial-gradient(circle at 85% 5%, rgba(130, 163, 255, 0.1) 0, transparent 32%),
-    linear-gradient(180deg, #060e20 0%, #08142b 100%);
+  --bg:             #0c0c0e;
+  --bg-raised:      #18181b;
+  --border:         #27272a;
+  --text:           #ededef;
+  --text-secondary: #8b8b8e;
+  --accent:         #3b82f6;
+  --accent-hover:   #60a5fa;
+  --accent-soft:    rgba(59, 130, 246, 0.12);
+  --accent-text:    #ffffff;
+  --danger:         #ef4444;
+  --success:        #22c55e;
+  --warning:        #fbbf24;
 
-  /* 新变量名别名（深色主题） */
-  --color-surface: var(--surface);
-  --color-surface-container-low: var(--surface-low);
-  --color-surface-container-lowest: var(--surface-high);
+  --shadow-xs:  0 1px 2px rgba(0,0,0,0.20);
+  --shadow-sm:  0 2px 6px -1px rgba(0,0,0,0.30),
+                0 1px 2px rgba(0,0,0,0.20);
+  --shadow-md:  0 4px 12px -2px rgba(0,0,0,0.35),
+                0 2px 4px rgba(0,0,0,0.20);
+  --shadow-lg:  0 8px 24px -4px rgba(0,0,0,0.40),
+                0 4px 8px -2px rgba(0,0,0,0.25);
+  --shadow-xl:  0 16px 48px -8px rgba(0,0,0,0.50),
+                0 8px 16px -4px rgba(0,0,0,0.30);
+
+  --surface:      var(--bg);
+  --surface-low:  var(--bg-raised);
+  --surface-high: var(--bg-raised);
+  --surface-muted: var(--bg-raised);
+  --surface-elevated: #27272a;
+  --text-muted:   var(--text-secondary);
+  --primary:      var(--accent);
+  --primary-soft: var(--accent);
+  --primary-glow: var(--accent-soft);
+  --on-primary:   var(--accent-text);
+  --outline:      var(--border);
+
+  --color-surface: var(--bg);
+  --color-surface-container-low: var(--bg-raised);
+  --color-surface-container-lowest: var(--bg-raised);
   --color-on-surface: var(--text);
-  --color-on-surface-variant: var(--text-muted);
-  --color-outline-variant: var(--outline);
-  --color-primary: var(--primary);
-  --color-primary-container: var(--primary-soft);
-  --color-on-primary: var(--on-primary);
+  --color-on-surface-variant: var(--text-secondary);
+  --color-outline-variant: var(--border);
+  --color-primary: var(--accent);
+  --color-primary-container: var(--accent);
+  --color-on-primary: var(--accent-text);
   --color-danger: var(--danger);
   --color-success: var(--success);
 }
+
+/* ── 基础重置 ── */
 
 * {
   box-sizing: border-box;
@@ -78,7 +117,9 @@ body {
   margin: 0;
   min-height: 100vh;
   color: var(--text);
-  background: var(--bg-pattern);
+  background: var(--bg);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 #root {
@@ -92,47 +133,80 @@ textarea {
   font: inherit;
 }
 
-.glass {
-  background: color-mix(in srgb, var(--surface-elevated) 78%, transparent);
-  backdrop-filter: blur(20px);
+/* ── 自定义滚动条 ── */
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
 }
 
-.no-line {
-  border: 1px solid transparent;
+::-webkit-scrollbar-track {
+  background: transparent;
 }
 
-/* 签名渐变背景 */
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-secondary);
+}
+
+/* ── 选中高亮色 ── */
+
+::selection {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+/* ── 全局 focus-visible ── */
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: var(--radius);
+}
+
+button:focus-visible,
+input:focus-visible,
+select:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+/* ── 工具类 ── */
+
+/* 主按钮纯色背景（替代渐变） */
 .signature-gradient {
-  background: linear-gradient(135deg, var(--primary-soft), var(--primary));
+  background: var(--accent);
 }
 
-/* 细微边框 */
+/* 边框 */
 .ghost-border {
-  border: 1px solid var(--outline);
+  border: 1px solid var(--border);
 }
 
-/* 毛玻璃面板 */
+/* 毛玻璃顶栏 */
+.glass {
+  background: color-mix(in srgb, var(--bg) 80%, transparent);
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+}
+
 .glass-panel {
-  background: color-mix(in srgb, var(--surface-high) 72%, transparent);
-  backdrop-filter: blur(24px);
+  background: color-mix(in srgb, var(--bg) 75%, transparent);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
 }
 
-/* 环境阴影 */
+/* 阴影：仅弹窗/浮层使用 */
 .ambient-shadow {
-  box-shadow: 0 32px 48px -4px rgba(0, 103, 130, 0.06),
-    0 8px 16px -2px rgba(0, 103, 130, 0.04);
+  box-shadow: var(--shadow-lg);
 }
 
-/* 全局主题过渡动画（不影响 transform/opacity 动画） */
-*,
-*::before,
-*::after {
-  transition: background-color 0.2s ease,
-    border-color 0.2s ease,
-    color 0.15s ease;
-}
+/* ── 动画 ── */
 
-/* 页面切换淡入动画 */
 @keyframes pageFadeIn {
   from { opacity: 0; transform: translateY(4px); }
   to { opacity: 1; transform: translateY(0); }
@@ -141,33 +215,29 @@ textarea {
   animation: pageFadeIn 0.25s ease-out both;
 }
 
-/* 列表项入场动画 */
 @keyframes rowFadeIn {
-  from { opacity: 0; transform: translateY(6px); }
+  from { opacity: 0; transform: translateY(4px); }
   to { opacity: 1; transform: translateY(0); }
 }
 .animate-row-in {
-  animation: rowFadeIn 0.2s ease both;
+  animation: rowFadeIn 0.15s ease both;
 }
 
-/* 进度条 shimmer 光效 */
 @keyframes shimmer {
   0% { background-position: -200% 0; }
   100% { background-position: 200% 0; }
 }
 .progress-shimmer {
-  background-image: linear-gradient(
+  background: linear-gradient(
     90deg,
-    var(--primary) 0%,
-    #82a3ff 40%,
-    var(--primary-soft) 60%,
-    var(--primary) 100%
+    var(--accent) 0%,
+    var(--accent-soft) 50%,
+    var(--accent) 100%
   );
   background-size: 200% 100%;
   animation: shimmer 2s linear infinite;
 }
 
-/* 对话框进入动画 */
 @keyframes fadeIn {
   from { opacity: 0; }
   to { opacity: 1; }
@@ -181,7 +251,7 @@ textarea {
 @keyframes dialogIn {
   from {
     opacity: 0;
-    transform: translate(-50%, -50%) scale(0.95);
+    transform: translate(-50%, -50%) scale(0.96);
   }
   to {
     opacity: 1;
@@ -196,17 +266,46 @@ textarea {
   }
   to {
     opacity: 0;
-    transform: translate(-50%, -50%) scale(0.95);
+    transform: translate(-50%, -50%) scale(0.96);
   }
 }
 
 @keyframes slideUp {
   from {
     opacity: 0;
-    transform: translateX(-50%) translateY(16px);
+    transform: translateX(-50%) translateY(12px);
   }
   to {
     opacity: 1;
     transform: translateX(-50%) translateY(0);
   }
 }
+
+@keyframes breathe {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 0.8; }
+}
+.animate-breathe {
+  animation: breathe 2.5s ease-in-out infinite;
+}
+
+@keyframes gradient-shift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+.animate-gradient {
+  background-size: 200% 200%;
+  animation: gradient-shift 4s ease infinite;
+}
+
+/* ── 文件类型图标颜色 ── */
+
+.icon-folder { color: #2563eb; }
+.icon-image  { color: #059669; }
+.icon-video  { color: #7c3aed; }
+.icon-audio  { color: #d97706; }
+.icon-code   { color: #0891b2; }
+.icon-archive { color: #9333ea; }
+.icon-text   { color: #6b7280; }
+.icon-file   { color: var(--text-secondary); }

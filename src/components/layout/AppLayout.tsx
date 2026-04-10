@@ -1,29 +1,25 @@
 import type { PropsWithChildren } from 'react';
-import { Sidebar } from './Sidebar';
 import { Header } from './Header';
+import { TransferPanel } from '@/components/transfers/TransferPanel';
 
 /**
- * 主布局：侧边栏（flex shrink-0） + 头部 + 内容区
- * 侧边栏通过 flex 布局自然占位，无需 fixed 定位
+ * 主布局：顶部导航栏 + 内容区
+ * 导航已合并到 Header，无需独立侧边栏
  */
 export function AppLayout({ children }: PropsWithChildren) {
   return (
     <div
       className={[
-        'flex min-h-screen',
+        'flex min-h-screen flex-col',
         'bg-[var(--color-surface)]',
         'transition-colors duration-300',
       ].join(' ')}
     >
-      <Sidebar />
-
-      {/* 主内容区 */}
-      <div className="flex min-h-screen flex-1 flex-col overflow-auto">
-        <Header />
-        <main className="flex-1 p-4 sm:p-6">
-          {children}
-        </main>
-      </div>
+      <Header />
+      <main className="flex-1 overflow-hidden p-4 sm:p-6">
+        {children}
+      </main>
+      <TransferPanel />
     </div>
   );
 }

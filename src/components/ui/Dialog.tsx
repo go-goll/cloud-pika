@@ -16,7 +16,7 @@ const DialogTrigger = DialogPrimitive.Trigger;
 /** 对话框关闭按钮 */
 const DialogClose = DialogPrimitive.Close;
 
-/** 对话框遮罩层 */
+/** 对话框遮罩层 - 增加 backdrop-blur */
 const DialogOverlay = forwardRef<
   ElementRef<typeof DialogPrimitive.Overlay>,
   ComponentPropsWithoutRef<typeof DialogPrimitive.Overlay>
@@ -24,7 +24,8 @@ const DialogOverlay = forwardRef<
   <DialogPrimitive.Overlay
     ref={ref}
     className={[
-      'fixed inset-0 z-50 bg-black/40 backdrop-blur-sm',
+      'fixed inset-0 z-50',
+      'bg-black/40 backdrop-blur-sm',
       'data-[state=open]:animate-[fadeIn_150ms_ease-out]',
       'data-[state=closed]:animate-[fadeOut_100ms_ease-in]',
       className ?? '',
@@ -34,7 +35,7 @@ const DialogOverlay = forwardRef<
 ));
 DialogOverlay.displayName = 'DialogOverlay';
 
-/** 对话框内容区 */
+/** 对话框内容区 - 增加多层阴影和更精致的圆角 */
 const DialogContent = forwardRef<
   ElementRef<typeof DialogPrimitive.Content>,
   ComponentPropsWithoutRef<typeof DialogPrimitive.Content>
@@ -44,10 +45,12 @@ const DialogContent = forwardRef<
     <DialogPrimitive.Content
       ref={ref}
       className={[
-        'fixed left-1/2 top-1/2 z-50 w-full max-w-lg',
+        'fixed left-1/2 top-1/2 z-50',
+        'w-full max-w-lg',
         '-translate-x-1/2 -translate-y-1/2',
-        'rounded-xl bg-surface-container-lowest',
-        'p-6 ghost-border shadow-ambient',
+        'rounded-xl bg-[var(--bg)]',
+        'p-6 border border-[var(--border)]',
+        'shadow-[var(--shadow-xl)]',
         'data-[state=open]:animate-[dialogIn_200ms_ease-out]',
         'data-[state=closed]:animate-[dialogOut_150ms_ease-in]',
         className ?? '',
@@ -59,10 +62,11 @@ const DialogContent = forwardRef<
       <DialogPrimitive.Close
         className={[
           'absolute right-4 top-4 rounded-lg',
-          'p-1 text-on-surface-variant',
-          'hover:bg-surface-container-low',
-          'hover:text-on-surface',
-          'transition-colors',
+          'p-1.5 text-[var(--text-secondary)]',
+          'hover:bg-[var(--bg-raised)]',
+          'hover:text-[var(--text)]',
+          'transition-all duration-150',
+          'active:scale-95',
         ].join(' ')}
       >
         <X className="h-4 w-4" />
@@ -96,7 +100,8 @@ const DialogTitle = forwardRef<
   <DialogPrimitive.Title
     ref={ref}
     className={[
-      'text-lg font-semibold text-on-surface',
+      'font-display text-lg font-semibold',
+      'text-[var(--text)]',
       className ?? '',
     ].join(' ')}
     {...props}
@@ -114,7 +119,7 @@ const DialogDescription = forwardRef<
   <DialogPrimitive.Description
     ref={ref}
     className={[
-      'text-sm text-on-surface-variant',
+      'text-sm text-[var(--text-secondary)]',
       className ?? '',
     ].join(' ')}
     {...props}

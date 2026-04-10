@@ -296,6 +296,19 @@ func (p *Provider) GenerateURL(
 		p.mu.Unlock()
 	}
 	if region == "" {
+		// 缓存未命中，刷新 bucket→region 映射
+		if _, err := p.ListBuckets(
+			context.Background(),
+		); err != nil {
+			return "", fmt.Errorf(
+				"refresh bucket regions: %w", err,
+			)
+		}
+		p.mu.Lock()
+		region = p.bucketRegions[params.Bucket]
+		p.mu.Unlock()
+	}
+	if region == "" {
 		return "", fmt.Errorf(
 			"cannot determine region for bucket %s",
 			params.Bucket,

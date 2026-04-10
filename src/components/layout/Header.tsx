@@ -1,35 +1,54 @@
+import { useEffect, useState } from 'react';
 import {
+  FolderKanban,
+  KeyRound,
   Languages,
   Moon,
-  RefreshCcw,
-  Rocket,
+  Settings2,
   Sun,
 } from 'lucide-react';
 import i18n from 'i18next';
 import { useTranslation } from 'react-i18next';
-import { useLocation, useNavigate } from 'react-router-dom';
-import { Button } from '@/components/ui/Button';
+import { Link, useLocation } from 'react-router-dom';
 import { Select } from '@/components/ui/Select';
 import { SimpleTooltip } from '@/components/ui/Tooltip';
+import { AccountDialog } from '@/components/account/AccountDialog';
+import { SettingsDrawer } from '@/components/settings/SettingsDrawer';
 import { useAppStore } from '@/stores/useAppStore';
 import { useAccountStore } from '@/stores/useAccountStore';
 
-/** 路由 → 标题 i18n 映射 */
-const titleMap: Record<string, string> = {
-  '/login': 'nav.accounts',
-  '/bucket': 'nav.explorer',
-  '/transfers': 'nav.transfer',
-  '/settings': 'nav.settings',
-};
+/** 导航图标按钮基础样式 */
+const navBtnBase = [
+  'relative flex h-9 w-9 items-center justify-center',
+  'rounded-lg transition-all duration-200',
+].join(' ');
 
-/** 顶部头部栏：毛玻璃背景、页面标题、操作按钮组 */
+/** 导航菜单项 */
+const navItems = [
+  { to: '/bucket', icon: FolderKanban, key: 'nav.explorer' },
+];
+
+/** 顶部导航栏：品牌 + 导航 + 全局操作 */
 export function Header() {
   const { t } = useTranslation();
   const { pathname } = useLocation();
-  const navigate = useNavigate();
-  const inBucketPage = pathname.startsWith('/bucket');
+  const [settingsOpen, setSettingsOpen] = useState(false);
 
   const accounts = useAccountStore((s) => s.accounts);
+  const accountDialogOpen = useAccountStore(
+    (s) => s.accountDialogOpen,
+  );
+  const setAccountDialogOpen = useAccountStore(
+    (s) => s.setAccountDialogOpen,
+  );
+
+  // 没有账户时自动打开账户管理对话框
+  useEffect(() => {
+    if (accounts.length === 0) {
+      setAccountDialogOpen(true);
+    }
+  }, [accounts.length, setAccountDialogOpen]);
+
   const activeAccountId = useAccountStore(
     (s) => s.activeAccountId,
   );
@@ -43,23 +62,24 @@ export function Header() {
   const setThemeMode = useAppStore((s) => s.setThemeMode);
   const locale = useAppStore((s) => s.locale);
   const setLocale = useAppStore((s) => s.setLocale);
+  const settings = useAppStore((s) => s.settings);
+  const setSettings = useAppStore((s) => s.setSettings);
 
-  /** 切换深色/浅色主题 */
   const handleToggleTheme = () => {
     const next =
       themeMode === 'dark' ? 'light' : 'dark';
     setThemeMode(next);
+    setSettings({ ...settings, theme: next });
   };
 
-  /** 切换中文/英文 */
   const handleToggleLanguage = () => {
     const next =
       locale === 'zh-CN' ? 'en-US' : 'zh-CN';
     setLocale(next);
+    setSettings({ ...settings, language: next });
     void i18n.changeLanguage(next);
   };
 
-  /** 判断当前是否为深色 */
   const isDark =
     themeMode === 'dark' ||
     (themeMode === 'system' &&
@@ -70,32 +90,131 @@ export function Header() {
 
   return (
     <header
-      className={
-        'glass sticky top-0 z-30 flex h-16 '
-        + 'items-center justify-between '
-        + 'border-b border-transparent px-4 sm:px-6'
-      }
+      className={[
+        'glass sticky top-0 z-30',
+        'flex h-14 items-center justify-between',
+        'border-b border-[var(--border)]/50 px-4',
+      ].join(' ')}
     >
-      {/* 左侧标题 */}
-      <div className="min-w-0">
-        <h2 className="font-display text-lg font-semibold">
-          {t(titleMap[pathname] ?? 'nav.explorer')}
-        </h2>
-        <p className="truncate text-xs text-[var(--text-muted)]">
-          {t('header.connectedAccounts', {
-            count: accounts.length,
+      {/* 左侧：品牌 + 导航 */}
+      <div className="flex items-center gap-1">
+        {/* 品牌 Logo + 名称 */}
+        <div className="flex items-center gap-2.5 mr-5">
+          <img
+            src="/images/logo.png"
+            alt="Cloud Pika"
+            className="h-7 w-7 rounded-md"
+          />
+          <span
+            className={[
+              'font-display text-sm font-semibold',
+              'tracking-tight hidden sm:inline',
+            ].join(' ')}
+          >
+            Cloud Pika
+          </span>
+        </div>
+
+        {/* 导航按钮组 */}
+        <nav className="flex items-center gap-0.5">
+          {/* 账户管理按钮 */}
+          <SimpleTooltip content={t('header.manageAccounts')}>
+            <button
+              type="button"
+              onClick={() => setAccountDialogOpen(true)}
+              className={[
+                navBtnBase,
+                accountDialogOpen
+                  ? 'bg-[var(--accent-soft)] text-[var(--accent)]'
+                  : [
+                      'text-[var(--text-secondary)]',
+                      'hover:bg-[var(--bg-raised)]',
+                      'hover:text-[var(--text)]',
+                    ].join(' '),
+              ].join(' ')}
+            >
+              <KeyRound size={16} />
+              {accountDialogOpen && (
+                <span
+                  className={[
+                    'absolute bottom-0.5 left-1/2',
+                    '-translate-x-1/2',
+                    'h-0.5 w-4 rounded-full',
+                    'bg-[var(--accent)]',
+                  ].join(' ')}
+                />
+              )}
+            </button>
+          </SimpleTooltip>
+
+          {navItems.map((item) => {
+            const active = pathname.startsWith(item.to);
+            const Icon = item.icon;
+            return (
+              <SimpleTooltip
+                key={item.to}
+                content={t(item.key)}
+              >
+                <Link
+                  to={item.to}
+                  className={[
+                    navBtnBase,
+                    active
+                      ? 'bg-[var(--accent-soft)] text-[var(--accent)]'
+                      : [
+                          'text-[var(--text-secondary)]',
+                          'hover:bg-[var(--bg-raised)]',
+                          'hover:text-[var(--text)]',
+                        ].join(' '),
+                  ].join(' ')}
+                >
+                  <Icon size={16} />
+                  {/* 底部激活指示条 */}
+                  {active && (
+                    <span
+                      className={[
+                        'absolute bottom-0.5 left-1/2',
+                        '-translate-x-1/2',
+                        'h-0.5 w-4 rounded-full',
+                        'bg-[var(--accent)]',
+                        'animate-fade-in',
+                      ].join(' ')}
+                    />
+                  )}
+                </Link>
+              </SimpleTooltip>
+            );
           })}
-        </p>
+
+          {/* 设置按钮 */}
+          <SimpleTooltip content={t('nav.settings')}>
+            <button
+              type="button"
+              onClick={() => setSettingsOpen(true)}
+              className={[
+                navBtnBase,
+                settingsOpen
+                  ? 'bg-[var(--accent-soft)] text-[var(--accent)]'
+                  : [
+                      'text-[var(--text-secondary)]',
+                      'hover:bg-[var(--bg-raised)]',
+                      'hover:text-[var(--text)]',
+                    ].join(' '),
+              ].join(' ')}
+            >
+              <Settings2 size={16} />
+            </button>
+          </SimpleTooltip>
+        </nav>
       </div>
 
-      {/* 右侧操作区 */}
+      {/* 右侧：账户选择 + 主题 + 语言 */}
       <div className="flex items-center gap-2">
-        {/* 账户选择器（窄窗口隐藏） */}
         {accounts.length > 0 ? (
           <Select
             value={selectedAccountId}
             onChange={(val) => setActiveAccountId(val)}
-            className="hidden h-9 min-w-[140px] sm:flex"
+            className="h-8 min-w-[120px] text-xs hidden sm:flex"
             options={accounts.map((item) => ({
               value: item.id,
               label: item.name,
@@ -104,7 +223,7 @@ export function Header() {
           />
         ) : null}
 
-        {/* 主题切换 */}
+        {/* 主题切换（带日月切换动画） */}
         <SimpleTooltip
           content={t('header.toggleTheme')}
         >
@@ -112,18 +231,21 @@ export function Header() {
             type="button"
             onClick={handleToggleTheme}
             className={[
-              'flex h-9 w-9 items-center justify-center',
-              'rounded-lg transition-all duration-200',
-              'text-[var(--color-on-surface-variant)]',
-              'hover:bg-[var(--color-surface-container-low)]',
-              'hover:text-[var(--color-on-surface)]',
+              'flex h-8 w-8 items-center justify-center',
+              'rounded-lg transition-all duration-300',
+              'text-[var(--text-secondary)]',
+              'hover:bg-[var(--bg-raised)]',
+              'hover:text-[var(--text)]',
+              'active:scale-90',
             ].join(' ')}
           >
-            {isDark ? (
-              <Sun size={18} />
-            ) : (
-              <Moon size={18} />
-            )}
+            <div className="transition-transform duration-300">
+              {isDark ? (
+                <Sun size={15} />
+              ) : (
+                <Moon size={15} />
+              )}
+            </div>
           </button>
         </SimpleTooltip>
 
@@ -135,69 +257,31 @@ export function Header() {
             type="button"
             onClick={handleToggleLanguage}
             className={[
-              'flex items-center gap-1.5 rounded-lg',
-              'px-2.5 py-1.5 text-xs font-medium',
+              'flex items-center gap-1 rounded-lg',
+              'px-2 py-1.5 text-xs font-medium',
               'transition-all duration-200',
-              'text-[var(--color-on-surface-variant)]',
-              'hover:bg-[var(--color-surface-container-low)]',
-              'hover:text-[var(--color-on-surface)]',
+              'text-[var(--text-secondary)]',
+              'hover:bg-[var(--bg-raised)]',
+              'hover:text-[var(--text)]',
+              'active:scale-95',
             ].join(' ')}
           >
-            <Languages size={14} />
+            <Languages size={13} />
             <span>
               {locale === 'zh-CN' ? '中文' : 'EN'}
             </span>
           </button>
         </SimpleTooltip>
-
-        {/* 账户管理（窄窗口隐藏文字） */}
-        <SimpleTooltip content={t('nav.accounts')}>
-          <Button
-            variant="secondary"
-            onClick={() => navigate('/login')}
-            className="hidden sm:inline-flex"
-          >
-            {t('nav.accounts')}
-          </Button>
-        </SimpleTooltip>
-
-        {/* 刷新 */}
-        <SimpleTooltip content={t('common.refresh')}>
-          <Button
-            variant="secondary"
-            onClick={() =>
-              window.dispatchEvent(
-                new CustomEvent(
-                  'cloud-pika:refresh-active',
-                ),
-              )
-            }
-            disabled={!inBucketPage}
-            iconOnly
-          >
-            <RefreshCcw size={16} />
-          </Button>
-        </SimpleTooltip>
-
-        {/* 上传 */}
-        <SimpleTooltip content={t('bucket.upload')}>
-          <Button
-            onClick={() =>
-              window.dispatchEvent(
-                new CustomEvent(
-                  'cloud-pika:upload-active',
-                ),
-              )
-            }
-            disabled={!inBucketPage}
-          >
-            <Rocket size={16} />
-            <span className="ml-2 hidden sm:inline">
-              {t('bucket.upload')}
-            </span>
-          </Button>
-        </SimpleTooltip>
       </div>
+
+      <AccountDialog
+        open={accountDialogOpen}
+        onClose={() => setAccountDialogOpen(false)}
+      />
+      <SettingsDrawer
+        open={settingsOpen}
+        onClose={() => setSettingsOpen(false)}
+      />
     </header>
   );
 }

@@ -22,10 +22,12 @@ const baseClasses = [
   'bg-[var(--color-surface-container-low)]',
   'text-sm text-[var(--color-on-surface)]',
   'ghost-border',
-  'placeholder:text-[var(--color-on-surface-variant)]',
-  'focus:ring-2 focus:ring-[var(--color-primary)]/20',
+  'placeholder:text-[var(--color-on-surface-variant)]/60',
+  'focus:ring-2 focus:ring-[var(--accent)]/20',
+  'focus:border-[var(--accent)]/40',
   'focus:bg-[var(--color-surface-container-lowest)]',
-  'focus:outline-none transition-all',
+  'focus:shadow-[var(--shadow-sm)]',
+  'focus:outline-none transition-all duration-200',
 ].join(' ');
 
 /**

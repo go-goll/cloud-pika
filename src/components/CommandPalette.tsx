@@ -13,12 +13,16 @@ import {
   Workflow,
 } from 'lucide-react';
 import { useAppStore } from '@/stores/useAppStore';
+import { useAccountStore } from '@/stores/useAccountStore';
 
 /** 全局命令面板，通过 Cmd+K / Ctrl+K 唤起 */
 export function CommandPalette() {
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const setAccountDialogOpen = useAccountStore(
+    (s) => s.setAccountDialogOpen,
+  );
   const themeMode = useAppStore((s) => s.themeMode);
   const setThemeMode = useAppStore(
     (s) => s.setThemeMode,
@@ -100,7 +104,7 @@ export function CommandPalette() {
                 icon={<KeyRound size={16} />}
                 label={t('command.goAccounts')}
                 onSelect={() =>
-                  run(() => navigate('/login'))
+                  run(() => setAccountDialogOpen(true))
                 }
               />
               <CommandItem

@@ -25,6 +25,7 @@ func buildRouter(token string, h *handler.Handler, hub *SSEHub) *gin.Engine {
 
 		api.POST("/accounts", h.CreateAccount)
 		api.GET("/accounts", h.ListAccounts)
+		api.GET("/accounts/:id/features", h.GetProviderFeatures)
 		api.PUT("/accounts/:id", h.UpdateAccount)
 		api.DELETE("/accounts/:id", h.DeleteAccount)
 

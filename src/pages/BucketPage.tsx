@@ -14,13 +14,19 @@ import { useDropzone } from 'react-dropzone';
 import {
   useBucketsQuery,
   useDeleteObjectsMutation,
+  useDomainsQuery,
   useDownloadMutation,
+  useFetchMutation,
   useGenerateUrlMutation,
   useObjectsQuery,
+  useProviderFeaturesQuery,
+  useRefreshCDNMutation,
   useRenameMutation,
   useUploadMutation,
 } from '@/hooks/useCloudApi';
+import { useKeyboardNavigation } from '@/hooks/useKeyboardNavigation';
 import { tauriApi } from '@/lib/tauri';
+import { cloudApi } from '@/lib/api-client';
 import { useAccountStore } from '@/stores/useAccountStore';
 import { useAppStore } from '@/stores/useAppStore';
 import { useBucketStore } from '@/stores/useBucketStore';
@@ -32,11 +38,17 @@ import { SelectionBar } from '@/components/bucket/SelectionBar';
 import { RenameDialog } from '@/components/bucket/RenameDialog';
 import { DeleteConfirmDialog } from '@/components/bucket/DeleteConfirmDialog';
 import { UploadZone } from '@/components/bucket/UploadZone';
+import { FetchUrlDialog } from '@/components/bucket/FetchUrlDialog';
 import { UrlDialog } from '@/components/bucket/UrlDialog';
 import { ResourceTable } from '@/components/resource/ResourceTable';
 import { ResourceGrid } from '@/components/resource/ResourceGrid';
 import { ImagePreview } from '@/components/preview/ImagePreview';
-import { isImageKey, extractFileName } from '@/lib/format';
+import {
+  isImageKey,
+  extractFileName,
+  formatCopyUrl,
+} from '@/lib/format';
+import { toast } from '@/lib/toast';
 
 export function BucketPage() {
   const { t } = useTranslation();
@@ -56,10 +68,13 @@ export function BucketPage() {
   const [renameTarget, setRenameTarget] = useState('');
   const [deleteTargets, setDeleteTargets] = useState<string[]>([]);
   const [urlDialogUrl, setUrlDialogUrl] = useState('');
+  const [urlDialogKey, setUrlDialogKey] = useState('');
+  const [fetchDialogOpen, setFetchDialogOpen] = useState(false);
 
   // ---- 图片预览状态 ----
   const [previewUrl, setPreviewUrl] = useState('');
   const [previewFileName, setPreviewFileName] = useState('');
+  const [previewKey, setPreviewKey] = useState('');
 
   // ---- 全局Store ----
   const accounts = useAccountStore((s) => s.accounts);
@@ -75,9 +90,12 @@ export function BucketPage() {
     activeBucket,
     objects,
     syncStatus,
+    domainPrefs,
     setBuckets,
     setActiveBucket,
     setObjects,
+    appendObjects,
+    setDomainPref,
     reset,
   } = useBucketStore();
 
@@ -88,7 +106,9 @@ export function BucketPage() {
   const queueDownload = useDownloadMutation().mutateAsync;
   const deleteObjects = useDeleteObjectsMutation().mutateAsync;
   const renameObject = useRenameMutation().mutateAsync;
+  const fetchMutation = useFetchMutation();
   const generateUrl = useGenerateUrlMutation().mutateAsync;
+  const refreshCDN = useRefreshCDNMutation();
 
   // ---- 查询 ----
   const bucketsQuery = useBucketsQuery(
@@ -99,20 +119,56 @@ export function BucketPage() {
 
   // 搜索时将keyword作为prefix，否则使用目录prefix
   const effectivePrefix = searchKeyword || prefix;
+  const pageLimit = settings.paging ? 50 : 200;
+
+  // 加载更多用的分页 marker
+  const [pageMarker, setPageMarker] = useState('');
+  const [loadingMore, setLoadingMore] = useState(false);
 
   const objectsQuery = useObjectsQuery(
     {
       accountId: activeAccountId,
       bucket: activeBucket,
       prefix: effectivePrefix,
-      limit: 200,
+      limit: pageLimit,
       delimiter: '/',
     },
     Boolean(activeAccountId && activeBucket),
   );
 
+  const features = useProviderFeaturesQuery(
+    activeAccountId,
+    Boolean(activeAccountId),
+  );
+  const featureList = features.data ?? [];
+  const hasUrlUpload = featureList.includes('urlUpload');
+  const hasCustomDomain = featureList.includes('customDomain');
+  const hasRefreshCDN = featureList.includes('refreshCDN');
+
+  const domainsQuery = useDomainsQuery(
+    activeAccountId,
+    activeBucket,
+    Boolean(activeAccountId && activeBucket && hasCustomDomain),
+  );
+  const domains = domainsQuery.data ?? [];
+
   const refetchBuckets = bucketsQuery.refetch;
   const refetchObjects = objectsQuery.refetch;
+
+  // ---- 图片 key 列表（用于预览导航） ----
+  const imageKeys = useMemo(
+    () =>
+      objects
+        .filter(
+          (o) =>
+            !o.isDir
+            && !o.key.endsWith('/')
+            && (isImageKey(o.key)
+              || o.mimeType?.startsWith('image/')),
+        )
+        .map((o) => o.key),
+    [objects],
+  );
 
   // ---- 数据同步 ----
   useEffect(() => {
@@ -125,6 +181,7 @@ export function BucketPage() {
         objectsQuery.data.items,
         objectsQuery.data.marker,
       );
+      setPageMarker(objectsQuery.data.marker ?? '');
     }
   }, [objectsQuery.data, setObjects]);
 
@@ -135,14 +192,37 @@ export function BucketPage() {
       setPrefix('');
       setSearchKeyword('');
       setSelectedKeys(new Set());
+      setPageMarker('');
       prevAccountIdRef.current = activeAccountId;
     }
   }, [activeAccountId, reset]);
 
-  // prefix改变时清空选中
+  // prefix改变时清空选中和分页
   useEffect(() => {
     setSelectedKeys(new Set());
+    setPageMarker('');
   }, [prefix, searchKeyword]);
+
+  // ---- previewKey 变化时生成预览 URL ----
+  useEffect(() => {
+    if (!previewKey || !activeAccountId || !activeBucket) {
+      setPreviewUrl('');
+      setPreviewFileName('');
+      return;
+    }
+    void generateUrl({
+      accountId: activeAccountId,
+      bucket: activeBucket,
+      key: previewKey,
+      https: settings.https,
+    }).then((r) => {
+      setPreviewUrl(r.url);
+      setPreviewFileName(extractFileName(previewKey));
+    });
+  }, [
+    previewKey, activeAccountId, activeBucket,
+    generateUrl, settings.https,
+  ]);
 
   // ---- 选中逻辑 ----
   /** 切换单个文件选中（支持Shift范围选择） */
@@ -281,7 +361,6 @@ export function BucketPage() {
   const onConfirmRename = useCallback(
     async (newName: string) => {
       if (!activeAccountId || !activeBucket) return;
-      // 保持相同目录路径
       const dir = renameTarget.includes('/')
         ? renameTarget.substring(
             0,
@@ -315,39 +394,127 @@ export function BucketPage() {
         key,
         https: settings.https,
       });
+      const formatted = formatCopyUrl(
+        result.url, key, settings.copyType,
+      );
+      try {
+        if (tauriApi.isTauriEnv()) {
+          await tauriApi.writeClipboardText(formatted);
+        } else {
+          await navigator.clipboard.writeText(formatted);
+        }
+        toast.success(t('toast.urlCopied'));
+      } catch {
+        // 复制失败时仍弹出 URL 对话框
+      }
       setUrlDialogUrl(result.url);
+      setUrlDialogKey(key);
     },
-    [activeAccountId, activeBucket, generateUrl, settings.https],
+    [
+      activeAccountId, activeBucket, generateUrl,
+      settings.https, settings.copyType, t,
+    ],
   );
 
-  /** 预览图片：生成签名URL并打开预览 */
-  const onPreview = useCallback(
+  /** 快速复制URL（使用存储的域名偏好，不弹对话框） */
+  const onQuickCopy = useCallback(
     async (key: string) => {
       if (!activeAccountId || !activeBucket) return;
-      // 判断是否为图片文件
+      try {
+        const pref = domainPrefs[activeBucket];
+        const result = await generateUrl({
+          accountId: activeAccountId,
+          bucket: activeBucket,
+          key,
+          domain: pref?.domain || undefined,
+          https: settings.https,
+        });
+        const formatted = formatCopyUrl(
+          result.url, key, settings.copyType,
+        );
+        if (tauriApi.isTauriEnv()) {
+          await tauriApi.writeClipboardText(formatted);
+        } else {
+          await navigator.clipboard.writeText(formatted);
+        }
+        toast.success(t('toast.urlCopied'));
+      } catch (err) {
+        toast.error(
+          (err as Error).message || t('toast.operationFailed'),
+        );
+      }
+    },
+    [
+      activeAccountId, activeBucket, domainPrefs,
+      generateUrl, settings, t,
+    ],
+  );
+
+  /** 预览图片：设置 previewKey 触发 URL 生成 */
+  const onPreview = useCallback(
+    (key: string) => {
       const obj = objects.find((o) => o.key === key);
       const isImage =
         isImageKey(key)
         || obj?.mimeType?.startsWith('image/');
       if (!isImage) return;
+      setPreviewKey(key);
+    },
+    [objects],
+  );
 
+  // ---- CDN 刷新 ----
+  const onRefreshCDN = useCallback(
+    async (key: string) => {
+      if (!activeAccountId || !activeBucket) return;
+      const pref = domainPrefs[activeBucket];
       const result = await generateUrl({
         accountId: activeAccountId,
         bucket: activeBucket,
         key,
+        domain: pref?.domain || undefined,
         https: settings.https,
       });
-      setPreviewUrl(result.url);
-      setPreviewFileName(extractFileName(key));
+      await refreshCDN.mutateAsync({
+        accountId: activeAccountId,
+        urls: [result.url],
+      });
     },
     [
-      activeAccountId,
-      activeBucket,
-      generateUrl,
-      objects,
-      settings.https,
+      activeAccountId, activeBucket, domainPrefs,
+      generateUrl, settings.https, refreshCDN,
     ],
   );
+
+  const handleBatchRefreshCDN = useCallback(async () => {
+    if (!activeAccountId || !activeBucket) return;
+    try {
+      const urls: string[] = [];
+      for (const key of selectedKeys) {
+        const pref = domainPrefs[activeBucket];
+        const result = await generateUrl({
+          accountId: activeAccountId,
+          bucket: activeBucket,
+          key,
+          domain: pref?.domain || undefined,
+          https: settings.https,
+        });
+        urls.push(result.url);
+      }
+      await refreshCDN.mutateAsync({
+        accountId: activeAccountId,
+        urls,
+      });
+    } catch (err) {
+      toast.error(
+        (err as Error).message || t('toast.operationFailed'),
+      );
+    }
+  }, [
+    activeAccountId, activeBucket, domainPrefs,
+    generateUrl, selectedKeys, settings.https,
+    refreshCDN, t,
+  ]);
 
   // ---- 批量操作 ----
   const handleBatchDelete = useCallback(() => {
@@ -355,29 +522,61 @@ export function BucketPage() {
   }, [selectedKeys]);
 
   const handleBatchDownload = useCallback(async () => {
-    for (const key of selectedKeys) {
-      await onDownload(key);
+    if (
+      !tauriApi.isTauriEnv()
+      || !activeAccountId || !activeBucket
+    ) {
+      return;
     }
-  }, [selectedKeys, onDownload]);
+    try {
+      const selected = await tauriApi.openFolderDialog();
+      const folder = selected[0];
+      if (!folder) return;
+      for (const key of selectedKeys) {
+        const fileName = key.split('/').pop() || key;
+        await queueDownload({
+          accountId: activeAccountId,
+          bucket: activeBucket,
+          key,
+          localPath: `${folder}/${fileName}`,
+        });
+      }
+    } catch (err) {
+      toast.error(
+        (err as Error).message || t('toast.operationFailed'),
+      );
+    }
+  }, [
+    activeAccountId, activeBucket, selectedKeys,
+    queueDownload, t,
+  ]);
 
   const handleBatchCopyUrl = useCallback(async () => {
-    // 批量复制：逐个生成并拼接
     if (!activeAccountId || !activeBucket) return;
-    const urls: string[] = [];
-    for (const key of selectedKeys) {
-      const result = await generateUrl({
-        accountId: activeAccountId,
-        bucket: activeBucket,
-        key,
-        https: settings.https,
-      });
-      urls.push(result.url);
-    }
-    const text = urls.join('\n');
-    if (tauriApi.isTauriEnv()) {
-      await tauriApi.writeClipboardText(text);
-    } else {
-      await navigator.clipboard.writeText(text);
+    try {
+      const lines: string[] = [];
+      for (const key of selectedKeys) {
+        const result = await generateUrl({
+          accountId: activeAccountId,
+          bucket: activeBucket,
+          key,
+          https: settings.https,
+        });
+        lines.push(
+          formatCopyUrl(result.url, key, settings.copyType),
+        );
+      }
+      const text = lines.join('\n');
+      if (tauriApi.isTauriEnv()) {
+        await tauriApi.writeClipboardText(text);
+      } else {
+        await navigator.clipboard.writeText(text);
+      }
+      toast.success(t('toast.urlCopied'));
+    } catch (err) {
+      toast.error(
+        (err as Error).message || t('toast.operationFailed'),
+      );
     }
   }, [
     activeAccountId,
@@ -385,12 +584,48 @@ export function BucketPage() {
     generateUrl,
     selectedKeys,
     settings.https,
+    settings.copyType,
+    t,
+  ]);
+
+  // ---- 加载更多 ----
+  const handleLoadMore = useCallback(async () => {
+    if (
+      !activeAccountId || !activeBucket
+      || !pageMarker || loadingMore
+    ) {
+      return;
+    }
+    setLoadingMore(true);
+    try {
+      const result = await cloudApi.listObjects({
+        accountId: activeAccountId,
+        bucket: activeBucket,
+        prefix: effectivePrefix,
+        limit: pageLimit,
+        delimiter: '/',
+        marker: pageMarker,
+      });
+      appendObjects(result.items, result.marker);
+      setPageMarker(result.marker ?? '');
+    } catch (err) {
+      toast.error(
+        (err as Error).message || t('toast.operationFailed'),
+      );
+    } finally {
+      setLoadingMore(false);
+    }
+  }, [
+    activeAccountId, activeBucket, pageMarker,
+    loadingMore, effectivePrefix, pageLimit,
+    appendObjects, t,
   ]);
 
   // ---- 文件夹导航 ----
   const navigateToFolder = useCallback((newPrefix: string) => {
     setPrefix(newPrefix);
     setSearchKeyword('');
+    setPageMarker('');
   }, []);
 
   // ---- 刷新 ----
@@ -409,6 +644,16 @@ export function BucketPage() {
     },
     [setActiveBucket],
   );
+
+  // ---- 键盘导航 ----
+  const { focusedIndex } = useKeyboardNavigation(objects, {
+    onNavigateFolder: navigateToFolder,
+    onPreview: (k) => void onPreview(k),
+    onDelete: settings.hideDeleteButton
+      ? undefined
+      : onRequestDelete,
+    onSelect: handleSelect,
+  });
 
   // ---- 拖拽上传 ----
   const { getRootProps, getInputProps, isDragActive } =
@@ -480,28 +725,24 @@ export function BucketPage() {
     return parts[parts.length - 1] || renameTarget;
   }, [renameTarget]);
 
+  // ---- 预览导航计算 ----
+  const previewIndex = imageKeys.indexOf(previewKey);
+
   // ---- 渲染 ----
   return (
-    <div className="space-y-4" {...getRootProps()}>
+    <div className="flex h-full gap-4" {...getRootProps()}>
       <input {...getInputProps()} />
 
-      <div
-        className={
-          'grid gap-4 '
-          + 'lg:grid-cols-[200px_1fr] '
-          + 'xl:grid-cols-[240px_1fr]'
-        }
-      >
-        {/* 左侧：Bucket列表 */}
-        <BucketSidebar
-          buckets={buckets}
-          activeBucket={activeBucket}
-          isLoading={bucketsQuery.isLoading}
-          onSelect={handleBucketSelect}
-        />
+      {/* 左侧：Bucket列表 */}
+      <BucketSidebar
+        buckets={buckets}
+        activeBucket={activeBucket}
+        isLoading={bucketsQuery.isLoading}
+        onSelect={handleBucketSelect}
+      />
 
-        {/* 右侧：资源浏览区 */}
-        <section className="space-y-3">
+      {/* 右侧：资源浏览区 */}
+      <section className="flex-1 min-w-0 space-y-3 overflow-auto">
           {/* 面包屑导航 */}
           {activeBucket ? (
             <BreadcrumbNav
@@ -519,6 +760,11 @@ export function BucketPage() {
             onSearch={setSearchKeyword}
             onUpload={() => void onClickUpload()}
             onRefresh={handleRefresh}
+            onFetchUrl={
+              hasUrlUpload
+                ? () => setFetchDialogOpen(true)
+                : undefined
+            }
           />
 
           {/* 资源列表 */}
@@ -526,14 +772,25 @@ export function BucketPage() {
             <ResourceTable
               objects={objects}
               selectedKeys={selectedKeys}
+              focusedIndex={focusedIndex}
               onSelect={handleSelect}
               onSelectAll={handleSelectAll}
               onCopyUrl={(k) => void onCopyUrl(k)}
-              onDelete={onRequestDelete}
+              onDelete={
+                settings.hideDeleteButton
+                  ? undefined
+                  : onRequestDelete
+              }
               onDownload={(k) => void onDownload(k)}
               onRename={onRequestRename}
               onPreview={(k) => void onPreview(k)}
               onNavigateFolder={navigateToFolder}
+              onRefreshCDN={
+                hasRefreshCDN
+                  ? (k) => void onRefreshCDN(k)
+                  : undefined
+              }
+              onQuickCopy={(k) => void onQuickCopy(k)}
               onUpload={() => void onClickUpload()}
               onRefresh={handleRefresh}
             />
@@ -541,19 +798,52 @@ export function BucketPage() {
             <ResourceGrid
               objects={objects}
               selectedKeys={selectedKeys}
+              focusedIndex={focusedIndex}
               accountId={activeAccountId}
               bucket={activeBucket}
               onSelect={handleSelect}
               onCopyUrl={(k) => void onCopyUrl(k)}
-              onDelete={onRequestDelete}
+              onDelete={
+                settings.hideDeleteButton
+                  ? undefined
+                  : onRequestDelete
+              }
               onDownload={(k) => void onDownload(k)}
               onRename={onRequestRename}
               onPreview={(k) => void onPreview(k)}
               onNavigateFolder={navigateToFolder}
+              onRefreshCDN={
+                hasRefreshCDN
+                  ? (k) => void onRefreshCDN(k)
+                  : undefined
+              }
+              onQuickCopy={(k) => void onQuickCopy(k)}
               onUpload={() => void onClickUpload()}
               onRefresh={handleRefresh}
             />
           )}
+
+          {/* 加载更多 */}
+          {pageMarker ? (
+            <div className="flex justify-center py-3">
+              <button
+                type="button"
+                onClick={() => void handleLoadMore()}
+                disabled={loadingMore}
+                className={[
+                  'px-6 py-2 text-sm rounded-lg',
+                  'ghost-border transition-colors',
+                  'text-[var(--text-muted)]',
+                  'hover:bg-[var(--surface-elevated)]',
+                  'disabled:opacity-50',
+                ].join(' ')}
+              >
+                {loadingMore
+                  ? t('common.loading')
+                  : t('bucket.loadMore')}
+              </button>
+            </div>
+          ) : null}
 
           {/* 加载/错误/同步状态 */}
           {bucketsQuery.isLoading || objectsQuery.isLoading ? (
@@ -580,7 +870,6 @@ export function BucketPage() {
             </p>
           ) : null}
         </section>
-      </div>
 
       {/* 拖拽上传遮罩 */}
       <UploadZone isDragActive={isDragActive} />
@@ -590,7 +879,16 @@ export function BucketPage() {
         count={selectedKeys.size}
         onBatchDownload={() => void handleBatchDownload()}
         onBatchCopyUrl={() => void handleBatchCopyUrl()}
-        onBatchDelete={handleBatchDelete}
+        onBatchRefreshCDN={
+          hasRefreshCDN
+            ? () => void handleBatchRefreshCDN()
+            : undefined
+        }
+        onBatchDelete={
+          settings.hideDeleteButton
+            ? undefined
+            : handleBatchDelete
+        }
         onClearSelection={clearSelection}
       />
 
@@ -613,19 +911,55 @@ export function BucketPage() {
       {/* URL对话框 */}
       <UrlDialog
         open={urlDialogUrl !== ''}
-        url={urlDialogUrl}
-        onClose={() => setUrlDialogUrl('')}
+        objectKey={urlDialogKey}
+        initialUrl={urlDialogUrl}
+        domains={domains}
+        domainPref={domainPrefs[activeBucket]}
+        copyType={settings.copyType}
+        https={settings.https}
+        onClose={() => {
+          setUrlDialogUrl('');
+          setUrlDialogKey('');
+        }}
+        onRegenerate={async (domain, _signed) => {
+          const r = await generateUrl({
+            accountId: activeAccountId,
+            bucket: activeBucket,
+            key: urlDialogKey,
+            domain: domain || undefined,
+            https: settings.https,
+          });
+          return r.url;
+        }}
+        onSaveDomainPref={(pref) =>
+          setDomainPref(activeBucket, pref)
+        }
       />
 
       {/* 图片预览 */}
       <ImagePreview
-        open={previewUrl !== ''}
+        open={previewUrl !== '' && previewKey !== ''}
         imageUrl={previewUrl}
         fileName={previewFileName}
         onClose={() => {
+          setPreviewKey('');
           setPreviewUrl('');
           setPreviewFileName('');
         }}
+        onPrev={
+          previewIndex > 0
+            ? () => setPreviewKey(imageKeys[previewIndex - 1])
+            : undefined
+        }
+        onNext={
+          previewIndex < imageKeys.length - 1
+            ? () => setPreviewKey(imageKeys[previewIndex + 1])
+            : undefined
+        }
+        currentIndex={
+          previewIndex >= 0 ? previewIndex + 1 : undefined
+        }
+        totalCount={imageKeys.length}
       />
     </div>
   );

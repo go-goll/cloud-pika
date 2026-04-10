@@ -14,6 +14,7 @@ import { useVirtualizer } from '@tanstack/react-virtual';
 import {
   ArrowDown,
   ArrowUp,
+  Copy,
   Eye,
   File,
   Folder,
@@ -45,15 +46,19 @@ interface ResourceTableProps {
   onRename?: (key: string) => void;
   onPreview?: (key: string) => void;
   onNavigateFolder?: (prefix: string) => void;
+  onQuickCopy?: (key: string) => void;
+  onRefreshCDN?: (key: string) => void;
   onUpload?: () => void;
   onRefresh?: () => void;
+  onFetchUrl?: () => void;
+  focusedIndex?: number;
 }
 
 /** 启用虚拟滚动的阈值 */
 const VIRTUAL_THRESHOLD = 100;
 
 /** 虚拟滚动行高估计值 */
-const ROW_HEIGHT = 52;
+const ROW_HEIGHT = 36;
 
 /** 行操作下拉菜单 */
 function RowActionMenu({
@@ -100,23 +105,23 @@ function RowActionMenu({
           setOpen(!open);
         }}
         className={[
-          'flex h-7 w-7 items-center justify-center',
-          'rounded-lg transition-colors',
-          'hover:bg-surface-container-low',
-          'text-on-surface-variant',
+          'flex h-6 w-6 items-center justify-center',
+          'rounded transition-colors',
+          'hover:bg-[var(--bg-raised)]',
+          'text-[var(--text-secondary)]',
           'opacity-0 group-hover:opacity-100',
         ].join(' ')}
       >
-        <MoreHorizontal size={15} />
+        <MoreHorizontal size={14} />
       </button>
 
       {open ? (
         <div
           className={[
-            'absolute right-0 top-8 z-30',
-            'min-w-[160px] rounded-xl p-1.5',
-            'bg-surface-container-lowest',
-            'ghost-border shadow-ambient',
+            'absolute right-0 top-7 z-30',
+            'min-w-[140px] rounded-lg p-1',
+            'bg-[var(--bg-raised)]',
+            'border border-[var(--border)] shadow-lg',
           ].join(' ')}
         >
           {isImage && onPreview ? (
@@ -150,15 +155,19 @@ function RowActionMenu({
               setOpen(false);
             }}
           />
-          <div className="my-1 h-px bg-outline-variant" />
-          <ActionItem
-            label={t('bucket.delete')}
-            danger
-            onClick={() => {
-              onDelete?.(objectKey);
-              setOpen(false);
-            }}
-          />
+          {onDelete ? (
+            <>
+              <div className="my-1 h-px bg-outline-variant" />
+              <ActionItem
+                label={t('bucket.delete')}
+                danger
+                onClick={() => {
+                  onDelete(objectKey);
+                  setOpen(false);
+                }}
+              />
+            </>
+          ) : null}
         </div>
       ) : null}
     </div>
@@ -182,9 +191,9 @@ function ActionItem({
       type="button"
       onClick={onClick}
       className={[
-        'flex w-full items-center gap-2 px-3 py-1.5 text-sm',
-        'rounded-[var(--radius)] transition-colors',
-        'hover:bg-[var(--surface-elevated)]',
+        'flex w-full items-center gap-2 px-2.5 py-1 text-xs',
+        'rounded transition-colors',
+        'hover:bg-[var(--accent-soft)]',
         danger ? 'text-[var(--danger)]' : '',
       ].join(' ')}
     >
@@ -223,8 +232,12 @@ export function ResourceTable({
   onRename,
   onPreview,
   onNavigateFolder,
+  onQuickCopy,
+  onRefreshCDN,
   onUpload,
   onRefresh,
+  onFetchUrl,
+  focusedIndex,
 }: ResourceTableProps) {
   const { t } = useTranslation();
   const [sortCol, setSortCol] =
@@ -287,16 +300,20 @@ export function ResourceTable({
     objects.every((o) => selectedKeys.has(o.key));
 
   const thClass = [
-    'px-6 py-4 cursor-pointer select-none',
-    'hover:text-on-surface transition-colors',
+    'px-3 py-2.5 cursor-pointer select-none text-xs',
+    'font-medium tracking-wide uppercase',
+    'hover:text-[var(--text)] transition-colors',
   ].join(' ');
 
   /** 渲染单行 */
   const renderRow = (
     item: ObjectItem,
     style?: React.CSSProperties,
+    rowIndex?: number,
   ) => {
     const isSelected = selectedKeys.has(item.key);
+    const isFocused =
+      rowIndex !== undefined && rowIndex === focusedIndex;
     const isDir =
       item.isDir || item.key.endsWith('/');
     const fileName = extractFileName(item.key);
@@ -316,23 +333,31 @@ export function ResourceTable({
             itemIsImage && !isDir
               ? () => onPreview?.(item.key)
               : undefined,
+          onRefreshCDN: onRefreshCDN
+            ? () => onRefreshCDN(item.key)
+            : undefined,
         }}
       >
         <tr
           style={style}
           className={[
-            'rounded-[var(--radius)] transition-colors',
-            'cursor-default',
-            isSelected
-              ? 'bg-[color-mix(in_srgb,var(--primary)_10%,var(--surface-high))]'
-              : 'bg-[var(--surface-high)] hover:bg-[var(--surface-elevated)]',
+            'group transition-all duration-150',
+            'cursor-default border-l-2',
+            isFocused
+              ? 'border-l-[var(--accent)] bg-[var(--accent-soft)]'
+              : isSelected
+                ? 'border-l-[var(--accent)] bg-[var(--accent-soft)]'
+                : [
+                    'border-l-transparent',
+                    'hover:bg-[var(--bg-raised)]',
+                  ].join(' '),
           ].join(' ')}
           onDoubleClick={() => {
             if (isDir) onNavigateFolder?.(item.key);
           }}
         >
           {/* Checkbox */}
-          <td className="rounded-l-[var(--radius)] px-3 py-2">
+          <td className="w-8 px-2 py-1.5">
             <input
               type="checkbox"
               checked={isSelected}
@@ -343,63 +368,73 @@ export function ResourceTable({
                     .shiftKey,
                 );
               }}
-              className="cursor-pointer accent-[var(--primary)]"
+              className="cursor-pointer accent-[var(--accent)]"
             />
           </td>
 
           {/* 文件名 */}
-          <td className="px-3 py-2.5">
-            <div className="flex items-center gap-2">
+          <td className="px-2 py-1.5">
+            <div className="flex items-center gap-1.5 w-full">
               {isDir ? (
                 <Folder
-                  size={15}
-                  className="shrink-0 text-[var(--primary)]"
+                  size={14}
+                  className="shrink-0 icon-folder"
                 />
               ) : (
                 <File
-                  size={15}
-                  className="shrink-0 text-[var(--text-muted)]"
+                  size={14}
+                  className="shrink-0 icon-file"
                 />
               )}
               <span
                 className={[
-                  'truncate',
+                  'truncate text-[13px]',
                   isDir
-                    ? 'font-medium text-[var(--primary)]'
+                    ? 'font-medium text-[var(--accent)]'
                     : '',
                 ].join(' ')}
                 title={item.key}
               >
                 {fileName}
               </span>
+              {!isDir && onQuickCopy ? (
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onQuickCopy(item.key);
+                  }}
+                  className={[
+                    'ml-auto shrink-0 flex h-5 w-5',
+                    'items-center justify-center',
+                    'rounded transition-colors',
+                    'hover:bg-[var(--bg-raised)]',
+                    'text-[var(--text-secondary)]',
+                    'hover:text-[var(--accent)]',
+                    'opacity-0 group-hover:opacity-100',
+                  ].join(' ')}
+                  title={t('bucket.quickCopy')}
+                >
+                  <Copy size={12} />
+                </button>
+              ) : null}
             </div>
           </td>
 
           {/* 大小 */}
-          <td className="px-3 py-2.5 text-[var(--text-muted)]">
+          <td className="px-2 py-1.5 text-xs text-[var(--text-secondary)]">
             {isDir ? '-' : formatFileSize(item.size)}
           </td>
 
-          {/* MIME（窄窗口隐藏） */}
-          <td
-            className={
-              'hidden px-3 py-2.5 '
-              + 'text-[var(--text-muted)] '
-              + 'lg:table-cell'
-            }
-          >
-            {item.mimeType ?? '-'}
-          </td>
-
           {/* 更新时间 */}
-          <td className="px-3 py-2.5 text-[var(--text-muted)]">
+          <td className="px-2 py-1.5 text-xs text-[var(--text-secondary)]">
             {item.lastModified
               ? formatRelativeTime(item.lastModified)
               : '-'}
           </td>
 
           {/* 操作 */}
-          <td className="rounded-r-[var(--radius)] px-3 py-2.5">
+          <td className="px-2 py-1.5">
             <RowActionMenu
               objectKey={item.key}
               isImage={Boolean(itemIsImage) && !isDir}
@@ -419,28 +454,35 @@ export function ResourceTable({
     <ResourceContextMenu
       blankActions={
         onUpload && onRefresh
-          ? { onUpload, onRefresh }
+          ? { onUpload, onRefresh, onFetchUrl }
           : undefined
       }
     >
       <div
         ref={scrollRef}
         className={[
-          'rounded-[var(--radius)]',
-          'bg-[var(--surface-low)] p-3',
+          'rounded-lg',
           useVirtual ? 'max-h-[70vh] overflow-auto' : '',
         ].join(' ')}
       >
-        <table className="w-full border-separate border-spacing-y-1 text-sm">
-          <thead className="text-left text-xs text-[var(--text-muted)]">
+        <table className="w-full text-[13px]">
+          <thead
+            className={[
+              'text-left text-xs',
+              'text-[var(--text-secondary)]',
+              'border-b border-[var(--border)]',
+              'sticky top-0 z-10',
+              'bg-[var(--bg)]',
+            ].join(' ')}
+          >
             <tr>
               {/* 全选Checkbox */}
-              <th className="w-12 px-6 py-4">
+              <th className="w-8 px-2 py-2">
                 <input
                   type="checkbox"
                   checked={allSelected}
                   onChange={onSelectAll}
-                  className="cursor-pointer accent-primary"
+                  className="cursor-pointer accent-[var(--accent)]"
                 />
               </th>
               <th
@@ -465,9 +507,6 @@ export function ResourceTable({
                   dir={sortDir}
                 />
               </th>
-              <th className="hidden px-3 lg:table-cell">
-                MIME
-              </th>
               <th
                 className={thClass}
                 onClick={() => toggleSort('lastModified')}
@@ -479,7 +518,7 @@ export function ResourceTable({
                   dir={sortDir}
                 />
               </th>
-              <th className="w-16 px-6 py-4" />
+              <th className="w-10 px-2 py-2" />
             </tr>
           </thead>
 
@@ -496,27 +535,31 @@ export function ResourceTable({
                 .map((vItem) => {
                   const item =
                     sortedObjects[vItem.index];
-                  return renderRow(item, {
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
-                    width: '100%',
-                    height: `${vItem.size}px`,
-                    transform: `translateY(${vItem.start}px)`,
-                  });
+                  return renderRow(
+                    item,
+                    {
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      width: '100%',
+                      height: `${vItem.size}px`,
+                      transform: `translateY(${vItem.start}px)`,
+                    },
+                    vItem.index,
+                  );
                 })}
             </tbody>
           ) : (
             <tbody>
-              {sortedObjects.map((item) =>
-                renderRow(item),
+              {sortedObjects.map((item, idx) =>
+                renderRow(item, undefined, idx),
               )}
 
               {objects.length === 0 ? (
                 <tr>
                   <td
-                    colSpan={6}
-                    className="px-3 py-8 text-center text-[var(--text-muted)]"
+                    colSpan={5}
+                    className="px-2 py-8 text-center text-xs text-[var(--text-secondary)]"
                   >
                     {t('bucket.empty')}
                   </td>

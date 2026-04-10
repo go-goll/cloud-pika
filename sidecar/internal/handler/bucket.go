@@ -185,3 +185,24 @@ func (h *Handler) ListDomains(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, gin.H{"domains": domains})
 }
+
+// GetProviderFeatures 返回指定账户对应 provider 的功能列表。
+func (h *Handler) GetProviderFeatures(c *gin.Context) {
+	accountID := c.Param("id")
+	if accountID == "" {
+		c.JSON(
+			http.StatusBadRequest,
+			gin.H{"error": "accountId required"},
+		)
+		return
+	}
+
+	provider, err := h.providerFromAccount(accountID)
+	if err != nil {
+		h.writeProviderErr(c, err)
+		return
+	}
+
+	features := provider.GetProviderFeatures()
+	c.JSON(http.StatusOK, gin.H{"features": features})
+}

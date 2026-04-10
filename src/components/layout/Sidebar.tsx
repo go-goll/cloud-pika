@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import {
   FolderKanban,
-  KeyRound,
   Settings2,
   Workflow,
 } from 'lucide-react';
@@ -11,7 +10,6 @@ import { SimpleTooltip } from '@/components/ui/Tooltip';
 
 /** 导航菜单项配置 */
 const navItems = [
-  { to: '/login', icon: KeyRound, key: 'nav.accounts' },
   {
     to: '/bucket',
     icon: FolderKanban,

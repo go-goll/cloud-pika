@@ -9,62 +9,62 @@ type Size = 'sm' | 'md' | 'lg';
 
 interface ButtonProps
   extends ButtonHTMLAttributes<HTMLButtonElement> {
-  /** 按钮风格 */
   variant?: Variant;
-  /** 按钮尺寸 */
   size?: Size;
-  /** 加载状态：显示 Spinner 并禁用交互 */
   loading?: boolean;
-  /** 仅图标模式（正方形按钮） */
   iconOnly?: boolean;
 }
 
-/** 风格样式映射 */
 const variantClasses: Record<Variant, string> = {
   primary: [
-    'signature-gradient text-white',
-    'ambient-shadow',
-    'hover:brightness-110',
+    'bg-[var(--accent)] text-[var(--accent-text)]',
+    'hover:bg-[var(--accent-hover)]',
+    'active:scale-[0.97]',
+    'shadow-[var(--shadow-sm)]',
+    'hover:shadow-[var(--shadow-md)]',
   ].join(' '),
   secondary: [
-    'ghost-border',
-    'bg-[var(--color-surface-container-lowest)]',
-    'text-[var(--color-on-surface)]',
-    'hover:bg-[var(--color-surface-container-low)]',
+    'border border-[var(--border)]',
+    'bg-[var(--bg)]',
+    'text-[var(--text)]',
+    'hover:bg-[var(--bg-raised)]',
+    'hover:border-[var(--text-secondary)]',
+    'active:scale-[0.97]',
   ].join(' '),
   ghost: [
     'bg-transparent',
-    'text-[var(--color-on-surface-variant)]',
-    'hover:bg-[var(--color-surface-container-low)]',
-    'hover:text-[var(--color-on-surface)]',
+    'text-[var(--text-secondary)]',
+    'hover:bg-[var(--bg-raised)]',
+    'hover:text-[var(--text)]',
+    'active:scale-[0.97]',
   ].join(' '),
   danger: [
-    'bg-[var(--color-danger)] text-white',
+    'bg-[var(--danger)] text-white',
     'hover:brightness-110',
+    'active:scale-[0.97]',
+    'shadow-[var(--shadow-sm)]',
   ].join(' '),
 };
 
-/** 尺寸样式映射 */
 const sizeClasses: Record<Size, string> = {
-  sm: 'h-7 px-3 text-xs',
-  md: 'h-9 px-4 text-sm',
-  lg: 'h-11 px-6 text-sm',
+  sm: 'h-7 px-2.5 text-xs gap-1.5',
+  md: 'h-8 px-3 text-sm gap-1.5',
+  lg: 'h-10 px-5 text-sm gap-2',
 };
 
-/** 仅图标模式的尺寸映射（正方形） */
 const iconOnlySizeClasses: Record<Size, string> = {
   sm: 'h-7 w-7',
-  md: 'h-9 w-9',
-  lg: 'h-11 w-11',
+  md: 'h-8 w-8',
+  lg: 'h-10 w-10',
 };
 
-/** Spinner 尺寸映射 */
 const spinnerSize: Record<Size, 'sm' | 'md'> = {
   sm: 'sm',
   md: 'sm',
   lg: 'md',
 };
 
+/** 通用按钮组件，支持多种变体、尺寸和加载态 */
 export function Button({
   children,
   className,
@@ -84,13 +84,13 @@ export function Button({
       disabled={isDisabled}
       className={[
         'inline-flex items-center justify-center',
-        'rounded-lg font-medium',
-        'transition-all duration-200',
-        'active:scale-[0.97]',
+        'rounded-md font-medium',
+        'transition-all duration-150',
         'disabled:cursor-not-allowed',
-        'disabled:opacity-60',
-        'disabled:hover:scale-100',
-        'disabled:hover:brightness-100',
+        'disabled:opacity-50',
+        'focus-visible:ring-2',
+        'focus-visible:ring-[var(--accent)]/30',
+        'focus-visible:outline-none',
         variantClasses[variant],
         iconOnly
           ? iconOnlySizeClasses[size]

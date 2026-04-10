@@ -10,6 +10,7 @@ import {
   Copy,
   Download,
   Eye,
+  Link2,
   Pencil,
   RefreshCcw,
   Trash2,
@@ -42,15 +43,20 @@ interface FileMenuActions {
   onCopyUrl: () => void;
   onDownload: () => void;
   onRename: () => void;
-  onDelete: () => void;
+  /** 删除回调（hideDeleteButton 启用时不传） */
+  onDelete?: () => void;
   /** 预览回调（仅图片文件可用） */
   onPreview?: () => void;
+  /** CDN 刷新回调（仅启用 refreshCDN 功能时提供） */
+  onRefreshCDN?: () => void;
 }
 
 /** 空白区域右键菜单的回调集合 */
 interface BlankMenuActions {
   onUpload: () => void;
   onRefresh: () => void;
+  /** 远程抓取回调（仅当 provider 支持时传入） */
+  onFetchUrl?: () => void;
 }
 
 interface ResourceContextMenuProps {
@@ -103,6 +109,16 @@ export function ResourceContextMenu({
                 {t('bucket.copyUrl')}
               </ContextMenu.Item>
 
+              {fileActions.onRefreshCDN ? (
+                <ContextMenu.Item
+                  className={itemClassName}
+                  onSelect={fileActions.onRefreshCDN}
+                >
+                  <RefreshCcw size={14} />
+                  {t('bucket.refreshCDN')}
+                </ContextMenu.Item>
+              ) : null}
+
               <ContextMenu.Item
                 className={itemClassName}
                 onSelect={fileActions.onDownload}
@@ -119,17 +135,20 @@ export function ResourceContextMenu({
                 {t('bucket.rename')}
               </ContextMenu.Item>
 
-              <ContextMenu.Separator
-                className={separatorClassName}
-              />
-
-              <ContextMenu.Item
-                className={dangerItemClassName}
-                onSelect={fileActions.onDelete}
-              >
-                <Trash2 size={14} />
-                {t('bucket.delete')}
-              </ContextMenu.Item>
+              {fileActions.onDelete ? (
+                <>
+                  <ContextMenu.Separator
+                    className={separatorClassName}
+                  />
+                  <ContextMenu.Item
+                    className={dangerItemClassName}
+                    onSelect={fileActions.onDelete}
+                  >
+                    <Trash2 size={14} />
+                    {t('bucket.delete')}
+                  </ContextMenu.Item>
+                </>
+              ) : null}
             </>
           ) : null}
 
@@ -143,6 +162,16 @@ export function ResourceContextMenu({
                 <UploadCloud size={14} />
                 {t('bucket.upload')}
               </ContextMenu.Item>
+
+              {blankActions.onFetchUrl ? (
+                <ContextMenu.Item
+                  className={itemClassName}
+                  onSelect={blankActions.onFetchUrl}
+                >
+                  <Link2 size={14} />
+                  {t('bucket.fetchUrl')}
+                </ContextMenu.Item>
+              ) : null}
 
               <ContextMenu.Item
                 className={disabledItemClassName}

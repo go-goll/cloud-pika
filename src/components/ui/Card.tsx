@@ -1,15 +1,12 @@
 import type { PropsWithChildren } from 'react';
 
 interface CardProps {
-  /** 自定义类名 */
   className?: string;
-  /** 是否启用 hover 微提升效果 */
   hoverable?: boolean;
-  /** 内联样式 */
   style?: React.CSSProperties;
 }
 
-/** 卡片容器：ghost-border + ambient-shadow + 圆角 12px */
+/** 卡片容器：精致边框 + 微妙内阴影 + 圆角 */
 export function Card({
   className,
   hoverable = false,
@@ -20,11 +17,17 @@ export function Card({
     <section
       style={style}
       className={[
-        'rounded-xl p-4',
-        'bg-[var(--color-surface-container-lowest)]',
-        'ghost-border ambient-shadow',
+        'rounded-lg p-4',
+        'bg-[var(--bg-raised)]',
+        'border border-[var(--border)]',
+        'shadow-[var(--shadow-xs)]',
         hoverable
-          ? 'transition-transform duration-200 hover:-translate-y-0.5'
+          ? [
+              'transition-all duration-200',
+              'hover:-translate-y-[2px]',
+              'hover:shadow-[var(--shadow-md)]',
+              'hover:border-[var(--accent)]/20',
+            ].join(' ')
           : '',
         className ?? '',
       ].join(' ')}

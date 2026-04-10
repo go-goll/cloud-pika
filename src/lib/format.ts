@@ -70,6 +70,20 @@ export function isImageKey(key: string): boolean {
 }
 
 /**
+ * 根据 copyType 格式化 URL
+ * url 模式返回纯 URL，markdown 模式返回 markdown 链接
+ */
+export function formatCopyUrl(
+  url: string,
+  key: string,
+  copyType: 'url' | 'markdown',
+): string {
+  if (copyType !== 'markdown') return url;
+  const name = extractFileName(key);
+  return isImageKey(key) ? `![${name}](${url})` : `[${name}](${url})`;
+}
+
+/**
  * 从完整key中提取文件名
  * 例如 "images/2024/photo.jpg" -> "photo.jpg"
  */

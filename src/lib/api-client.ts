@@ -127,4 +127,8 @@ export const cloudApi = {
     const { data } = await client.put('/api/v1/settings', settings);
     return data.settings;
   },
+  async getProviderFeatures(accountId: string): Promise<string[]> {
+    const { data } = await client.get(`/api/v1/accounts/${accountId}/features`);
+    return data.features;
+  },
 };

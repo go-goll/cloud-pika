@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import i18n from 'i18next';
 import { useTranslation } from 'react-i18next';
 import { SettingsPanel } from '@/components/settings/SettingsPanel';
@@ -11,7 +11,6 @@ import {
   normalizeLocale,
   resolveSystemLocale,
 } from '@/lib/locale';
-import { toast } from '@/lib/toast';
 
 /** 设置页面，两列布局对齐 digital-obsidian */
 export function SettingsPage() {
@@ -27,6 +26,10 @@ export function SettingsPage() {
   const query = useSettingsQuery();
   const mutation = useSaveSettingsMutation();
 
+  // 防止初始加载时触发自动保存
+  const initialized = useRef(false);
+  const timerRef = useRef<ReturnType<typeof setTimeout>>();
+
   // 从后端同步设置到前端状态
   useEffect(() => {
     if (!query.data) return;
@@ -39,13 +42,22 @@ export function SettingsPage() {
     setLocale(nextLocale);
     void i18n.changeLanguage(nextLocale);
     setThemeMode(query.data.theme);
+
+    // 标记初始化完成（下一个 tick，避免与 settings 同步 effect 竞争）
+    requestAnimationFrame(() => {
+      initialized.current = true;
+    });
   }, [query.data, setLocale, setSettings, setThemeMode]);
 
-  /** 保存设置并提示用户 */
-  const handleSave = async () => {
-    await mutation.mutateAsync(settings);
-    toast.success(t('settings.saveSuccess'));
-  };
+  // 设置变更时自动保存（debounce 800ms）
+  useEffect(() => {
+    if (!initialized.current) return;
+    clearTimeout(timerRef.current);
+    timerRef.current = setTimeout(() => {
+      void mutation.mutateAsync(settings);
+    }, 800);
+    return () => clearTimeout(timerRef.current);
+  }, [settings]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <div className="max-w-4xl mx-auto space-y-8">
@@ -55,7 +67,7 @@ export function SettingsPage() {
           {t('settings.title')}
         </h1>
         <p className="text-on-surface-variant text-lg">
-          {t('transfer.subtitle')}
+          {t('settings.subtitle')}
         </p>
       </div>
 
@@ -65,7 +77,6 @@ export function SettingsPage() {
           settings={settings}
           themeMode={themeMode}
           language={settings.language}
-          isSaving={mutation.isPending}
           onThemeModeChange={(mode) => {
             setThemeMode(mode);
             setSettings({ ...settings, theme: mode });
@@ -91,7 +102,6 @@ export function SettingsPage() {
           onSettingsChange={(patch) =>
             setSettings({ ...settings, ...patch })
           }
-          onSave={() => void handleSave()}
         />
       </div>
     </div>

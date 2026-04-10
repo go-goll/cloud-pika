@@ -12,6 +12,7 @@ import { useTranslation } from 'react-i18next';
 import {
   Grid3x3,
   LayoutList,
+  Link2,
   RefreshCcw,
   Search,
   UploadCloud,
@@ -29,6 +30,8 @@ interface BucketToolbarProps {
   onSearch: (keyword: string) => void;
   onUpload: () => void;
   onRefresh: () => void;
+  /** 远程抓取回调（仅当 provider 支持时传入） */
+  onFetchUrl?: () => void;
 }
 
 /** 搜索防抖延迟（毫秒） */
@@ -41,6 +44,7 @@ export function BucketToolbar({
   onSearch,
   onUpload,
   onRefresh,
+  onFetchUrl,
 }: BucketToolbarProps) {
   const { t } = useTranslation();
   const [inputValue, setInputValue] = useState('');
@@ -72,8 +76,30 @@ export function BucketToolbar({
     };
   }, []);
 
+  /** 视图切换按钮样式 */
+  const viewBtnClass = (active: boolean) => [
+    'flex items-center gap-1.5 px-3 py-2',
+    'text-xs transition-all duration-200',
+    active
+      ? [
+          'bg-[var(--bg)]',
+          'font-semibold text-[var(--text)]',
+          'shadow-[var(--shadow-sm)]',
+        ].join(' ')
+      : [
+          'text-[var(--text-secondary)]',
+          'hover:text-[var(--text)]',
+          'bg-[var(--bg-raised)]',
+        ].join(' '),
+  ].join(' ');
+
   return (
-    <div className="flex flex-wrap items-center justify-between gap-3">
+    <div
+      className={[
+        'flex flex-wrap items-center',
+        'justify-between gap-3',
+      ].join(' ')}
+    >
       {/* 左侧：搜索框 */}
       <div className="relative max-w-[360px] flex-1">
         <Search
@@ -81,7 +107,7 @@ export function BucketToolbar({
           className={[
             'pointer-events-none absolute left-3',
             'top-1/2 -translate-y-1/2',
-            'text-on-surface-variant',
+            'text-[var(--text-secondary)]',
           ].join(' ')}
         />
         <Input
@@ -99,8 +125,9 @@ export function BucketToolbar({
             className={[
               'absolute right-2.5 top-1/2',
               '-translate-y-1/2',
-              'text-on-surface-variant',
-              'hover:text-on-surface',
+              'text-[var(--text-secondary)]',
+              'hover:text-[var(--text)]',
+              'transition-colors',
             ].join(' ')}
           >
             <X size={14} />
@@ -112,7 +139,14 @@ export function BucketToolbar({
       <div className="flex items-center gap-2">
         {/* 选中数量提示 */}
         {selectedCount > 0 ? (
-          <span className="text-xs font-bold text-primary">
+          <span
+            className={[
+              'text-xs font-semibold',
+              'text-[var(--accent)]',
+              'bg-[var(--accent-soft)]',
+              'px-2 py-1 rounded-md',
+            ].join(' ')}
+          >
             {t('bucket.selectedCount', {
               count: selectedCount,
             })}
@@ -120,25 +154,16 @@ export function BucketToolbar({
         ) : null}
 
         {/* 视图切换按钮组 */}
-        <div className="flex overflow-hidden rounded-lg ghost-border">
+        <div
+          className={[
+            'flex overflow-hidden rounded-lg',
+            'ghost-border',
+          ].join(' ')}
+        >
           <button
             type="button"
             onClick={() => onViewChange('table')}
-            className={[
-              'flex items-center gap-1.5 px-3 py-2',
-              'text-xs transition-colors',
-              view === 'table'
-                ? [
-                    'bg-surface-container-lowest',
-                    'font-bold text-on-surface',
-                    'shadow-sm',
-                  ].join(' ')
-                : [
-                    'text-on-surface-variant',
-                    'hover:text-on-surface',
-                    'bg-surface-container-low',
-                  ].join(' '),
-            ].join(' ')}
+            className={viewBtnClass(view === 'table')}
           >
             <LayoutList size={14} />
             {t('bucket.table')}
@@ -146,33 +171,31 @@ export function BucketToolbar({
           <button
             type="button"
             onClick={() => onViewChange('grid')}
-            className={[
-              'flex items-center gap-1.5 px-3 py-2',
-              'text-xs transition-colors',
-              view === 'grid'
-                ? [
-                    'bg-surface-container-lowest',
-                    'font-bold text-on-surface',
-                    'shadow-sm',
-                  ].join(' ')
-                : [
-                    'text-on-surface-variant',
-                    'hover:text-on-surface',
-                    'bg-surface-container-low',
-                  ].join(' '),
-            ].join(' ')}
+            className={viewBtnClass(view === 'grid')}
           >
             <Grid3x3 size={14} />
             {t('bucket.grid')}
           </button>
         </div>
 
+        {/* 远程抓取 */}
+        {onFetchUrl ? (
+          <Button variant="ghost" onClick={onFetchUrl}>
+            <Link2 size={15} className="mr-1.5" />
+            {t('bucket.fetchUrl')}
+          </Button>
+        ) : null}
+
         {/* 刷新 */}
-        <Button variant="ghost" onClick={onRefresh}>
+        <Button
+          variant="ghost"
+          iconOnly
+          onClick={onRefresh}
+        >
           <RefreshCcw size={15} />
         </Button>
 
-        {/* 上传 */}
+        {/* 上传按钮 - 品牌色 */}
         <Button onClick={onUpload}>
           <UploadCloud size={15} className="mr-1.5" />
           {t('bucket.upload')}
