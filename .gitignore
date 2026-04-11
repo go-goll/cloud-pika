@@ -18,6 +18,9 @@ sidecar/.cache/
 .idea/
 .vscode/
 
+# TypeScript build cache
+tsconfig.tsbuildinfo
+
 # Runtime
 *.log
 *.sqlite
