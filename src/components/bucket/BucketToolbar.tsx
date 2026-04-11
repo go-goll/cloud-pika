@@ -15,6 +15,7 @@ import {
   Link2,
   RefreshCcw,
   Search,
+  Settings2,
   UploadCloud,
   X,
 } from 'lucide-react';
@@ -32,6 +33,8 @@ interface BucketToolbarProps {
   onRefresh: () => void;
   /** 远程抓取回调（仅当 provider 支持时传入） */
   onFetchUrl?: () => void;
+  /** Bucket 设置回调（仅当有治理功能时传入） */
+  onSettings?: () => void;
 }
 
 /** 搜索防抖延迟（毫秒） */
@@ -45,6 +48,7 @@ export function BucketToolbar({
   onUpload,
   onRefresh,
   onFetchUrl,
+  onSettings,
 }: BucketToolbarProps) {
   const { t } = useTranslation();
   const [inputValue, setInputValue] = useState('');
@@ -179,6 +183,18 @@ export function BucketToolbar({
           >
             <Link2 size={15} className="mr-1.5" />
             {t('bucket.fetchUrl')}
+          </Button>
+        ) : null}
+
+        {/* Bucket 设置 */}
+        {onSettings ? (
+          <Button
+            variant="ghost"
+            iconOnly
+            className="rounded-xl"
+            onClick={onSettings}
+          >
+            <Settings2 size={15} />
           </Button>
         ) : null}
 

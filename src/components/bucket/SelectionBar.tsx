@@ -17,6 +17,7 @@ interface SelectionBarProps {
   onBatchDownload: () => void;
   onBatchCopyUrl: () => void;
   onBatchRefreshCDN?: () => void;
+  onBatchPrefetchCDN?: () => void;
   onBatchDelete?: () => void;
   onClearSelection: () => void;
 }
@@ -26,6 +27,7 @@ export function SelectionBar({
   onBatchDownload,
   onBatchCopyUrl,
   onBatchRefreshCDN,
+  onBatchPrefetchCDN,
   onBatchDelete,
   onClearSelection,
 }: SelectionBarProps) {
@@ -90,6 +92,26 @@ export function SelectionBar({
             <RefreshCcw size={14} />
             <span className="hidden sm:inline">
               {t('bucket.refreshCDN')}
+            </span>
+          </button>
+        </SimpleTooltip>
+      ) : null}
+
+      {onBatchPrefetchCDN ? (
+        <SimpleTooltip content={t('bucket.prefetchCDN')}>
+          <button
+            type="button"
+            onClick={onBatchPrefetchCDN}
+            className={[
+              'flex items-center gap-1.5',
+              'text-sm text-[var(--text-secondary)]',
+              'hover:text-[var(--text)]',
+              'transition-colors px-2 py-1.5 rounded-full',
+            ].join(' ')}
+          >
+            <RefreshCcw size={14} />
+            <span className="hidden sm:inline">
+              {t('bucket.prefetchCDN')}
             </span>
           </button>
         </SimpleTooltip>

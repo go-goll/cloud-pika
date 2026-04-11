@@ -28,8 +28,9 @@ func New() *Provider {
 		base: s3compat.New(
 			"qiniu",
 			[]string{
-				"urlUpload", "refreshCDN",
-				"customDomain", "paging",
+				"urlUpload", "refreshCDN", "prefetchCDN",
+				"cdnQuota", "customDomain", "paging",
+				"lifecycle", "cors",
 			},
 			s3compat.Options{
 				ResolveEndpoint: func(cfg model.Account) string {
@@ -209,58 +210,115 @@ type cdnRefreshRequest struct {
 }
 
 // RefreshCDN 使用七牛 CDN 刷新 API 刷新指定 URL 缓存。
-// API: POST /v2/tune/refresh (fusion.qiniuapi.com)
-func (p *Provider) RefreshCDN(
-	ctx context.Context, urls []string,
-) error {
+func (p *Provider) RefreshCDN(ctx context.Context, urls []string) error {
+	return p.refreshCDNWithURL(ctx, qiniuCDNRefreshURL, urls)
+}
+
+func (p *Provider) refreshCDNWithURL(ctx context.Context, apiURL string, urls []string) error {
 	if len(urls) == 0 {
 		return nil
 	}
+	return p.postCDNAction(ctx, apiURL, cdnRefreshRequest{URLs: urls})
+}
 
-	payload := cdnRefreshRequest{URLs: urls}
+// PrefetchCDN 使用七牛 CDN 预热 API 预热指定 URL。
+func (p *Provider) PrefetchCDN(ctx context.Context, urls []string) error {
+	return p.prefetchCDNWithURL(ctx, qiniuCDNPrefetchURL, urls)
+}
+
+func (p *Provider) prefetchCDNWithURL(ctx context.Context, apiURL string, urls []string) error {
+	if len(urls) == 0 {
+		return nil
+	}
+	return p.postCDNAction(ctx, apiURL, struct {
+		URLs []string `json:"urls"`
+	}{URLs: urls})
+}
+
+// GetRefreshQuota 查询七牛 CDN 刷新/预热每日配额。
+func (p *Provider) GetRefreshQuota(ctx context.Context) (*model.CDNQuota, error) {
+	return p.getRefreshQuotaWithURL(ctx, qiniuCDNQuotaURL)
+}
+
+func (p *Provider) getRefreshQuotaWithURL(
+	ctx context.Context, apiURL string,
+) (*model.CDNQuota, error) {
+	token, err := qboxAccessToken(p.account.AccessKey, p.account.SecretKey, apiURL)
+	if err != nil {
+		return nil, fmt.Errorf("sign qiniu quota failed: %w", err)
+	}
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, apiURL, nil)
+	if err != nil {
+		return nil, fmt.Errorf("build quota request failed: %w", err)
+	}
+	req.Header.Set("Authorization", "QBox "+token)
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("quota request failed: %w", err)
+	}
+	defer resp.Body.Close()
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("read quota response failed: %w", err)
+	}
+	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+		return nil, fmt.Errorf("quota failed(%d): %s", resp.StatusCode, string(body))
+	}
+
+	var raw struct {
+		URLSurplus      int `json:"urlSurplusDay"`
+		URLQuota        int `json:"urlQuotaDay"`
+		DirSurplus      int `json:"dirSurplusDay"`
+		DirQuota        int `json:"dirQuotaDay"`
+		PrefetchSurplus int `json:"prefetchSurplusDay"`
+		PrefetchQuota   int `json:"prefetchQuotaDay"`
+	}
+	if err = json.Unmarshal(body, &raw); err != nil {
+		return nil, fmt.Errorf("parse quota failed: %w", err)
+	}
+	return &model.CDNQuota{
+		URLRefreshRemain: raw.URLSurplus,
+		URLRefreshLimit:  raw.URLQuota,
+		DirRefreshRemain: raw.DirSurplus,
+		DirRefreshLimit:  raw.DirQuota,
+		PrefetchRemain:   raw.PrefetchSurplus,
+		PrefetchLimit:    raw.PrefetchQuota,
+	}, nil
+}
+
+// postCDNAction 发送 CDN 管理类 POST 请求（带请求体签名）。
+func (p *Provider) postCDNAction(ctx context.Context, apiURL string, payload any) error {
 	body, err := json.Marshal(payload)
 	if err != nil {
-		return fmt.Errorf("marshal cdn refresh body failed: %w", err)
+		return fmt.Errorf("marshal cdn body failed: %w", err)
 	}
 
-	refreshURL := qiniuCDNRefreshURL
-
-	// 七牛管理类 API 签名需要包含请求体
 	token, err := qboxAccessTokenWithBody(
-		p.account.AccessKey,
-		p.account.SecretKey,
-		refreshURL,
-		body,
+		p.account.AccessKey, p.account.SecretKey, apiURL, body,
 	)
 	if err != nil {
-		return fmt.Errorf(
-			"sign qiniu cdn refresh failed: %w", err,
-		)
+		return fmt.Errorf("sign cdn request failed: %w", err)
 	}
 
-	req, err := http.NewRequestWithContext(
-		ctx, http.MethodPost, refreshURL, bytes.NewReader(body),
-	)
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, apiURL, bytes.NewReader(body))
 	if err != nil {
-		return fmt.Errorf(
-			"build cdn refresh request failed: %w", err,
-		)
+		return fmt.Errorf("build cdn request failed: %w", err)
 	}
 	req.Header.Set("Authorization", "QBox "+token)
 	req.Header.Set("Content-Type", "application/json")
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return fmt.Errorf("cdn refresh request failed: %w", err)
+		return fmt.Errorf("cdn request failed: %w", err)
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
 		respBody, _ := io.ReadAll(resp.Body)
-		return fmt.Errorf(
-			"cdn refresh failed(%d): %s",
-			resp.StatusCode, string(respBody),
-		)
+		return fmt.Errorf("cdn action failed(%d): %s", resp.StatusCode, string(respBody))
 	}
 	return nil
 }
@@ -326,10 +384,12 @@ func (p *Provider) ListDomains(
 }
 
 const (
-	qiniuBucketListURL = "https://rs.qbox.me/buckets"
-	qiniuFetchHost     = "https://ioapi.qiniuapi.com"
-	qiniuCDNRefreshURL = "https://fusion.qiniuapi.com/v2/tune/refresh"
-	qiniuAPIHost       = "https://api.qiniu.com"
+	qiniuBucketListURL  = "https://rs.qbox.me/buckets"
+	qiniuFetchHost      = "https://ioapi.qiniuapi.com"
+	qiniuCDNRefreshURL  = "https://fusion.qiniuapi.com/v2/tune/refresh"
+	qiniuCDNPrefetchURL = "https://fusion.qiniuapi.com/v2/tune/prefetch"
+	qiniuCDNQuotaURL    = "https://fusion.qiniuapi.com/v2/tune/refresh/quota"
+	qiniuAPIHost        = "https://api.qiniu.com"
 )
 
 // qboxAccessToken 生成七牛 QBox 管理凭证（不含请求体）。

@@ -15,7 +15,7 @@ func New() *Provider {
 	return &Provider{
 		base: s3compat.New(
 			"minio",
-			[]string{"paging", "manualPrivateBucket"},
+			[]string{"paging", "manualPrivateBucket", "lifecycle", "cors", "encryption", "versioning"},
 			s3compat.Options{
 				RequireEndpoint: true,
 				ForcePathStyle:  true,

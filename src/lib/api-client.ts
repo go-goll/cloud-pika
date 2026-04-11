@@ -3,13 +3,18 @@ import type { AccountSummary, AccountUpsertPayload } from '@/types/account';
 import type {
   AppSettings,
   BucketInfo,
+  CDNQuota,
+  CORSRule,
   DownloadParams,
+  EncryptionConfig,
+  LifecycleRule,
   ListParams,
   ListResult,
+  RefererConfig,
+  RenameParams,
   SignedURLParams,
   TransferTask,
   UploadParams,
-  RenameParams,
 } from '@/types/cloud';
 
 let baseUrl = '';
@@ -106,6 +111,17 @@ export const cloudApi = {
   async refreshCDN(payload: { accountId: string; urls: string[] }): Promise<void> {
     await client.post('/api/v1/cdn/refresh', payload);
   },
+  async prefetchCDN(payload: { accountId: string; urls: string[] }): Promise<void> {
+    await client.post('/api/v1/cdn/prefetch', payload);
+  },
+  async getCDNQuota(accountId: string): Promise<CDNQuota | null> {
+    try {
+      const { data } = await client.get('/api/v1/cdn/quota', { params: { accountId } });
+      return data.quota;
+    } catch {
+      return null;
+    }
+  },
   async listDomains(accountId: string, bucket: string): Promise<string[]> {
     const { data } = await client.get(`/api/v1/buckets/${bucket}/domains`, {
       params: { accountId },
@@ -130,5 +146,72 @@ export const cloudApi = {
   async getProviderFeatures(accountId: string): Promise<string[]> {
     const { data } = await client.get(`/api/v1/accounts/${accountId}/features`);
     return data.features;
+  },
+
+  // ---- Bucket 治理 API ----
+
+  async getLifecycle(accountId: string, bucket: string): Promise<LifecycleRule[]> {
+    const { data } = await client.get(
+      `/api/v1/buckets/${bucket}/lifecycle`, { params: { accountId } },
+    );
+    return data.rules ?? [];
+  },
+  async putLifecycle(
+    payload: { accountId: string; bucket: string; rules: LifecycleRule[] },
+  ): Promise<void> {
+    await client.put(`/api/v1/buckets/${payload.bucket}/lifecycle`, payload);
+  },
+  async deleteLifecycle(
+    payload: { accountId: string; bucket: string },
+  ): Promise<void> {
+    await client.delete(`/api/v1/buckets/${payload.bucket}/lifecycle`, { data: payload });
+  },
+
+  async getCORS(accountId: string, bucket: string): Promise<CORSRule[]> {
+    const { data } = await client.get(
+      `/api/v1/buckets/${bucket}/cors`, { params: { accountId } },
+    );
+    return data.rules ?? [];
+  },
+  async putCORS(
+    payload: { accountId: string; bucket: string; rules: CORSRule[] },
+  ): Promise<void> {
+    await client.put(`/api/v1/buckets/${payload.bucket}/cors`, payload);
+  },
+
+  async getReferer(accountId: string, bucket: string): Promise<RefererConfig> {
+    const { data } = await client.get(
+      `/api/v1/buckets/${bucket}/referer`, { params: { accountId } },
+    );
+    return data.config;
+  },
+  async putReferer(
+    payload: { accountId: string; bucket: string; config: RefererConfig },
+  ): Promise<void> {
+    await client.put(`/api/v1/buckets/${payload.bucket}/referer`, payload);
+  },
+
+  async getEncryption(accountId: string, bucket: string): Promise<EncryptionConfig> {
+    const { data } = await client.get(
+      `/api/v1/buckets/${bucket}/encryption`, { params: { accountId } },
+    );
+    return data.config;
+  },
+  async putEncryption(
+    payload: { accountId: string; bucket: string; config: EncryptionConfig },
+  ): Promise<void> {
+    await client.put(`/api/v1/buckets/${payload.bucket}/encryption`, payload);
+  },
+
+  async getVersioning(accountId: string, bucket: string): Promise<string> {
+    const { data } = await client.get(
+      `/api/v1/buckets/${bucket}/versioning`, { params: { accountId } },
+    );
+    return data.status ?? 'Suspended';
+  },
+  async putVersioning(
+    payload: { accountId: string; bucket: string; status: string },
+  ): Promise<void> {
+    await client.put(`/api/v1/buckets/${payload.bucket}/versioning`, payload);
   },
 };

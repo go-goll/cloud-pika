@@ -78,9 +78,54 @@ export interface TransferTask {
   key: string;
   status: TransferStatus;
   progress: number;
+  speed?: number;
+  totalSize?: number;
+  transferredSize?: number;
   errorMessage?: string;
   createdAt: string;
   updatedAt: string;
+}
+
+export interface CDNQuota {
+  urlRefreshRemain: number;
+  urlRefreshLimit: number;
+  dirRefreshRemain: number;
+  dirRefreshLimit: number;
+  prefetchRemain: number;
+  prefetchLimit: number;
+}
+
+/** 生命周期规则 */
+export interface LifecycleRule {
+  id: string;
+  prefix: string;
+  enabled: boolean;
+  expiration: number;
+  transition?: { days: number; storageClass: string };
+}
+
+/** CORS 跨域规则 */
+export interface CORSRule {
+  allowedOrigins: string[];
+  allowedMethods: string[];
+  allowedHeaders: string[];
+  exposeHeaders?: string[];
+  maxAgeSeconds: number;
+}
+
+/** 防盗链配置 */
+export interface RefererConfig {
+  enabled: boolean;
+  type: 'whitelist' | 'blacklist';
+  allowEmpty: boolean;
+  referers: string[];
+}
+
+/** 服务端加密配置 */
+export interface EncryptionConfig {
+  enabled: boolean;
+  algorithm: string;
+  kmsKeyId?: string;
 }
 
 export interface AppSettings {

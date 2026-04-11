@@ -311,7 +311,7 @@ func (p *Provider) GenerateURL(
 }
 
 func (p *Provider) GetProviderFeatures() []string {
-	return []string{"customDomain"}
+	return []string{"refreshCDN", "customDomain"}
 }
 
 // FetchURL 又拍云暂不支持URL抓取，使用下载+上传模拟。
@@ -322,16 +322,70 @@ func (p *Provider) FetchURL(
 	return p.UploadObject(ctx, params)
 }
 
-func (p *Provider) RefreshCDN(
-	_ context.Context, _ []string,
-) error {
-	return fmt.Errorf(
-		"upyun cdn refresh is not implemented yet",
-	)
+// RefreshCDN 使用又拍云 SDK Purge 方法刷新 CDN 缓存。
+func (p *Provider) RefreshCDN(_ context.Context, urls []string) error {
+	return p.refreshCDNImpl(urls)
 }
 
-func (p *Provider) ListDomains(
-	_ context.Context, _ string,
-) ([]string, error) {
+func (p *Provider) refreshCDNImpl(urls []string) error {
+	if len(urls) == 0 {
+		return nil
+	}
+	if p.up == nil {
+		return fmt.Errorf("upyun client not initialized")
+	}
+	fails, err := p.up.Purge(urls)
+	if err != nil {
+		return fmt.Errorf("upyun purge failed: %w", err)
+	}
+	if len(fails) > 0 {
+		return fmt.Errorf("upyun purge partially failed: %v", fails)
+	}
+	return nil
+}
+
+// refreshCDNWithURL 用于测试的 HTTP 直调版本。
+func (p *Provider) refreshCDNWithURL(ctx context.Context, apiURL string, urls []string) error {
+	if len(urls) == 0 {
+		return nil
+	}
+
+	purgeList := strings.Join(urls, "\n")
+	form := url.Values{"purge": {purgeList}}
+
+	req, err := http.NewRequestWithContext(
+		ctx, http.MethodPost, apiURL, strings.NewReader(form.Encode()),
+	)
+	if err != nil {
+		return fmt.Errorf("build upyun purge request failed: %w", err)
+	}
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return fmt.Errorf("upyun purge request failed: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+		body, _ := io.ReadAll(resp.Body)
+		return fmt.Errorf("upyun purge failed(%d): %s", resp.StatusCode, string(body))
+	}
+	return nil
+}
+
+// PrefetchCDN 又拍云不支持 CDN 预热。
+func (p *Provider) PrefetchCDN(_ context.Context, _ []string) error {
+	return model.ErrNotSupported
+}
+
+// ListDomains 又拍云不支持域名列表 API，返回空列表。
+func (p *Provider) ListDomains(_ context.Context, _ string) ([]string, error) {
 	return []string{}, nil
 }
+
+// GetRefreshQuota 又拍云不支持配额查询。
+func (p *Provider) GetRefreshQuota(_ context.Context) (*model.CDNQuota, error) {
+	return nil, model.ErrNotSupported
+}
+

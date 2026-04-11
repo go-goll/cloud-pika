@@ -17,7 +17,7 @@ func New() *Provider {
 	return &Provider{
 		base: s3compat.New(
 			"aliyun",
-			[]string{"paging"},
+			[]string{"paging", "lifecycle", "cors", "encryption", "versioning"},
 			s3compat.Options{
 				ResolveEndpoint: func(cfg model.Account) string {
 					region := strings.TrimSpace(cfg.Region)

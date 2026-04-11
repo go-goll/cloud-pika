@@ -162,13 +162,13 @@ func (h *Handler) ListDomains(c *gin.Context) {
 		return
 	}
 
-	specific, ok := provider.(storage.ProviderSpecific)
+	cdn, ok := provider.(storage.CDNProvider)
 	if !ok {
 		c.JSON(http.StatusOK, gin.H{"domains": []string{}})
 		return
 	}
 
-	domains, err := specific.ListDomains(c.Request.Context(), bucket)
+	domains, err := cdn.ListDomains(c.Request.Context(), bucket)
 	if err != nil {
 		var vErr *validationErr
 		if errors.As(err, &vErr) {

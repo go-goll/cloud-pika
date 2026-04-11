@@ -81,8 +81,8 @@ func (h *Handler) FetchObject(c *gin.Context) {
 		Key:    payload.Key,
 		Run: func(ctx context.Context, notifyProgress func(progress int)) error {
 			notifyProgress(10)
-			if specific, ok := provider.(storage.ProviderSpecific); ok {
-				if callErr := specific.FetchURL(ctx, payload); callErr != nil {
+			if fetcher, ok := provider.(storage.FetchProvider); ok {
+				if callErr := fetcher.FetchURL(ctx, payload); callErr != nil {
 					return callErr
 				}
 			} else {
@@ -268,13 +268,13 @@ func (h *Handler) RefreshCDN(c *gin.Context) {
 		return
 	}
 
-	specific, ok := provider.(storage.ProviderSpecific)
+	cdn, ok := provider.(storage.CDNProvider)
 	if !ok {
 		c.JSON(http.StatusOK, gin.H{"ok": true})
 		return
 	}
 
-	if err = specific.RefreshCDN(c.Request.Context(), payload.URLs); err != nil {
+	if err = cdn.RefreshCDN(c.Request.Context(), payload.URLs); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}

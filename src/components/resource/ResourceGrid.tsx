@@ -4,19 +4,7 @@
  */
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import {
-  Copy,
-  Eye,
-  File,
-  FileArchive,
-  FileAudio,
-  FileCode,
-  FileText,
-  FileVideo,
-  Folder,
-  Image,
-  MoreHorizontal,
-} from 'lucide-react';
+import { Copy, Eye, MoreHorizontal } from 'lucide-react';
 import type { ObjectItem } from '@/types/cloud';
 import { Card } from '@/components/ui/Card';
 import { Skeleton } from '@/components/ui/Skeleton';
@@ -25,6 +13,8 @@ import {
   formatFileSize,
   isImageKey,
 } from '@/lib/format';
+import { getFileIcon, getIconBg } from '@/lib/file-icon';
+import { getPreviewType } from '@/lib/preview-type';
 import { useThumbnail } from '@/hooks/useThumbnail';
 import { ResourceContextMenu } from '@/components/bucket/ResourceContextMenu';
 
@@ -42,6 +32,7 @@ interface ResourceGridProps {
   onNavigateFolder?: (prefix: string) => void;
   onQuickCopy?: (key: string) => void;
   onRefreshCDN?: (key: string) => void;
+  onPrefetchCDN?: (key: string) => void;
   onUpload?: () => void;
   onRefresh?: () => void;
   onFetchUrl?: () => void;
@@ -105,52 +96,11 @@ function ThumbnailArea({
   );
 }
 
-/** 文件类型对应的图标容器背景色 */
-function getIconBg(key: string, mimeType?: string): string {
-  if (key.endsWith('/')) return 'bg-blue-500/10';
-  if (isImageKey(key) || mimeType?.startsWith('image/')) return 'bg-emerald-500/10';
-  if (mimeType?.startsWith('video/')) return 'bg-purple-500/10';
-  if (mimeType?.startsWith('audio/')) return 'bg-amber-500/10';
-  if (mimeType?.startsWith('text/')) return 'bg-gray-500/10';
-  const ext = key.split('.').pop()?.toLowerCase() ?? '';
-  if (['zip', 'tar', 'gz', 'rar', '7z'].includes(ext)) return 'bg-violet-500/10';
-  if (['js', 'ts', 'jsx', 'tsx', 'json', 'yml', 'yaml', 'xml', 'html', 'css'].includes(ext)) {
-    return 'bg-cyan-500/10';
-  }
-  return 'bg-gray-500/10';
-}
-
-/** 根据mimeType或文件名返回对应图标（大尺寸用于网格） */
-function getFileIcon(key: string, mimeType?: string, size = 28) {
-  if (key.endsWith('/')) {
-    return <Folder size={size} className="icon-folder" />;
-  }
-  if (isImageKey(key) || mimeType?.startsWith('image/')) {
-    return <Image size={size} className="icon-image" />;
-  }
-  if (mimeType?.startsWith('video/')) {
-    return <FileVideo size={size} className="icon-video" />;
-  }
-  if (mimeType?.startsWith('audio/')) {
-    return <FileAudio size={size} className="icon-audio" />;
-  }
-  if (mimeType?.startsWith('text/')) {
-    return <FileText size={size} className="icon-text" />;
-  }
-  const ext = key.split('.').pop()?.toLowerCase() ?? '';
-  if (['zip', 'tar', 'gz', 'rar', '7z'].includes(ext)) {
-    return <FileArchive size={size} className="icon-archive" />;
-  }
-  if (['js', 'ts', 'jsx', 'tsx', 'json', 'yml', 'yaml', 'xml', 'html', 'css'].includes(ext)) {
-    return <FileCode size={size} className="icon-code" />;
-  }
-  return <File size={size} className="icon-file" />;
-}
 
 /** 卡片操作菜单 */
 function CardActionMenu({
   objectKey,
-  isImage,
+  canPreview,
   onCopyUrl,
   onDownload,
   onRename,
@@ -158,7 +108,7 @@ function CardActionMenu({
   onPreview,
 }: {
   objectKey: string;
-  isImage: boolean;
+  canPreview: boolean;
   onCopyUrl?: (key: string) => void;
   onDownload?: (key: string) => void;
   onRename?: (key: string) => void;
@@ -169,7 +119,7 @@ function CardActionMenu({
   const [open, setOpen] = useState(false);
 
   const menuItems = [
-    ...(isImage && onPreview
+    ...(canPreview && onPreview
       ? [{
           label: t('bucket.preview'),
           icon: <Eye size={12} />,
@@ -278,6 +228,7 @@ export function ResourceGrid({
   onNavigateFolder,
   onQuickCopy,
   onRefreshCDN,
+  onPrefetchCDN,
   onUpload,
   onRefresh,
   onFetchUrl,
@@ -308,6 +259,8 @@ export function ResourceGrid({
             !isDir
             && (isImageKey(item.key)
               || Boolean(item.mimeType?.startsWith('image/')));
+          const canPreview =
+            !isDir && getPreviewType(item.key) !== null;
 
           return (
             <ResourceContextMenu
@@ -317,11 +270,14 @@ export function ResourceGrid({
                 onDownload: () => onDownload?.(item.key),
                 onRename: () => onRename?.(item.key),
                 onDelete: () => onDelete?.(item.key),
-                onPreview: isImage
+                onPreview: canPreview
                   ? () => onPreview?.(item.key)
                   : undefined,
                 onRefreshCDN: onRefreshCDN
                   ? () => onRefreshCDN(item.key)
+                  : undefined,
+                onPrefetchCDN: onPrefetchCDN
+                  ? () => onPrefetchCDN(item.key)
                   : undefined,
               }}
             >
@@ -374,7 +330,7 @@ export function ResourceGrid({
                 >
                   <CardActionMenu
                     objectKey={item.key}
-                    isImage={isImage}
+                    canPreview={canPreview}
                     onCopyUrl={onCopyUrl}
                     onDownload={onDownload}
                     onRename={onRename}

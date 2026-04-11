@@ -16,8 +16,6 @@ import {
   ArrowUp,
   Copy,
   Eye,
-  File,
-  Folder,
   MoreHorizontal,
 } from 'lucide-react';
 import type { ObjectItem } from '@/types/cloud';
@@ -25,8 +23,9 @@ import {
   extractFileName,
   formatFileSize,
   formatRelativeTime,
-  isImageKey,
 } from '@/lib/format';
+import { getFileIcon } from '@/lib/file-icon';
+import { getPreviewType } from '@/lib/preview-type';
 import { ResourceContextMenu } from '@/components/bucket/ResourceContextMenu';
 
 /** 排序方向 */
@@ -48,6 +47,7 @@ interface ResourceTableProps {
   onNavigateFolder?: (prefix: string) => void;
   onQuickCopy?: (key: string) => void;
   onRefreshCDN?: (key: string) => void;
+  onPrefetchCDN?: (key: string) => void;
   onUpload?: () => void;
   onRefresh?: () => void;
   onFetchUrl?: () => void;
@@ -63,7 +63,7 @@ const ROW_HEIGHT = 36;
 /** 行操作下拉菜单 */
 function RowActionMenu({
   objectKey,
-  isImage,
+  canPreview,
   onCopyUrl,
   onDownload,
   onRename,
@@ -71,7 +71,7 @@ function RowActionMenu({
   onPreview,
 }: {
   objectKey: string;
-  isImage: boolean;
+  canPreview: boolean;
   onCopyUrl?: (key: string) => void;
   onDownload?: (key: string) => void;
   onRename?: (key: string) => void;
@@ -124,7 +124,7 @@ function RowActionMenu({
             'border border-[var(--border)] shadow-lg',
           ].join(' ')}
         >
-          {isImage && onPreview ? (
+          {canPreview && onPreview ? (
             <ActionItem
               label={t('bucket.preview')}
               icon={<Eye size={14} />}
@@ -234,6 +234,7 @@ export function ResourceTable({
   onNavigateFolder,
   onQuickCopy,
   onRefreshCDN,
+  onPrefetchCDN,
   onUpload,
   onRefresh,
   onFetchUrl,
@@ -318,9 +319,8 @@ export function ResourceTable({
     const isDir =
       item.isDir || item.key.endsWith('/');
     const fileName = extractFileName(item.key);
-    const itemIsImage =
-      isImageKey(item.key)
-      || item.mimeType?.startsWith('image/');
+    const canPreview =
+      !isDir && getPreviewType(item.key) !== null;
 
     return (
       <ResourceContextMenu
@@ -330,12 +330,14 @@ export function ResourceTable({
           onDownload: () => onDownload?.(item.key),
           onRename: () => onRename?.(item.key),
           onDelete: () => onDelete?.(item.key),
-          onPreview:
-            itemIsImage && !isDir
-              ? () => onPreview?.(item.key)
-              : undefined,
+          onPreview: canPreview
+            ? () => onPreview?.(item.key)
+            : undefined,
           onRefreshCDN: onRefreshCDN
             ? () => onRefreshCDN(item.key)
+            : undefined,
+          onPrefetchCDN: onPrefetchCDN
+            ? () => onPrefetchCDN(item.key)
             : undefined,
         }}
       >
@@ -373,17 +375,9 @@ export function ResourceTable({
           {/* 文件名 */}
           <td className="px-4 py-3.5">
             <div className="flex items-center gap-2 w-full">
-              {isDir ? (
-                <Folder
-                  size={24}
-                  className="shrink-0 icon-folder"
-                />
-              ) : (
-                <File
-                  size={24}
-                  className="shrink-0 icon-file"
-                />
-              )}
+              <span className="shrink-0">
+                {getFileIcon(item.key, item.mimeType, 24)}
+              </span>
               <span
                 className={[
                   'truncate text-sm font-medium',
@@ -435,7 +429,7 @@ export function ResourceTable({
           <td className="px-4 py-3.5">
             <RowActionMenu
               objectKey={item.key}
-              isImage={Boolean(itemIsImage) && !isDir}
+              canPreview={canPreview}
               onCopyUrl={onCopyUrl}
               onDownload={onDownload}
               onRename={onRename}

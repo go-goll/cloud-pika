@@ -13,6 +13,11 @@ import type {
   TransferTask,
   TransferStatus,
 } from '@/types/cloud';
+import {
+  formatFileSize,
+  formatSpeed,
+  formatETA,
+} from '@/lib/format';
 
 interface TransferCardProps {
   task: TransferTask;
@@ -137,8 +142,27 @@ export function TransferCard({
                     {t('transfer.progress')}
                   </span>
                 </div>
-                <span className="text-sm font-semibold text-[var(--accent)]">
-                  {task.progress}%
+                <div className="flex items-center gap-2">
+                  {task.totalSize != null && task.transferredSize != null ? (
+                    <span className="text-xs text-[var(--text-secondary)]">
+                      {formatFileSize(task.transferredSize)} / {formatFileSize(task.totalSize)}
+                    </span>
+                  ) : null}
+                  <span className="text-sm font-semibold text-[var(--accent)]">
+                    {task.progress}%
+                  </span>
+                </div>
+              </div>
+              {/* 速度和 ETA */}
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-xs text-[var(--text-secondary)]">
+                  {formatSpeed(task.speed ?? 0)}
+                </span>
+                <span className="text-xs text-[var(--text-secondary)]">
+                  {formatETA(
+                    (task.totalSize ?? 0) - (task.transferredSize ?? 0),
+                    task.speed ?? 0,
+                  )}
                 </span>
               </div>
               <div

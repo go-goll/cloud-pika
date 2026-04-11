@@ -6,8 +6,12 @@ import { tauriApi } from '@/lib/tauri';
 import type { AccountUpsertPayload } from '@/types/account';
 import type {
   AppSettings,
+  CORSRule,
   DownloadParams,
+  EncryptionConfig,
+  LifecycleRule,
   ListParams,
+  RefererConfig,
   RenameParams,
   SignedURLParams,
   UploadParams,
@@ -239,5 +243,182 @@ export function useRefreshCDNMutation() {
     onError: (err: Error) => {
       toast.error(err.message || t('toast.operationFailed'));
     },
+  });
+}
+
+/** 预热 CDN 缓存 */
+export function usePrefetchCDNMutation() {
+  const { t } = useTranslation();
+  return useMutation({
+    mutationFn: (payload: { accountId: string; urls: string[] }) =>
+      cloudApi.prefetchCDN(payload),
+    onSuccess: () => {
+      toast.success(t('toast.cdnPrefetched'));
+    },
+    onError: (err: Error) => {
+      toast.error(err.message || t('toast.operationFailed'));
+    },
+  });
+}
+
+/** 查询 CDN 配额 */
+export function useCDNQuotaQuery(accountId: string, enabled: boolean) {
+  return useQuery({
+    queryKey: ['cdnQuota', accountId],
+    queryFn: () => cloudApi.getCDNQuota(accountId),
+    enabled,
+    staleTime: 60 * 1000,
+  });
+}
+
+// ---- Bucket 治理 Hooks ----
+
+/** 查询生命周期规则 */
+export function useLifecycleRulesQuery(
+  accountId: string, bucket: string, enabled: boolean,
+) {
+  return useQuery({
+    queryKey: ['lifecycle', accountId, bucket],
+    queryFn: () => cloudApi.getLifecycle(accountId, bucket),
+    enabled,
+    staleTime: 60 * 1000,
+  });
+}
+
+/** 更新生命周期规则 */
+export function usePutLifecycleRulesMutation() {
+  const qc = useQueryClient();
+  const { t } = useTranslation();
+  return useMutation({
+    mutationFn: (payload: { accountId: string; bucket: string; rules: LifecycleRule[] }) =>
+      cloudApi.putLifecycle(payload),
+    onSuccess: (_data, vars) => {
+      void qc.invalidateQueries({ queryKey: ['lifecycle', vars.accountId, vars.bucket] });
+      toast.success(t('toast.settingsSaved'));
+    },
+    onError: (err: Error) => toast.error(err.message || t('toast.operationFailed')),
+  });
+}
+
+/** 删除生命周期规则 */
+export function useDeleteLifecycleRulesMutation() {
+  const qc = useQueryClient();
+  const { t } = useTranslation();
+  return useMutation({
+    mutationFn: (payload: { accountId: string; bucket: string }) =>
+      cloudApi.deleteLifecycle(payload),
+    onSuccess: (_data, vars) => {
+      void qc.invalidateQueries({ queryKey: ['lifecycle', vars.accountId, vars.bucket] });
+      toast.success(t('toast.deleteSuccess'));
+    },
+    onError: (err: Error) => toast.error(err.message || t('toast.operationFailed')),
+  });
+}
+
+/** 查询 CORS 规则 */
+export function useCORSRulesQuery(
+  accountId: string, bucket: string, enabled: boolean,
+) {
+  return useQuery({
+    queryKey: ['cors', accountId, bucket],
+    queryFn: () => cloudApi.getCORS(accountId, bucket),
+    enabled,
+    staleTime: 60 * 1000,
+  });
+}
+
+/** 更新 CORS 规则 */
+export function usePutCORSRulesMutation() {
+  const qc = useQueryClient();
+  const { t } = useTranslation();
+  return useMutation({
+    mutationFn: (payload: { accountId: string; bucket: string; rules: CORSRule[] }) =>
+      cloudApi.putCORS(payload),
+    onSuccess: (_data, vars) => {
+      void qc.invalidateQueries({ queryKey: ['cors', vars.accountId, vars.bucket] });
+      toast.success(t('toast.settingsSaved'));
+    },
+    onError: (err: Error) => toast.error(err.message || t('toast.operationFailed')),
+  });
+}
+
+/** 查询防盗链配置 */
+export function useRefererConfigQuery(
+  accountId: string, bucket: string, enabled: boolean,
+) {
+  return useQuery({
+    queryKey: ['referer', accountId, bucket],
+    queryFn: () => cloudApi.getReferer(accountId, bucket),
+    enabled,
+    staleTime: 60 * 1000,
+  });
+}
+
+/** 更新防盗链配置 */
+export function usePutRefererConfigMutation() {
+  const qc = useQueryClient();
+  const { t } = useTranslation();
+  return useMutation({
+    mutationFn: (payload: { accountId: string; bucket: string; config: RefererConfig }) =>
+      cloudApi.putReferer(payload),
+    onSuccess: (_data, vars) => {
+      void qc.invalidateQueries({ queryKey: ['referer', vars.accountId, vars.bucket] });
+      toast.success(t('toast.settingsSaved'));
+    },
+    onError: (err: Error) => toast.error(err.message || t('toast.operationFailed')),
+  });
+}
+
+/** 查询加密配置 */
+export function useEncryptionQuery(
+  accountId: string, bucket: string, enabled: boolean,
+) {
+  return useQuery({
+    queryKey: ['encryption', accountId, bucket],
+    queryFn: () => cloudApi.getEncryption(accountId, bucket),
+    enabled,
+    staleTime: 60 * 1000,
+  });
+}
+
+/** 更新加密配置 */
+export function usePutEncryptionMutation() {
+  const qc = useQueryClient();
+  const { t } = useTranslation();
+  return useMutation({
+    mutationFn: (payload: { accountId: string; bucket: string; config: EncryptionConfig }) =>
+      cloudApi.putEncryption(payload),
+    onSuccess: (_data, vars) => {
+      void qc.invalidateQueries({ queryKey: ['encryption', vars.accountId, vars.bucket] });
+      toast.success(t('toast.settingsSaved'));
+    },
+    onError: (err: Error) => toast.error(err.message || t('toast.operationFailed')),
+  });
+}
+
+/** 查询版本控制状态 */
+export function useVersioningQuery(
+  accountId: string, bucket: string, enabled: boolean,
+) {
+  return useQuery({
+    queryKey: ['versioning', accountId, bucket],
+    queryFn: () => cloudApi.getVersioning(accountId, bucket),
+    enabled,
+    staleTime: 60 * 1000,
+  });
+}
+
+/** 更新版本控制状态 */
+export function usePutVersioningMutation() {
+  const qc = useQueryClient();
+  const { t } = useTranslation();
+  return useMutation({
+    mutationFn: (payload: { accountId: string; bucket: string; status: string }) =>
+      cloudApi.putVersioning(payload),
+    onSuccess: (_data, vars) => {
+      void qc.invalidateQueries({ queryKey: ['versioning', vars.accountId, vars.bucket] });
+      toast.success(t('toast.settingsSaved'));
+    },
+    onError: (err: Error) => toast.error(err.message || t('toast.operationFailed')),
   });
 }

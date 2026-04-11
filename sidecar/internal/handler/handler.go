@@ -26,7 +26,7 @@ type Handler struct {
 	settings  database.SettingsStore
 	transfers database.TransferStore
 	queue     *queue.Manager
-	providers storage.Factory
+	providers storage.ProviderFactory
 }
 
 func New(cfg config.Config, db *sql.DB, queueMgr *queue.Manager) *Handler {

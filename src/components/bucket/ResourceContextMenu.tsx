@@ -56,6 +56,8 @@ interface FileMenuActions {
   onPreview?: () => void;
   /** CDN 刷新回调（仅启用 refreshCDN 功能时提供） */
   onRefreshCDN?: () => void;
+  /** CDN 预热回调（仅启用 prefetchCDN 功能时提供） */
+  onPrefetchCDN?: () => void;
 }
 
 /** 空白区域右键菜单的回调集合 */
@@ -123,6 +125,16 @@ export function ResourceContextMenu({
                 >
                   <RefreshCcw size={16} />
                   {t('bucket.refreshCDN')}
+                </ContextMenu.Item>
+              ) : null}
+
+              {fileActions.onPrefetchCDN ? (
+                <ContextMenu.Item
+                  className={itemClassName}
+                  onSelect={fileActions.onPrefetchCDN}
+                >
+                  <RefreshCcw size={16} />
+                  {t('bucket.prefetchCDN')}
                 </ContextMenu.Item>
               ) : null}
 

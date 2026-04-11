@@ -84,6 +84,35 @@ export function formatCopyUrl(
 }
 
 /**
+ * 格式化传输速度
+ * 例如：1048576 -> "1 MB/s"
+ */
+export function formatSpeed(bytesPerSecond: number): string {
+  return `${formatFileSize(bytesPerSecond)}/s`;
+}
+
+/**
+ * 格式化预计剩余时间
+ * 返回如 "2m 30s"、"1h 5m"，speed 为 0 时返回 "--"
+ */
+export function formatETA(remainingBytes: number, speed: number): string {
+  if (speed <= 0) return '--';
+  const totalSeconds = Math.ceil(remainingBytes / speed);
+  if (totalSeconds < 60) return `${totalSeconds}s`;
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = totalSeconds % 60;
+  if (minutes < 60) return `${minutes}m ${seconds}s`;
+  const hours = Math.floor(minutes / 60);
+  const remainMinutes = minutes % 60;
+  return `${hours}h ${remainMinutes}m`;
+}
+
+/** 提取文件扩展名（小写） */
+export function getExtension(key: string): string {
+  return key.split('.').pop()?.toLowerCase() ?? '';
+}
+
+/**
  * 从完整key中提取文件名
  * 例如 "images/2024/photo.jpg" -> "photo.jpg"
  */

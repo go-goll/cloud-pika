@@ -19,6 +19,7 @@ import {
   useFetchMutation,
   useGenerateUrlMutation,
   useObjectsQuery,
+  usePrefetchCDNMutation,
   useProviderFeaturesQuery,
   useRefreshCDNMutation,
   useRenameMutation,
@@ -31,6 +32,7 @@ import { useAccountStore } from '@/stores/useAccountStore';
 import { useAppStore } from '@/stores/useAppStore';
 import { useBucketStore } from '@/stores/useBucketStore';
 import { BucketToolbar } from '@/components/bucket/BucketToolbar';
+import { BucketSettingsDrawer } from '@/components/bucket/BucketSettingsDrawer';
 import type { ViewMode } from '@/components/bucket/BucketToolbar';
 import { BreadcrumbNav } from '@/components/bucket/BreadcrumbNav';
 import { SelectionBar } from '@/components/bucket/SelectionBar';
@@ -41,7 +43,8 @@ import { FetchUrlDialog } from '@/components/bucket/FetchUrlDialog';
 import { UrlDialog } from '@/components/bucket/UrlDialog';
 import { ResourceTable } from '@/components/resource/ResourceTable';
 import { ResourceGrid } from '@/components/resource/ResourceGrid';
-import { ImagePreview } from '@/components/preview/ImagePreview';
+import { FilePreview } from '@/components/preview/FilePreview';
+import { getPreviewType } from '@/lib/preview-type';
 import {
   isImageKey,
   extractFileName,
@@ -69,6 +72,7 @@ export function BucketPage() {
   const [urlDialogUrl, setUrlDialogUrl] = useState('');
   const [urlDialogKey, setUrlDialogKey] = useState('');
   const [fetchDialogOpen, setFetchDialogOpen] = useState(false);
+  const [settingsDrawerOpen, setSettingsDrawerOpen] = useState(false);
 
   // ---- 图片预览状态 ----
   const [previewUrl, setPreviewUrl] = useState('');
@@ -108,6 +112,7 @@ export function BucketPage() {
   const fetchMutation = useFetchMutation();
   const generateUrl = useGenerateUrlMutation().mutateAsync;
   const refreshCDN = useRefreshCDNMutation();
+  const prefetchCDN = usePrefetchCDNMutation();
 
   // ---- 查询 ----
   const bucketsQuery = useBucketsQuery(
@@ -143,6 +148,13 @@ export function BucketPage() {
   const hasUrlUpload = featureList.includes('urlUpload');
   const hasCustomDomain = featureList.includes('customDomain');
   const hasRefreshCDN = featureList.includes('refreshCDN');
+  const hasPrefetchCDN = featureList.includes('prefetchCDN');
+
+  const governanceFeatures = useMemo(
+    () => ['lifecycle', 'cors', 'referer', 'encryption', 'versioning']
+      .filter((f) => featureList.includes(f)),
+    [featureList],
+  );
 
   const domainsQuery = useDomainsQuery(
     activeAccountId,
@@ -461,17 +473,14 @@ export function BucketPage() {
     ],
   );
 
-  /** 预览图片：设置 previewKey 触发 URL 生成 */
+  /** 预览文件：设置 previewKey 触发 URL 生成 */
   const onPreview = useCallback(
     (key: string) => {
-      const obj = objects.find((o) => o.key === key);
-      const isImage =
-        isImageKey(key)
-        || obj?.mimeType?.startsWith('image/');
-      if (!isImage) return;
-      setPreviewKey(key);
+      if (getPreviewType(key) !== null) {
+        setPreviewKey(key);
+      }
     },
-    [objects],
+    [],
   );
 
   // ---- CDN 刷新 ----
@@ -500,18 +509,18 @@ export function BucketPage() {
   const handleBatchRefreshCDN = useCallback(async () => {
     if (!activeAccountId || !activeBucket) return;
     try {
-      const urls: string[] = [];
-      for (const key of selectedKeys) {
-        const pref = domainPrefs[activeBucket];
-        const result = await generateUrl({
-          accountId: activeAccountId,
-          bucket: activeBucket,
-          key,
-          domain: pref?.domain || undefined,
-          https: settings.https,
-        });
-        urls.push(result.url);
-      }
+      const pref = domainPrefs[activeBucket];
+      const urls = await Promise.all(
+        [...selectedKeys].map((key) =>
+          generateUrl({
+            accountId: activeAccountId,
+            bucket: activeBucket,
+            key,
+            domain: pref?.domain || undefined,
+            https: settings.https,
+          }).then((r) => r.url),
+        ),
+      );
       await refreshCDN.mutateAsync({
         accountId: activeAccountId,
         urls,
@@ -525,6 +534,59 @@ export function BucketPage() {
     activeAccountId, activeBucket, domainPrefs,
     generateUrl, selectedKeys, settings.https,
     refreshCDN, t,
+  ]);
+
+  // ---- CDN 预热 ----
+  const onPrefetchCDN = useCallback(
+    async (key: string) => {
+      if (!activeAccountId || !activeBucket) return;
+      const pref = domainPrefs[activeBucket];
+      const result = await generateUrl({
+        accountId: activeAccountId,
+        bucket: activeBucket,
+        key,
+        domain: pref?.domain || undefined,
+        https: settings.https,
+      });
+      await prefetchCDN.mutateAsync({
+        accountId: activeAccountId,
+        urls: [result.url],
+      });
+    },
+    [
+      activeAccountId, activeBucket, domainPrefs,
+      generateUrl, settings.https, prefetchCDN,
+    ],
+  );
+
+  const handleBatchPrefetchCDN = useCallback(async () => {
+    if (!activeAccountId || !activeBucket) return;
+    try {
+      const pref = domainPrefs[activeBucket];
+      const urls = await Promise.all(
+        [...selectedKeys].map((key) =>
+          generateUrl({
+            accountId: activeAccountId,
+            bucket: activeBucket,
+            key,
+            domain: pref?.domain || undefined,
+            https: settings.https,
+          }).then((r) => r.url),
+        ),
+      );
+      await prefetchCDN.mutateAsync({
+        accountId: activeAccountId,
+        urls,
+      });
+    } catch (err) {
+      toast.error(
+        (err as Error).message || t('toast.operationFailed'),
+      );
+    }
+  }, [
+    activeAccountId, activeBucket, domainPrefs,
+    generateUrl, selectedKeys, settings.https,
+    prefetchCDN, t,
   ]);
 
   // ---- 批量操作 ----
@@ -654,6 +716,10 @@ export function BucketPage() {
       ? undefined
       : onRequestDelete,
     onSelect: handleSelect,
+    onRename: (k) => setRenameTarget(k),
+    onUpload: () => void onClickUpload(),
+    onRefresh: handleRefresh,
+    onSelectAll: handleSelectAll,
   });
 
   // ---- 拖拽上传 ----
@@ -758,6 +824,11 @@ export function BucketPage() {
                 ? () => setFetchDialogOpen(true)
                 : undefined
             }
+            onSettings={
+              governanceFeatures.length > 0 && activeBucket
+                ? () => setSettingsDrawerOpen(true)
+                : undefined
+            }
           />
 
           {/* 资源列表 */}
@@ -781,6 +852,11 @@ export function BucketPage() {
               onRefreshCDN={
                 hasRefreshCDN
                   ? (k) => void onRefreshCDN(k)
+                  : undefined
+              }
+              onPrefetchCDN={
+                hasPrefetchCDN
+                  ? (k) => void onPrefetchCDN(k)
                   : undefined
               }
               onQuickCopy={(k) => void onQuickCopy(k)}
@@ -808,6 +884,11 @@ export function BucketPage() {
               onRefreshCDN={
                 hasRefreshCDN
                   ? (k) => void onRefreshCDN(k)
+                  : undefined
+              }
+              onPrefetchCDN={
+                hasPrefetchCDN
+                  ? (k) => void onPrefetchCDN(k)
                   : undefined
               }
               onQuickCopy={(k) => void onQuickCopy(k)}
@@ -877,6 +958,11 @@ export function BucketPage() {
             ? () => void handleBatchRefreshCDN()
             : undefined
         }
+        onBatchPrefetchCDN={
+          hasPrefetchCDN
+            ? () => void handleBatchPrefetchCDN()
+            : undefined
+        }
         onBatchDelete={
           settings.hideDeleteButton
             ? undefined
@@ -929,11 +1015,11 @@ export function BucketPage() {
         }
       />
 
-      {/* 图片预览 */}
-      <ImagePreview
+      {/* 文件预览 */}
+      <FilePreview
         open={previewUrl !== '' && previewKey !== ''}
-        imageUrl={previewUrl}
-        fileName={previewFileName}
+        fileKey={previewKey}
+        contentUrl={previewUrl}
         onClose={() => {
           setPreviewKey('');
           setPreviewUrl('');
@@ -953,6 +1039,15 @@ export function BucketPage() {
           previewIndex >= 0 ? previewIndex + 1 : undefined
         }
         totalCount={imageKeys.length}
+      />
+
+      {/* Bucket 治理设置抽屉 */}
+      <BucketSettingsDrawer
+        open={settingsDrawerOpen}
+        onClose={() => setSettingsDrawerOpen(false)}
+        accountId={activeAccountId}
+        bucket={activeBucket}
+        features={governanceFeatures}
       />
     </div>
   );
