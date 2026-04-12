@@ -178,7 +178,7 @@ func (p *Provider) regionClient(
 
 	client := s3compat.New(
 		"tencent",
-		[]string{"urlUpload", "paging", "lifecycle", "cors", "encryption", "versioning"},
+		[]string{"paging", "lifecycle", "cors", "encryption", "versioning"},
 		s3compat.Options{ForceVirtualHost: true},
 	)
 	if err := client.Init(cfg); err != nil {
@@ -323,7 +323,7 @@ func (p *Provider) GenerateURL(
 
 func (p *Provider) GetProviderFeatures() []string {
 	return []string{
-		"urlUpload", "paging", "lifecycle", "cors",
+		"paging", "lifecycle", "cors",
 		"encryption", "versioning",
 		"refreshCDN", "prefetchCDN", "cdnQuota", "customDomain",
 	}
