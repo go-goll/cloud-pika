@@ -10,6 +10,7 @@ import {
 } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
+  FolderPlus,
   Grid3x3,
   LayoutList,
   Link2,
@@ -33,6 +34,8 @@ interface BucketToolbarProps {
   onRefresh: () => void;
   /** 远程抓取回调（仅当 provider 支持时传入） */
   onFetchUrl?: () => void;
+  /** 新建文件夹回调 */
+  onCreateFolder?: () => void;
   /** Bucket 设置回调（仅当有治理功能时传入） */
   onSettings?: () => void;
 }
@@ -48,6 +51,7 @@ export function BucketToolbar({
   onUpload,
   onRefresh,
   onFetchUrl,
+  onCreateFolder,
   onSettings,
 }: BucketToolbarProps) {
   const { t } = useTranslation();
@@ -173,6 +177,19 @@ export function BucketToolbar({
             {t('bucket.grid')}
           </button>
         </div>
+
+        {/* 新建文件夹 */}
+        {onCreateFolder ? (
+          <Button
+            variant="ghost"
+            iconOnly
+            className="rounded-xl"
+            onClick={onCreateFolder}
+            title={t('bucket.newFolder')}
+          >
+            <FolderPlus size={15} />
+          </Button>
+        ) : null}
 
         {/* 远程抓取 */}
         {onFetchUrl ? (

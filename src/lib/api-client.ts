@@ -15,6 +15,7 @@ import type {
   SignedURLParams,
   TransferTask,
   UploadParams,
+  VersionListResult,
 } from '@/types/cloud';
 
 let baseUrl = '';
@@ -100,6 +101,11 @@ export const cloudApi = {
   },
   async renameObject(payload: RenameParams): Promise<void> {
     await client.post('/api/v1/objects/rename', payload);
+  },
+  async createFolder(payload: {
+    accountId: string; bucket: string; key: string;
+  }): Promise<void> {
+    await client.post('/api/v1/objects/folder', payload);
   },
   async deleteObjects(payload: { accountId: string; bucket: string; keys: string[] }): Promise<void> {
     await client.delete('/api/v1/objects', { data: payload });
@@ -213,5 +219,15 @@ export const cloudApi = {
     payload: { accountId: string; bucket: string; status: string },
   ): Promise<void> {
     await client.put(`/api/v1/buckets/${payload.bucket}/versioning`, payload);
+  },
+  async listObjectVersions(params: {
+    accountId: string; bucket: string; prefix?: string;
+    keyMarker?: string; versionMarker?: string; limit?: number;
+  }): Promise<VersionListResult> {
+    const { data } = await client.get(
+      `/api/v1/buckets/${params.bucket}/objects/versions`,
+      { params },
+    );
+    return data.result;
   },
 };

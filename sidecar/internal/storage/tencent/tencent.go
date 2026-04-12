@@ -322,7 +322,11 @@ func (p *Provider) GenerateURL(
 }
 
 func (p *Provider) GetProviderFeatures() []string {
-	return []string{"urlUpload", "paging", "lifecycle", "cors", "encryption", "versioning"}
+	return []string{
+		"urlUpload", "paging", "lifecycle", "cors",
+		"encryption", "versioning",
+		"refreshCDN", "prefetchCDN", "cdnQuota", "customDomain",
+	}
 }
 
 // ──────────── 签名工具函数 ────────────

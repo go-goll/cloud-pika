@@ -28,6 +28,7 @@ const defaultSettings: AppSettings = {
   hideDeleteButton: false,
   paging: false,
   copyType: 'url',
+  autoRefreshCDN: false,
 };
 
 export const useAppStore = create<AppState>()(

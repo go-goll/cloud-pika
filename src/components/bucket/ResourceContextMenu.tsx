@@ -10,6 +10,8 @@ import {
   Copy,
   Download,
   Eye,
+  FolderPlus,
+  History,
   Link2,
   Pencil,
   RefreshCcw,
@@ -36,12 +38,6 @@ const dangerItemClassName = [
   'transition-colors',
 ].join(' ');
 
-const disabledItemClassName = [
-  'flex items-center gap-3 px-4 py-2.5 text-sm',
-  'rounded-lg outline-none',
-  'opacity-40 pointer-events-none',
-].join(' ');
-
 const separatorClassName =
   'border-t border-[var(--border)] my-1';
 
@@ -58,6 +54,8 @@ interface FileMenuActions {
   onRefreshCDN?: () => void;
   /** CDN 预热回调（仅启用 prefetchCDN 功能时提供） */
   onPrefetchCDN?: () => void;
+  /** 版本历史回调（仅启用 versioning 功能时提供） */
+  onVersionHistory?: () => void;
 }
 
 /** 空白区域右键菜单的回调集合 */
@@ -66,6 +64,8 @@ interface BlankMenuActions {
   onRefresh: () => void;
   /** 远程抓取回调（仅当 provider 支持时传入） */
   onFetchUrl?: () => void;
+  /** 新建文件夹回调 */
+  onCreateFolder?: () => void;
 }
 
 interface ResourceContextMenuProps {
@@ -154,6 +154,16 @@ export function ResourceContextMenu({
                 {t('bucket.rename')}
               </ContextMenu.Item>
 
+              {fileActions.onVersionHistory ? (
+                <ContextMenu.Item
+                  className={itemClassName}
+                  onSelect={fileActions.onVersionHistory}
+                >
+                  <History size={16} />
+                  {t('bucketSettings.versionHistory')}
+                </ContextMenu.Item>
+              ) : null}
+
               {fileActions.onDelete ? (
                 <>
                   <ContextMenu.Separator
@@ -191,12 +201,15 @@ export function ResourceContextMenu({
                 </ContextMenu.Item>
               ) : null}
 
-              <ContextMenu.Item
-                className={disabledItemClassName}
-                disabled
-              >
-                {t('bucket.newFolder')}
-              </ContextMenu.Item>
+              {blankActions.onCreateFolder ? (
+                <ContextMenu.Item
+                  className={itemClassName}
+                  onSelect={blankActions.onCreateFolder}
+                >
+                  <FolderPlus size={16} />
+                  {t('bucket.newFolder')}
+                </ContextMenu.Item>
+              ) : null}
 
               <ContextMenu.Separator
                 className={separatorClassName}

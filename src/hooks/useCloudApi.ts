@@ -161,6 +161,22 @@ export function useDownloadMutation() {
   });
 }
 
+/** 创建文件夹 */
+export function useCreateFolderMutation() {
+  const { t } = useTranslation();
+  return useMutation({
+    mutationFn: (payload: {
+      accountId: string; bucket: string; key: string;
+    }) => cloudApi.createFolder(payload),
+    onSuccess: () => {
+      toast.success(t('toast.folderCreated'));
+    },
+    onError: (err: Error) => {
+      toast.error(err.message || t('toast.operationFailed'));
+    },
+  });
+}
+
 export function useRenameMutation() {
   const { t } = useTranslation();
   return useMutation({

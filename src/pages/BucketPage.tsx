@@ -13,6 +13,7 @@ import { useTranslation } from 'react-i18next';
 import { useDropzone } from 'react-dropzone';
 import {
   useBucketsQuery,
+  useCreateFolderMutation,
   useDeleteObjectsMutation,
   useDomainsQuery,
   useDownloadMutation,
@@ -39,6 +40,8 @@ import { SelectionBar } from '@/components/bucket/SelectionBar';
 import { RenameDialog } from '@/components/bucket/RenameDialog';
 import { DeleteConfirmDialog } from '@/components/bucket/DeleteConfirmDialog';
 import { UploadZone } from '@/components/bucket/UploadZone';
+import { VersionHistoryDialog } from '@/components/bucket/VersionHistoryDialog';
+import { CreateFolderDialog } from '@/components/bucket/CreateFolderDialog';
 import { FetchUrlDialog } from '@/components/bucket/FetchUrlDialog';
 import { UrlDialog } from '@/components/bucket/UrlDialog';
 import { ResourceTable } from '@/components/resource/ResourceTable';
@@ -72,6 +75,8 @@ export function BucketPage() {
   const [urlDialogUrl, setUrlDialogUrl] = useState('');
   const [urlDialogKey, setUrlDialogKey] = useState('');
   const [fetchDialogOpen, setFetchDialogOpen] = useState(false);
+  const [createFolderOpen, setCreateFolderOpen] = useState(false);
+  const [versionHistoryKey, setVersionHistoryKey] = useState('');
   const [settingsDrawerOpen, setSettingsDrawerOpen] = useState(false);
 
   // ---- 图片预览状态 ----
@@ -109,6 +114,7 @@ export function BucketPage() {
   const queueDownload = useDownloadMutation().mutateAsync;
   const deleteObjects = useDeleteObjectsMutation().mutateAsync;
   const renameObject = useRenameMutation().mutateAsync;
+  const createFolder = useCreateFolderMutation().mutateAsync;
   const fetchMutation = useFetchMutation();
   const generateUrl = useGenerateUrlMutation().mutateAsync;
   const refreshCDN = useRefreshCDNMutation();
@@ -149,6 +155,7 @@ export function BucketPage() {
   const hasCustomDomain = featureList.includes('customDomain');
   const hasRefreshCDN = featureList.includes('refreshCDN');
   const hasPrefetchCDN = featureList.includes('prefetchCDN');
+  const hasVersioning = featureList.includes('versioning');
 
   const governanceFeatures = useMemo(
     () => ['lifecycle', 'cors', 'referer', 'encryption', 'versioning']
@@ -349,6 +356,28 @@ export function BucketPage() {
     [activeAccountId, activeBucket, queueDownload],
   );
 
+  /** 新建文件夹 */
+  const onConfirmCreateFolder = useCallback(
+    async (name: string) => {
+      if (!activeAccountId || !activeBucket) return;
+      try {
+        await createFolder({
+          accountId: activeAccountId,
+          bucket: activeBucket,
+          key: prefix + name,
+        });
+      } catch {
+        // mutation hook 已处理 toast
+      }
+      setCreateFolderOpen(false);
+      await refetchObjects();
+    },
+    [
+      activeAccountId, activeBucket, prefix,
+      createFolder, refetchObjects,
+    ],
+  );
+
   /** 触发删除确认（单个或批量） */
   const onRequestDelete = useCallback((key: string) => {
     setDeleteTargets([key]);
@@ -356,11 +385,15 @@ export function BucketPage() {
 
   const onConfirmDelete = useCallback(async () => {
     if (!activeAccountId || !activeBucket) return;
-    await deleteObjects({
-      accountId: activeAccountId,
-      bucket: activeBucket,
-      keys: deleteTargets,
-    });
+    try {
+      await deleteObjects({
+        accountId: activeAccountId,
+        bucket: activeBucket,
+        keys: deleteTargets,
+      });
+    } catch {
+      // mutation hook 已处理 toast
+    }
     setDeleteTargets([]);
     setSelectedKeys((prev) => {
       const next = new Set(prev);
@@ -390,12 +423,16 @@ export function BucketPage() {
             renameTarget.lastIndexOf('/') + 1,
           )
         : '';
-      await renameObject({
-        accountId: activeAccountId,
-        bucket: activeBucket,
-        from: renameTarget,
-        to: dir + newName,
-      });
+      try {
+        await renameObject({
+          accountId: activeAccountId,
+          bucket: activeBucket,
+          from: renameTarget,
+          to: dir + newName,
+        });
+      } catch {
+        // mutation hook 已处理 toast
+      }
       setRenameTarget('');
       await refetchObjects();
     },
@@ -720,6 +757,7 @@ export function BucketPage() {
     onUpload: () => void onClickUpload(),
     onRefresh: handleRefresh,
     onSelectAll: handleSelectAll,
+    onClearSelection: clearSelection,
   });
 
   // ---- 拖拽上传 ----
@@ -785,6 +823,45 @@ export function BucketPage() {
     };
   }, [handleRefresh, onClickUpload]);
 
+  // ---- 上传完成后自动刷新 CDN ----
+  useEffect(() => {
+    if (!settings.autoRefreshCDN || !hasRefreshCDN) return;
+    if (!activeAccountId || !activeBucket) return;
+
+    const onUploadDone = (e: Event) => {
+      const task = (e as CustomEvent).detail as {
+        bucket: string; key: string;
+      };
+      if (task.bucket !== activeBucket) return;
+      const pref = domainPrefs[activeBucket];
+      void generateUrl({
+        accountId: activeAccountId,
+        bucket: activeBucket,
+        key: task.key,
+        domain: pref?.domain || undefined,
+        https: settings.https,
+      }).then((r) => {
+        void refreshCDN.mutateAsync({
+          accountId: activeAccountId,
+          urls: [r.url],
+        });
+      });
+    };
+
+    window.addEventListener(
+      'cloud-pika:upload-completed', onUploadDone,
+    );
+    return () => {
+      window.removeEventListener(
+        'cloud-pika:upload-completed', onUploadDone,
+      );
+    };
+  }, [
+    settings.autoRefreshCDN, settings.https, hasRefreshCDN,
+    activeAccountId, activeBucket, domainPrefs,
+    generateUrl, refreshCDN,
+  ]);
+
   // ---- 提取重命名目标的文件名（不含目录路径） ----
   const renameFileName = useMemo(() => {
     if (!renameTarget) return '';
@@ -824,6 +901,7 @@ export function BucketPage() {
                 ? () => setFetchDialogOpen(true)
                 : undefined
             }
+            onCreateFolder={() => setCreateFolderOpen(true)}
             onSettings={
               governanceFeatures.length > 0 && activeBucket
                 ? () => setSettingsDrawerOpen(true)
@@ -860,8 +938,14 @@ export function BucketPage() {
                   : undefined
               }
               onQuickCopy={(k) => void onQuickCopy(k)}
+              onVersionHistory={
+                hasVersioning
+                  ? (k) => setVersionHistoryKey(k)
+                  : undefined
+              }
               onUpload={() => void onClickUpload()}
               onRefresh={handleRefresh}
+              onCreateFolder={() => setCreateFolderOpen(true)}
             />
           ) : (
             <ResourceGrid
@@ -892,8 +976,14 @@ export function BucketPage() {
                   : undefined
               }
               onQuickCopy={(k) => void onQuickCopy(k)}
+              onVersionHistory={
+                hasVersioning
+                  ? (k) => setVersionHistoryKey(k)
+                  : undefined
+              }
               onUpload={() => void onClickUpload()}
               onRefresh={handleRefresh}
+              onCreateFolder={() => setCreateFolderOpen(true)}
             />
           )}
 
@@ -969,6 +1059,22 @@ export function BucketPage() {
             : handleBatchDelete
         }
         onClearSelection={clearSelection}
+      />
+
+      {/* 新建文件夹对话框 */}
+      <CreateFolderDialog
+        open={createFolderOpen}
+        onConfirm={(name) => void onConfirmCreateFolder(name)}
+        onCancel={() => setCreateFolderOpen(false)}
+      />
+
+      {/* 版本历史对话框 */}
+      <VersionHistoryDialog
+        open={versionHistoryKey !== ''}
+        objectKey={versionHistoryKey}
+        accountId={activeAccountId}
+        bucket={activeBucket}
+        onClose={() => setVersionHistoryKey('')}
       />
 
       {/* 重命名对话框 */}

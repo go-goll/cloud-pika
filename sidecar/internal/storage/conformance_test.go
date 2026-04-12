@@ -2,8 +2,10 @@ package storage_test
 
 import (
 	"github.com/goll/cloud-pika/sidecar/internal/storage"
+	"github.com/goll/cloud-pika/sidecar/internal/storage/aws"
 	"github.com/goll/cloud-pika/sidecar/internal/storage/qiniu"
 	"github.com/goll/cloud-pika/sidecar/internal/storage/s3compat"
+	"github.com/goll/cloud-pika/sidecar/internal/storage/tencent"
 	"github.com/goll/cloud-pika/sidecar/internal/storage/upyun"
 )
 
@@ -21,6 +23,20 @@ var (
 	_ storage.Provider      = (*upyun.Provider)(nil)
 	_ storage.CDNProvider   = (*upyun.Provider)(nil)
 	_ storage.FetchProvider = (*upyun.Provider)(nil)
+)
+
+// 腾讯云: Provider + CDNProvider
+var (
+	_ storage.Provider    = (*tencent.Provider)(nil)
+	_ storage.CDNProvider = (*tencent.Provider)(nil)
+)
+
+// AWS: Provider + CDNProvider + StorageConfigProvider + VersioningProvider
+var (
+	_ storage.Provider              = (*aws.Provider)(nil)
+	_ storage.CDNProvider           = (*aws.Provider)(nil)
+	_ storage.StorageConfigProvider = (*aws.Provider)(nil)
+	_ storage.VersioningProvider    = (*aws.Provider)(nil)
 )
 
 // S3 兼容层: Provider + StorageConfigProvider + VersioningProvider

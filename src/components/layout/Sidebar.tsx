@@ -1,14 +1,16 @@
-import { useEffect, useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { useEffect, useMemo, useState } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
+  ChevronLeft,
+  ChevronRight,
   Database,
   FolderOpen,
   Upload,
-  ChevronLeft,
-  ChevronRight,
+  User,
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { SimpleTooltip } from '@/components/ui/Tooltip';
+import { useAccountStore } from '@/stores/useAccountStore';
 import { useBucketStore } from '@/stores/useBucketStore';
 
 /** 导航菜单项配置（仅保留已实现的路由） */
@@ -28,6 +30,7 @@ export const SIDEBAR_COLLAPSED_WIDTH = 64;
 /** 侧边栏组件，支持自动折叠/展开 */
 export function Sidebar() {
   const location = useLocation();
+  const navigate = useNavigate();
   const { t } = useTranslation();
   const [collapsed, setCollapsed] = useState(
     window.innerWidth < COLLAPSE_WIDTH,
@@ -35,6 +38,13 @@ export function Sidebar() {
   const buckets = useBucketStore((s) => s.buckets);
   const activeBucket = useBucketStore((s) => s.activeBucket);
   const setActiveBucket = useBucketStore((s) => s.setActiveBucket);
+
+  const accounts = useAccountStore((s) => s.accounts);
+  const activeAccountId = useAccountStore((s) => s.activeAccountId);
+  const activeAccount = useMemo(
+    () => accounts.find((a) => a.id === activeAccountId),
+    [accounts, activeAccountId],
+  );
 
   useEffect(() => {
     const onResize = () => {
@@ -174,8 +184,50 @@ export function Sidebar() {
         </div>
       )}
 
-      {/* 底部：折叠切换 */}
-      <div className="mt-auto px-4 pb-4">
+      {/* 底部：账户信息 + 折叠切换 */}
+      <div className="mt-auto px-3 pb-3 space-y-2">
+        {/* 当前账户 */}
+        {activeAccount ? (
+          collapsed ? (
+            <SimpleTooltip
+              content={`${activeAccount.name} (${activeAccount.provider})`}
+              side="right"
+            >
+              <button
+                type="button"
+                onClick={() => navigate('/')}
+                className="flex w-full items-center justify-center rounded-xl py-2 text-[var(--text-secondary)] transition-colors hover:bg-[var(--bg-raised)]"
+              >
+                <User size={16} />
+              </button>
+            </SimpleTooltip>
+          ) : (
+            <button
+              type="button"
+              onClick={() => navigate('/')}
+              className={[
+                'flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5',
+                'text-left transition-colors',
+                'hover:bg-[var(--bg-raised)]',
+              ].join(' ')}
+              title={t('sidebar.switchAccount')}
+            >
+              <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[var(--accent-soft)] text-[var(--accent)]">
+                <User size={14} />
+              </div>
+              <div className="min-w-0">
+                <p className="truncate text-xs font-medium text-[var(--text)]">
+                  {activeAccount.name}
+                </p>
+                <p className="truncate text-[10px] text-[var(--text-secondary)]">
+                  {activeAccount.provider}
+                </p>
+              </div>
+            </button>
+          )
+        ) : null}
+
+        {/* 折叠切换 */}
         <button
           type="button"
           onClick={() => setCollapsed((prev) => !prev)}

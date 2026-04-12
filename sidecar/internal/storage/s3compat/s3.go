@@ -165,9 +165,23 @@ func (p *Provider) ListObjects(ctx context.Context, params model.ListParams) (mo
 	}, nil
 }
 
-func (p *Provider) UploadObject(ctx context.Context, params model.UploadParams) error {
+// multipartPartSize 分片上传的分片大小（64MB）。
+// minio-go 会在文件超过此大小时自动使用 multipart upload。
+const multipartPartSize = 64 * 1024 * 1024
+
+// multipartNumThreads 分片上传的并发线程数。
+const multipartNumThreads = 4
+
+// UploadObject 上传文件到 S3 兼容存储。
+// 对于本地文件，通过 FPutObject 自动支持大文件分片上传；
+// 对于远程 URL，通过 PutObject 流式上传。
+func (p *Provider) UploadObject(
+	ctx context.Context, params model.UploadParams,
+) error {
 	if p.client == nil {
-		return fmt.Errorf("provider %s is not initialized", p.provider)
+		return fmt.Errorf(
+			"provider %s is not initialized", p.provider,
+		)
 	}
 	if params.Bucket == "" {
 		return fmt.Errorf("bucket required")
@@ -181,43 +195,113 @@ func (p *Provider) UploadObject(ctx context.Context, params model.UploadParams) 
 	}
 
 	if params.LocalPath != "" {
-		contentType := detectContentType(key, params.LocalPath)
-		_, err := p.client.FPutObject(ctx, params.Bucket, key, params.LocalPath, minio.PutObjectOptions{
-			ContentType: contentType,
-		})
-		if err != nil {
-			return fmt.Errorf("upload local file failed: %w", err)
-		}
-		return nil
+		return p.uploadLocalFile(ctx, params, key)
 	}
-
 	if params.SourceURL != "" {
-		req, err := http.NewRequestWithContext(ctx, http.MethodGet, params.SourceURL, nil)
-		if err != nil {
-			return fmt.Errorf("build source url request failed: %w", err)
-		}
-		resp, err := http.DefaultClient.Do(req)
-		if err != nil {
-			return fmt.Errorf("fetch source url failed: %w", err)
-		}
-		defer resp.Body.Close()
-		if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-			return fmt.Errorf("fetch source url failed: status %d", resp.StatusCode)
-		}
-		size := resp.ContentLength
-		if size <= 0 {
-			size = -1
-		}
-		_, err = p.client.PutObject(ctx, params.Bucket, key, resp.Body, size, minio.PutObjectOptions{
-			ContentType: resp.Header.Get("Content-Type"),
-		})
-		if err != nil {
-			return fmt.Errorf("upload source url failed: %w", err)
-		}
-		return nil
+		return p.uploadFromURL(ctx, params, key)
+	}
+	return fmt.Errorf("localPath or sourceUrl required")
+}
+
+// uploadLocalFile 上传本地文件，自动对大文件启用分片上传。
+func (p *Provider) uploadLocalFile(
+	ctx context.Context, params model.UploadParams, key string,
+) error {
+	contentType := detectContentType(key, params.LocalPath)
+	opts := minio.PutObjectOptions{
+		ContentType: contentType,
+		PartSize:    multipartPartSize,
+		NumThreads:  multipartNumThreads,
 	}
 
-	return fmt.Errorf("localPath or sourceUrl required")
+	// 如果调用方提供了进度回调，包装为 progress reader
+	if params.ProgressFn != nil {
+		info, err := os.Stat(params.LocalPath)
+		if err == nil && info.Size() > 0 {
+			opts.Progress = &progressReader{
+				total:    info.Size(),
+				callback: params.ProgressFn,
+			}
+		}
+	}
+
+	_, err := p.client.FPutObject(
+		ctx, params.Bucket, key, params.LocalPath, opts,
+	)
+	if err != nil {
+		return fmt.Errorf("upload local file failed: %w", err)
+	}
+	return nil
+}
+
+// uploadFromURL 从远程 URL 拉取并上传到存储。
+func (p *Provider) uploadFromURL(
+	ctx context.Context, params model.UploadParams, key string,
+) error {
+	req, err := http.NewRequestWithContext(
+		ctx, http.MethodGet, params.SourceURL, nil,
+	)
+	if err != nil {
+		return fmt.Errorf("build source url request failed: %w", err)
+	}
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return fmt.Errorf("fetch source url failed: %w", err)
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+		return fmt.Errorf(
+			"fetch source url failed: status %d", resp.StatusCode,
+		)
+	}
+
+	size := resp.ContentLength
+	if size <= 0 {
+		size = -1
+	}
+	opts := minio.PutObjectOptions{
+		ContentType: resp.Header.Get("Content-Type"),
+		PartSize:    multipartPartSize,
+		NumThreads:  multipartNumThreads,
+	}
+	if params.ProgressFn != nil && size > 0 {
+		opts.Progress = &progressReader{
+			total:    size,
+			callback: params.ProgressFn,
+		}
+	}
+
+	_, err = p.client.PutObject(
+		ctx, params.Bucket, key, resp.Body, size, opts,
+	)
+	if err != nil {
+		return fmt.Errorf("upload source url failed: %w", err)
+	}
+	return nil
+}
+
+// progressReader 将 minio-go 的进度字节数转换为百分比回调。
+// 实现 io.Reader 接口，用于 PutObjectOptions.Progress。
+// minio-go 内部通过 Read 调用通知已传输的字节数。
+type progressReader struct {
+	total    int64
+	read     int64
+	lastPct  int
+	callback func(percentage int)
+}
+
+func (pr *progressReader) Read(b []byte) (int, error) {
+	n := len(b)
+	pr.read += int64(n)
+	pct := int(pr.read * 100 / pr.total)
+	if pct > 99 {
+		pct = 99
+	}
+	if pct > pr.lastPct {
+		pr.lastPct = pct
+		pr.callback(pct)
+	}
+	return n, nil
 }
 
 func (p *Provider) DownloadObject(ctx context.Context, params model.DownloadParams) error {

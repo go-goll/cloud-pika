@@ -2,8 +2,11 @@
  * FilePreview - 文件预览统一分发器
  * 根据文件类型分发到 ImagePreview 或 TextPreview
  */
+import { AudioPreview } from './AudioPreview';
 import { ImagePreview } from './ImagePreview';
+import { PdfPreview } from './PdfPreview';
 import { TextPreview } from './TextPreview';
+import { VideoPreview } from './VideoPreview';
 import { getPreviewType, getShikiLang } from '@/lib/preview-type';
 import type { PreviewType } from '@/lib/preview-type';
 
@@ -45,6 +48,39 @@ export function FilePreview({
         onNext={onNext}
         currentIndex={currentIndex}
         totalCount={totalCount}
+      />
+    );
+  }
+
+  if (previewType === 'video') {
+    return (
+      <VideoPreview
+        open={open}
+        onClose={onClose}
+        videoUrl={contentUrl}
+        fileName={fileName}
+      />
+    );
+  }
+
+  if (previewType === 'audio') {
+    return (
+      <AudioPreview
+        open={open}
+        onClose={onClose}
+        audioUrl={contentUrl}
+        fileName={fileName}
+      />
+    );
+  }
+
+  if (previewType === 'pdf') {
+    return (
+      <PdfPreview
+        open={open}
+        onClose={onClose}
+        pdfUrl={contentUrl}
+        fileName={fileName}
       />
     );
   }

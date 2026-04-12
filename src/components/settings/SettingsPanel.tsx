@@ -147,6 +147,18 @@ export function SettingsPanel({
             }
           />
         </SettingsItem>
+
+        <SettingsItem
+          label={t('settings.autoRefreshCDN')}
+          description={t('settings.autoRefreshCDNDesc')}
+        >
+          <Checkbox
+            checked={settings.autoRefreshCDN}
+            onCheckedChange={(checked) =>
+              onSettingsChange({ autoRefreshCDN: checked })
+            }
+          />
+        </SettingsItem>
       </SettingsGroup>
 
       {/* 安全组 */}

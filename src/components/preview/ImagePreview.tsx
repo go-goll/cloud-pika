@@ -1,18 +1,19 @@
 /**
  * ImagePreview - 图片预览大图查看器
- * 全屏暗色遮罩 + 居中图片 + 平滑缩放入场
- * 支持左右箭头切换和键盘导航
- *
- * Cirrus Ether 设计系统：
- * - 遮罩 bg-black/80
- * - 导航按钮 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-sm
- * - 底部控制栏 rounded-full bg-white/10 backdrop-blur-md
- * - 图片 rounded-2xl shadow-2xl
+ * 全屏暗色遮罩 + 居中图片 + 缩放/旋转/重置
+ * 支持左右箭头切换、鼠标滚轮缩放、键盘导航
  */
-import { useEffect } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { useTranslation } from 'react-i18next';
-import { ChevronLeft, ChevronRight, X } from 'lucide-react';
+import {
+  ChevronLeft,
+  ChevronRight,
+  Maximize2,
+  RotateCw,
+  X,
+  ZoomIn,
+  ZoomOut,
+} from 'lucide-react';
 
 interface ImagePreviewProps {
   open: boolean;
@@ -32,6 +33,17 @@ const navBtnClass = [
   'hover:bg-white/20 transition-all duration-200 active:scale-90',
 ].join(' ');
 
+const toolBtnClass = [
+  'flex h-9 w-9 items-center justify-center',
+  'rounded-full text-white/80 hover:text-white',
+  'hover:bg-white/15 transition-all duration-150',
+].join(' ');
+
+/** 缩放步长 */
+const ZOOM_STEP = 0.25;
+const ZOOM_MIN = 0.1;
+const ZOOM_MAX = 5;
+
 export function ImagePreview({
   open,
   onClose,
@@ -42,20 +54,63 @@ export function ImagePreview({
   currentIndex,
   totalCount,
 }: ImagePreviewProps) {
-  const { t } = useTranslation();
+  const [scale, setScale] = useState(1);
+  const [rotation, setRotation] = useState(0);
 
+  // 图片切换或关闭时重置状态
+  useEffect(() => {
+    setScale(1);
+    setRotation(0);
+  }, [imageUrl, open]);
+
+  const zoomIn = useCallback(() => {
+    setScale((s) => Math.min(s + ZOOM_STEP, ZOOM_MAX));
+  }, []);
+
+  const zoomOut = useCallback(() => {
+    setScale((s) => Math.max(s - ZOOM_STEP, ZOOM_MIN));
+  }, []);
+
+  const resetView = useCallback(() => {
+    setScale(1);
+    setRotation(0);
+  }, []);
+
+  const rotate = useCallback(() => {
+    setRotation((r) => (r + 90) % 360);
+  }, []);
+
+  // 键盘和滚轮事件
   useEffect(() => {
     if (!open) return;
-    const handler = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
-      if (e.key === 'ArrowLeft') onPrev?.();
-      if (e.key === 'ArrowRight') onNext?.();
+    const onKey = (e: KeyboardEvent) => {
+      switch (e.key) {
+        case 'Escape': onClose(); break;
+        case 'ArrowLeft': onPrev?.(); break;
+        case 'ArrowRight': onNext?.(); break;
+        case '+':
+        case '=': zoomIn(); break;
+        case '-': zoomOut(); break;
+        case '0': resetView(); break;
+        case 'r': rotate(); break;
+      }
     };
-    window.addEventListener('keydown', handler);
-    return () => window.removeEventListener('keydown', handler);
-  }, [open, onPrev, onNext, onClose]);
+    const onWheel = (e: WheelEvent) => {
+      e.preventDefault();
+      if (e.deltaY < 0) zoomIn();
+      else zoomOut();
+    };
+    window.addEventListener('keydown', onKey);
+    window.addEventListener('wheel', onWheel, { passive: false });
+    return () => {
+      window.removeEventListener('keydown', onKey);
+      window.removeEventListener('wheel', onWheel);
+    };
+  }, [open, onPrev, onNext, onClose, zoomIn, zoomOut, resetView, rotate]);
 
   if (!open) return null;
+
+  const zoomPercent = Math.round(scale * 100);
 
   return createPortal(
     <div
@@ -85,7 +140,11 @@ export function ImagePreview({
         <img
           src={imageUrl}
           alt={fileName}
-          className="max-w-[85vw] max-h-[80vh] rounded-2xl object-contain shadow-2xl"
+          className="max-w-[85vw] max-h-[80vh] rounded-2xl object-contain shadow-2xl transition-transform duration-200"
+          style={{
+            transform: `scale(${scale}) rotate(${rotation}deg)`,
+          }}
+          draggable={false}
         />
 
         {onNext ? (
@@ -95,17 +154,38 @@ export function ImagePreview({
         ) : null}
       </div>
 
-      {/* 底部信息 pill */}
-      <p
-        className="mt-4 rounded-full px-5 py-2.5 bg-white/10 backdrop-blur-md text-sm text-white/80 max-w-[80vw] truncate"
-        title={fileName}
+      {/* 底部工具栏 */}
+      <div
+        className="mt-4 flex items-center gap-1 rounded-full bg-white/10 backdrop-blur-md px-3 py-1.5"
         onClick={(e) => e.stopPropagation()}
       >
-        {currentIndex !== undefined && totalCount
-          ? `${currentIndex} / ${totalCount} — `
-          : ''}
-        {fileName}
-      </p>
+        <button type="button" onClick={zoomOut} className={toolBtnClass} title="Zoom out (-)">
+          <ZoomOut size={16} />
+        </button>
+        <span className="min-w-[3rem] text-center text-xs text-white/70">
+          {zoomPercent}%
+        </span>
+        <button type="button" onClick={zoomIn} className={toolBtnClass} title="Zoom in (+)">
+          <ZoomIn size={16} />
+        </button>
+        <div className="mx-1 h-4 w-px bg-white/20" />
+        <button type="button" onClick={rotate} className={toolBtnClass} title="Rotate (R)">
+          <RotateCw size={16} />
+        </button>
+        <button type="button" onClick={resetView} className={toolBtnClass} title="Reset (0)">
+          <Maximize2 size={16} />
+        </button>
+        <div className="mx-1 h-4 w-px bg-white/20" />
+        <span
+          className="max-w-[200px] truncate text-xs text-white/60 px-1"
+          title={fileName}
+        >
+          {currentIndex !== undefined && totalCount
+            ? `${currentIndex} / ${totalCount} — `
+            : ''}
+          {fileName}
+        </span>
+      </div>
     </div>,
     document.body,
   );

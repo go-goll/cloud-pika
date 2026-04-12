@@ -4,6 +4,7 @@ import type {
   PropsWithChildren,
   ReactNode,
 } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   AlertTriangle,
   Home,
@@ -34,7 +35,7 @@ export class ErrorBoundary extends Component<
   ): ErrorBoundaryState {
     return {
       hasError: true,
-      message: error.message || '未知错误',
+      message: error.message || '',
     };
   }
 
@@ -72,11 +73,7 @@ export class ErrorBoundary extends Component<
   }
 }
 
-/**
- * 错误回退页面
- * 注意：由于类组件内无法使用 useTranslation，
- * 此处使用硬编码的中英文文本作为兜底
- */
+/** 错误回退页面（函数组件，支持 i18n） */
 function ErrorFallback({
   message,
   onRefresh,
@@ -86,6 +83,8 @@ function ErrorFallback({
   onRefresh: () => void;
   onGoHome: () => void;
 }) {
+  const { t } = useTranslation();
+
   return (
     <div className="flex min-h-screen items-center justify-center bg-surface">
       <div className="flex max-w-md flex-col items-center gap-5 px-6 text-center">
@@ -97,11 +96,11 @@ function ErrorFallback({
         </div>
 
         <h2 className="font-headline text-xl font-semibold text-on-surface">
-          出错了 / Something went wrong
+          {t('error.title')}
         </h2>
 
         <p className="text-sm text-on-surface-variant">
-          {message}
+          {message || t('error.unknown')}
         </p>
 
         <div className="flex gap-3">
@@ -110,11 +109,11 @@ function ErrorFallback({
             onClick={onRefresh}
           >
             <RefreshCcw size={16} className="mr-2" />
-            刷新页面
+            {t('error.refresh')}
           </Button>
           <Button onClick={onGoHome}>
             <Home size={16} className="mr-2" />
-            返回首页
+            {t('error.goHome')}
           </Button>
         </div>
       </div>

@@ -1,6 +1,6 @@
 import { isImageKey, getExtension } from '@/lib/format';
 
-export type PreviewType = 'image' | 'markdown' | 'code' | 'text';
+export type PreviewType = 'image' | 'video' | 'audio' | 'pdf' | 'markdown' | 'code' | 'text';
 
 const CODE_EXTS = new Set([
   'js', 'jsx', 'ts', 'tsx', 'json', 'yaml', 'yml',
@@ -9,6 +9,10 @@ const CODE_EXTS = new Set([
   'kt', 'c', 'cpp', 'h', 'swift', 'rb', 'php',
   'lua', 'dockerfile', 'makefile',
 ]);
+
+const VIDEO_EXTS = new Set(['mp4', 'webm', 'mov']);
+
+const AUDIO_EXTS = new Set(['mp3', 'aac', 'flac', 'wav', 'ogg', 'm4a']);
 
 const TEXT_EXTS = new Set(['txt', 'log', 'csv', 'env']);
 
@@ -50,6 +54,9 @@ export function getPreviewType(key: string): PreviewType | null {
   if (key.endsWith('/')) return null;
   if (isImageKey(key)) return 'image';
   const ext = getExtension(key);
+  if (VIDEO_EXTS.has(ext)) return 'video';
+  if (AUDIO_EXTS.has(ext)) return 'audio';
+  if (ext === 'pdf') return 'pdf';
   if (ext === 'md') return 'markdown';
   if (CODE_EXTS.has(ext)) return 'code';
   if (TEXT_EXTS.has(ext)) return 'text';

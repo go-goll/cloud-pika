@@ -9,15 +9,21 @@ import (
 	"github.com/goll/cloud-pika/sidecar/internal/storage/s3compat"
 )
 
+// Provider 阿里云 OSS 适配器，基于 S3 兼容层并扩展 CDN 管理能力。
 type Provider struct {
-	base *s3compat.Provider
+	base    *s3compat.Provider
+	account model.Account
 }
 
 func New() *Provider {
 	return &Provider{
 		base: s3compat.New(
 			"aliyun",
-			[]string{"paging", "lifecycle", "cors", "encryption", "versioning"},
+			[]string{
+				"paging", "lifecycle", "cors", "encryption",
+				"versioning", "refreshCDN", "prefetchCDN",
+				"cdnQuota", "customDomain",
+			},
 			s3compat.Options{
 				ResolveEndpoint: func(cfg model.Account) string {
 					region := strings.TrimSpace(cfg.Region)
@@ -34,7 +40,10 @@ func New() *Provider {
 	}
 }
 
-func (p *Provider) Init(cfg model.Account) error { return p.base.Init(cfg) }
+func (p *Provider) Init(cfg model.Account) error {
+	p.account = cfg
+	return p.base.Init(cfg)
+}
 
 func (p *Provider) ListBuckets(ctx context.Context) ([]model.BucketInfo, error) {
 	return p.base.ListBuckets(ctx)

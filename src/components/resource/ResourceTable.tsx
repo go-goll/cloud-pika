@@ -48,9 +48,11 @@ interface ResourceTableProps {
   onQuickCopy?: (key: string) => void;
   onRefreshCDN?: (key: string) => void;
   onPrefetchCDN?: (key: string) => void;
+  onVersionHistory?: (key: string) => void;
   onUpload?: () => void;
   onRefresh?: () => void;
   onFetchUrl?: () => void;
+  onCreateFolder?: () => void;
   focusedIndex?: number;
 }
 
@@ -235,9 +237,11 @@ export function ResourceTable({
   onQuickCopy,
   onRefreshCDN,
   onPrefetchCDN,
+  onVersionHistory,
   onUpload,
   onRefresh,
   onFetchUrl,
+  onCreateFolder,
   focusedIndex,
 }: ResourceTableProps) {
   const { t } = useTranslation();
@@ -338,6 +342,9 @@ export function ResourceTable({
             : undefined,
           onPrefetchCDN: onPrefetchCDN
             ? () => onPrefetchCDN(item.key)
+            : undefined,
+          onVersionHistory: onVersionHistory
+            ? () => onVersionHistory(item.key)
             : undefined,
         }}
       >
@@ -446,7 +453,7 @@ export function ResourceTable({
     <ResourceContextMenu
       blankActions={
         onUpload && onRefresh
-          ? { onUpload, onRefresh, onFetchUrl }
+          ? { onUpload, onRefresh, onFetchUrl, onCreateFolder }
           : undefined
       }
     >
@@ -479,7 +486,7 @@ export function ResourceTable({
                 className={thClass}
                 onClick={() => toggleSort('key')}
               >
-                Key
+                {t('bucket.columnKey')}
                 <SortIcon
                   column="key"
                   activeColumn={sortCol}
@@ -490,7 +497,7 @@ export function ResourceTable({
                 className={thClass}
                 onClick={() => toggleSort('size')}
               >
-                Size
+                {t('bucket.columnSize')}
                 <SortIcon
                   column="size"
                   activeColumn={sortCol}
@@ -501,7 +508,7 @@ export function ResourceTable({
                 className={thClass}
                 onClick={() => toggleSort('lastModified')}
               >
-                Updated
+                {t('bucket.columnUpdated')}
                 <SortIcon
                   column="lastModified"
                   activeColumn={sortCol}

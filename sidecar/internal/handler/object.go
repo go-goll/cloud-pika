@@ -41,13 +41,8 @@ func (h *Handler) UploadObject(c *gin.Context) {
 		Bucket: payload.Bucket,
 		Key:    payload.Key,
 		Run: func(ctx context.Context, notifyProgress func(progress int)) error {
-			notifyProgress(12)
-			err := provider.UploadObject(ctx, payload)
-			if err != nil {
-				return err
-			}
-			notifyProgress(95)
-			return nil
+			payload.ProgressFn = notifyProgress
+			return provider.UploadObject(ctx, payload)
 		},
 	})
 	if err != nil {
@@ -80,18 +75,11 @@ func (h *Handler) FetchObject(c *gin.Context) {
 		Bucket: payload.Bucket,
 		Key:    payload.Key,
 		Run: func(ctx context.Context, notifyProgress func(progress int)) error {
-			notifyProgress(10)
+			payload.ProgressFn = notifyProgress
 			if fetcher, ok := provider.(storage.FetchProvider); ok {
-				if callErr := fetcher.FetchURL(ctx, payload); callErr != nil {
-					return callErr
-				}
-			} else {
-				if callErr := provider.UploadObject(ctx, payload); callErr != nil {
-					return callErr
-				}
+				return fetcher.FetchURL(ctx, payload)
 			}
-			notifyProgress(95)
-			return nil
+			return provider.UploadObject(ctx, payload)
 		},
 	})
 	if err != nil {

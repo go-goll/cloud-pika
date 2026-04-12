@@ -55,6 +55,7 @@ func buildRouter(token string, h *handler.Handler, hub *SSEHub) *gin.Engine {
 		api.PUT("/buckets/:bucket/encryption", h.PutEncryption)
 		api.GET("/buckets/:bucket/versioning", h.GetVersioning)
 		api.PUT("/buckets/:bucket/versioning", h.PutVersioning)
+		api.GET("/buckets/:bucket/objects/versions", h.ListObjectVersions)
 
 		api.GET("/transfers", h.ListTransfers)
 		api.POST("/transfers/:id/cancel", h.CancelTransfer)

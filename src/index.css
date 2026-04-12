@@ -108,6 +108,24 @@
   --color-success: var(--success);
 }
 
+/* ── 主题切换过渡 ── */
+
+:root {
+  transition:
+    background-color 0.2s ease-out,
+    color 0.2s ease-out;
+}
+
+*,
+*::before,
+*::after {
+  transition:
+    background-color 0.2s ease-out,
+    border-color 0.2s ease-out,
+    box-shadow 0.2s ease-out,
+    color 0.2s ease-out;
+}
+
 /* ── 基础重置 ── */
 
 * {

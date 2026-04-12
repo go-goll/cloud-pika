@@ -10,14 +10,15 @@ import (
 )
 
 type Provider struct {
-	base *s3compat.Provider
+	base    *s3compat.Provider
+	account model.Account
 }
 
 func New() *Provider {
 	return &Provider{
 		base: s3compat.New(
 			"aws",
-			[]string{"paging", "manualPrivateBucket", "lifecycle", "cors", "encryption", "versioning"},
+			[]string{"paging", "manualPrivateBucket", "lifecycle", "cors", "encryption", "versioning", "refreshCDN"},
 			s3compat.Options{
 				ResolveEndpoint: func(cfg model.Account) string {
 					region := strings.TrimSpace(cfg.Region)
@@ -31,7 +32,10 @@ func New() *Provider {
 	}
 }
 
-func (p *Provider) Init(cfg model.Account) error { return p.base.Init(cfg) }
+func (p *Provider) Init(cfg model.Account) error {
+	p.account = cfg
+	return p.base.Init(cfg)
+}
 
 func (p *Provider) ListBuckets(ctx context.Context) ([]model.BucketInfo, error) {
 	return p.base.ListBuckets(ctx)

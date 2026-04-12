@@ -30,6 +30,14 @@ export function useSSE(): void {
     source.addEventListener('transfer.completed', (event) => {
       const payload = JSON.parse((event as MessageEvent).data) as { transfer: TransferTask };
       upsertTransfer(payload.transfer);
+      // 上传完成时派发事件，供 BucketPage 触发 CDN 自动刷新
+      if (payload.transfer.type === 'upload') {
+        window.dispatchEvent(
+          new CustomEvent('cloud-pika:upload-completed', {
+            detail: payload.transfer,
+          }),
+        );
+      }
     });
 
     source.addEventListener('transfer.failed', (event) => {

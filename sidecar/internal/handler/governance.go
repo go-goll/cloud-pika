@@ -2,6 +2,7 @@ package handler
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -406,4 +407,61 @@ func (h *Handler) PutVersioning(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"ok": true})
+}
+
+// ListObjectVersions 查询对象历史版本列表。
+func (h *Handler) ListObjectVersions(c *gin.Context) {
+	bucket := c.Param("bucket")
+	accountID := c.Query("accountId")
+	if accountID == "" || bucket == "" {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "accountId/bucket required",
+		})
+		return
+	}
+
+	provider, err := h.providerFromAccount(accountID)
+	if err != nil {
+		h.writeProviderErr(c, err)
+		return
+	}
+
+	vp, ok := provider.(storage.VersioningProvider)
+	if !ok {
+		c.JSON(http.StatusNotFound, gin.H{
+			"error": "versioning not supported",
+		})
+		return
+	}
+
+	limit := 100
+	if v := c.Query("limit"); v != "" {
+		fmt.Sscanf(v, "%d", &limit)
+	}
+
+	params := model.VersionListParams{
+		AccountID:     accountID,
+		Bucket:        bucket,
+		Prefix:        c.Query("prefix"),
+		KeyMarker:     c.Query("keyMarker"),
+		VersionMarker: c.Query("versionMarker"),
+		Limit:         limit,
+	}
+	result, err := vp.ListObjectVersions(
+		c.Request.Context(), params,
+	)
+	if err != nil {
+		if errors.Is(err, model.ErrNotSupported) {
+			c.JSON(http.StatusNotFound, gin.H{
+				"error": err.Error(),
+			})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"result": result})
 }

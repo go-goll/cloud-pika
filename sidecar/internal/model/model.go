@@ -67,12 +67,13 @@ type ListResult struct {
 
 // UploadParams 上传参数。
 type UploadParams struct {
-	AccountID string `json:"accountId"`
-	Bucket    string `json:"bucket"`
-	Key       string `json:"key"`
-	LocalPath string `json:"localPath,omitempty"`
-	SourceURL string `json:"sourceUrl,omitempty"`
-	Overwrite bool   `json:"overwrite"`
+	AccountID  string `json:"accountId"`
+	Bucket     string `json:"bucket"`
+	Key        string `json:"key"`
+	LocalPath  string `json:"localPath,omitempty"`
+	SourceURL  string `json:"sourceUrl,omitempty"`
+	Overwrite  bool   `json:"overwrite"`
+	ProgressFn func(percentage int) `json:"-"`
 }
 
 // DownloadParams 下载参数。
@@ -125,4 +126,5 @@ type AppSettings struct {
 	HideDeleteButton bool   `json:"hideDeleteButton"`
 	Paging           bool   `json:"paging"`
 	CopyType         string `json:"copyType"`
+	AutoRefreshCDN   bool   `json:"autoRefreshCDN"`
 }

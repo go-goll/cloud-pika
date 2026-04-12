@@ -15,6 +15,7 @@ interface KeyboardNavCallbacks {
   onUpload?: () => void;
   onRefresh?: () => void;
   onSelectAll?: () => void;
+  onClearSelection?: () => void;
 }
 
 export function useKeyboardNavigation(
@@ -108,6 +109,10 @@ export function useKeyboardNavigation(
           cb.onSelect?.(focused.key, e.shiftKey);
           break;
         }
+        case 'Escape':
+          setFocusedIndex(-1);
+          cb.onClearSelection?.();
+          break;
       }
     };
 

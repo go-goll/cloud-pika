@@ -128,6 +128,24 @@ export interface EncryptionConfig {
   kmsKeyId?: string;
 }
 
+/** 对象版本信息 */
+export interface ObjectVersion {
+  key: string;
+  versionId: string;
+  isLatest: boolean;
+  size: number;
+  lastModified: string;
+  storageClass?: string;
+}
+
+/** 版本列表返回 */
+export interface VersionListResult {
+  versions: ObjectVersion[];
+  nextKeyMarker?: string;
+  nextVersionMarker?: string;
+  truncated: boolean;
+}
+
 export interface AppSettings {
   language: 'system' | 'zh-CN' | 'en-US';
   theme: 'system' | 'light' | 'dark';
@@ -135,4 +153,5 @@ export interface AppSettings {
   hideDeleteButton: boolean;
   paging: boolean;
   copyType: 'url' | 'markdown';
+  autoRefreshCDN: boolean;
 }
