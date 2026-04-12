@@ -448,10 +448,15 @@ export function BucketPage() {
   const onCopyUrl = useCallback(
     async (key: string) => {
       if (!activeAccountId || !activeBucket) return;
+      // 优先使用用户保存的域名偏好，否则使用第一个 CDN 域名
+      const pref = domainPrefs[activeBucket];
+      const domain = pref?.domain
+        || (domains.length > 0 ? domains[0] : undefined);
       const result = await generateUrl({
         accountId: activeAccountId,
         bucket: activeBucket,
         key,
+        domain,
         https: settings.https,
       });
       const formatted = formatCopyUrl(
@@ -471,8 +476,8 @@ export function BucketPage() {
       setUrlDialogKey(key);
     },
     [
-      activeAccountId, activeBucket, generateUrl,
-      settings.https, settings.copyType, t,
+      activeAccountId, activeBucket, domainPrefs, domains,
+      generateUrl, settings.https, settings.copyType, t,
     ],
   );
 
@@ -482,11 +487,13 @@ export function BucketPage() {
       if (!activeAccountId || !activeBucket) return;
       try {
         const pref = domainPrefs[activeBucket];
+        const domain = pref?.domain
+          || (domains.length > 0 ? domains[0] : undefined);
         const result = await generateUrl({
           accountId: activeAccountId,
           bucket: activeBucket,
           key,
-          domain: pref?.domain || undefined,
+          domain,
           https: settings.https,
         });
         const formatted = formatCopyUrl(
