@@ -296,8 +296,9 @@ func (p *Provider) postCDNAction(ctx context.Context, apiURL string, payload any
 		return fmt.Errorf("marshal cdn body failed: %w", err)
 	}
 
-	token, err := qboxAccessTokenWithBody(
-		p.account.AccessKey, p.account.SecretKey, apiURL, body,
+	// 七牛 CDN 用 QBox V1 签名，application/json 的 body 不计入签名串。
+	token, err := qboxAccessToken(
+		p.account.AccessKey, p.account.SecretKey, apiURL,
 	)
 	if err != nil {
 		return fmt.Errorf("sign cdn request failed: %w", err)
@@ -412,33 +413,9 @@ func qboxAccessToken(
 		return "", fmt.Errorf("sign qiniu request failed: %w", err)
 	}
 
-	sign := base64.RawURLEncoding.EncodeToString(mac.Sum(nil))
-	return accessKey + ":" + sign, nil
-}
-
-// qboxAccessTokenWithBody 生成七牛 QBox 管理凭证（包含请求体）。
-func qboxAccessTokenWithBody(
-	accessKey, secretKey, rawURL string,
-	body []byte,
-) (string, error) {
-	parsed, err := url.Parse(rawURL)
-	if err != nil {
-		return "", fmt.Errorf("parse qiniu url failed: %w", err)
-	}
-
-	signing := parsed.Path
-	if parsed.RawQuery != "" {
-		signing += "?" + parsed.RawQuery
-	}
-	signing += "\n"
-	signing += string(body)
-
-	mac := hmac.New(sha1.New, []byte(secretKey))
-	if _, err = mac.Write([]byte(signing)); err != nil {
-		return "", fmt.Errorf("sign qiniu request failed: %w", err)
-	}
-
-	sign := base64.RawURLEncoding.EncodeToString(mac.Sum(nil))
+	// 七牛要求带 padding 的 URL 安全 base64，与官方 go-sdk auth.Sign 一致；
+	// 使用 RawURLEncoding 会丢失末尾 '='，导致 BadToken。
+	sign := base64.URLEncoding.EncodeToString(mac.Sum(nil))
 	return accessKey + ":" + sign, nil
 }
 
