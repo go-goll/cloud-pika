@@ -18,6 +18,7 @@ type AccountService struct {
 	deps *core.Deps
 }
 
+// NewAccountService 基于共享依赖构建账号服务。
 func NewAccountService(deps *core.Deps) *AccountService {
 	return &AccountService{deps: deps}
 }
@@ -44,10 +45,17 @@ func (s *AccountService) Create(payload model.ProviderConfig) (model.Account, er
 	}
 	now := time.Now().UTC()
 	account := model.Account{
-		ID: uuid.NewString(), Provider: normalized.Provider, Name: normalized.Name,
-		AccessKey: normalized.AccessKey, Endpoint: normalized.Endpoint, Region: normalized.Region,
-		ServiceName: normalized.ServiceName, Internal: normalized.Internal, Paging: normalized.Paging,
-		CreatedAt: now, UpdatedAt: now,
+		ID:          uuid.NewString(),
+		Provider:    normalized.Provider,
+		Name:        normalized.Name,
+		AccessKey:   normalized.AccessKey,
+		Endpoint:    normalized.Endpoint,
+		Region:      normalized.Region,
+		ServiceName: normalized.ServiceName,
+		Internal:    normalized.Internal,
+		Paging:      normalized.Paging,
+		CreatedAt:   now,
+		UpdatedAt:   now,
 	}
 	account.SecretKey = normalized.SecretKey
 	if err = s.validateConnectivity(account); err != nil {
@@ -85,10 +93,14 @@ func (s *AccountService) Update(id string, payload model.ProviderConfig) (model.
 		return model.Account{}, err
 	}
 	updated := old
-	updated.Provider, updated.Name = normalized.Provider, normalized.Name
-	updated.AccessKey, updated.Endpoint = normalized.AccessKey, normalized.Endpoint
-	updated.Region, updated.ServiceName = normalized.Region, normalized.ServiceName
-	updated.Internal, updated.Paging = normalized.Internal, normalized.Paging
+	updated.Provider = normalized.Provider
+	updated.Name = normalized.Name
+	updated.AccessKey = normalized.AccessKey
+	updated.Endpoint = normalized.Endpoint
+	updated.Region = normalized.Region
+	updated.ServiceName = normalized.ServiceName
+	updated.Internal = normalized.Internal
+	updated.Paging = normalized.Paging
 	updated.UpdatedAt = time.Now().UTC()
 	updated.SecretKey = normalized.SecretKey
 	if err = s.validateConnectivity(updated); err != nil {
