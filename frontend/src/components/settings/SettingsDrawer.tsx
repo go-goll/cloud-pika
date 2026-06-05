@@ -58,9 +58,11 @@ export function SettingsDrawer({
     });
   }, [query.data, setLocale, setSettings, setThemeMode]);
 
-  // 设置变更时自动保存（debounce 800ms）
+  // 设置变更时自动保存（debounce 800ms）。
+  // 仅在抽屉打开时允许保存：关闭状态下用户无法改设置，启动加载设置
+  // 不应触发保存（否则一打开应用就误弹「设置已保存」）。
   useEffect(() => {
-    if (!initialized.current) return;
+    if (!open || !initialized.current) return;
     clearTimeout(timerRef.current);
     timerRef.current = setTimeout(() => {
       void mutation.mutateAsync(settings);
