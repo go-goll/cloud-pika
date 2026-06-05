@@ -18,6 +18,7 @@ import { useAccountStore } from '@/stores/useAccountStore';
 /** 路由路径到页面标题的映射 */
 const pageTitleMap: Record<string, string> = {
   '/bucket': 'nav.explorer',
+  '/designs': 'nav.designs',
   '/shared': 'nav.shared',
   '/starred': 'nav.starred',
   '/trash': 'nav.trash',
@@ -39,10 +40,10 @@ export function Header() {
 
   // 没有账户时自动打开账户管理对话框
   useEffect(() => {
-    if (accounts.length === 0) {
+    if (accounts.length === 0 && !pathname.startsWith('/designs')) {
       setAccountDialogOpen(true);
     }
-  }, [accounts.length, setAccountDialogOpen]);
+  }, [accounts.length, pathname, setAccountDialogOpen]);
 
   const themeMode = useAppStore((s) => s.themeMode);
   const setThemeMode = useAppStore((s) => s.setThemeMode);
@@ -81,7 +82,7 @@ export function Header() {
   return (
     <header
       className={[
-        'glass sticky top-0 z-30',
+        'sticky top-0 z-30 bg-[var(--bg-card)]',
         'flex h-14 items-center justify-between',
         'border-b border-[var(--border)]/50 px-5',
       ].join(' ')}

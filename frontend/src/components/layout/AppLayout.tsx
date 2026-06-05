@@ -1,15 +1,14 @@
 import { useEffect, useState } from 'react';
-import type { PropsWithChildren } from 'react';
-import { Header } from './Header';
+import type { CSSProperties, PropsWithChildren } from 'react';
 import { Sidebar, SIDEBAR_WIDTH, SIDEBAR_COLLAPSED_WIDTH } from './Sidebar';
-import { TransferPanel } from '@/components/transfers/TransferPanel';
+import { AppTitlebar } from './AppTitlebar';
+import { AppInspector } from './AppInspector';
+import { MetricsBar } from './MetricsBar';
 
 /** 窄窗口折叠阈值（与 Sidebar 保持一致） */
 const COLLAPSE_WIDTH = 900;
 
-/**
- * 主布局：左侧固定 Sidebar + 右侧（顶部 Header + 内容区）
- */
+/** 主布局：标题栏 + Sidebar + 中央工作区 + Inspector */
 export function AppLayout({ children }: PropsWithChildren) {
   const [collapsed, setCollapsed] = useState(
     window.innerWidth < COLLAPSE_WIDTH,
@@ -29,18 +28,28 @@ export function AppLayout({ children }: PropsWithChildren) {
     : SIDEBAR_WIDTH;
 
   return (
-    <div className="flex min-h-screen bg-[var(--bg)] transition-colors duration-300">
-      <Sidebar />
-      <div
-        className="flex flex-1 flex-col transition-[margin-left] duration-200"
-        style={{ marginLeft: sidebarWidth }}
-      >
-        <Header />
-        <main className="flex-1 overflow-auto p-4 sm:p-6">
+    <div
+      className="app-shell grid h-screen min-h-screen bg-[var(--bg)] text-[var(--text)] transition-colors duration-300"
+      style={
+        {
+          '--sidebar-width': `${sidebarWidth}px`,
+          '--titlebar-height': '48px',
+          gridTemplateRows: 'var(--titlebar-height) minmax(0, 1fr)',
+        } as CSSProperties
+      }
+    >
+      <AppTitlebar />
+      <Sidebar
+        collapsed={collapsed}
+        onCollapsedChange={setCollapsed}
+      />
+      <main className="min-h-0 overflow-auto p-3 sm:p-4">
+        <div className="mx-auto flex min-h-full max-w-[1440px] flex-col gap-3">
+          <MetricsBar />
           {children}
-        </main>
-        <TransferPanel />
-      </div>
+        </div>
+      </main>
+      <AppInspector />
     </div>
   );
 }

@@ -6,30 +6,31 @@
   font-family: 'Inter', 'Noto Sans SC', -apple-system,
     BlinkMacSystemFont, 'Segoe UI', sans-serif;
 
-  /* ── Cirrus Ether 核心调色板 ── */
-  --bg:             #F7F9FB;
-  --bg-raised:      #EFF2F5;
-  --bg-card:        #FFFFFF;
-  --border:         rgba(172, 179, 183, 0.15);
-  --text:           #2C3437;
-  --text-secondary: #6B7680;
-  --accent:         #007AFF;
-  --accent-hover:   #005BC2;
-  --accent-soft:    rgba(0, 122, 255, 0.08);
+  /* ── Atlas Ops 核心调色板 ── */
+  --bg:             #eef3f7;
+  --bg-raised:      #e4ecf2;
+  --bg-card:        #fbfcfd;
+  --border:         rgba(34, 52, 63, 0.14);
+  --text:           #17222b;
+  --text-secondary: #62717d;
+  --accent:         #0b74e5;
+  --accent-hover:   #095fbe;
+  --accent-2:       #18a0a6;
+  --accent-soft:    rgba(11, 116, 229, 0.08);
   --accent-text:    #ffffff;
-  --danger:         #dc2626;
-  --success:        #16a34a;
-  --warning:        #f59e0b;
-  --radius:         12px;
+  --danger:         #d24a3f;
+  --success:        #0e9f6e;
+  --warning:        #d27816;
+  --good-soft:      rgba(14, 159, 110, 0.12);
+  --warn-soft:      rgba(210, 120, 22, 0.14);
+  --radius:         8px;
 
-  /* ── 阴影层级（主色辉光） ── */
-  --shadow-xs:  0 1px 2px rgba(0,0,0,0.03);
-  --shadow-sm:  0 2px 8px -2px rgba(0,122,255,0.06);
-  --shadow-md:  0 8px 24px -4px rgba(0,122,255,0.08);
-  --shadow-lg:  0 16px 48px -8px rgba(0,0,0,0.08),
-                0 0 8px rgba(0,122,255,0.04);
-  --shadow-xl:  0 24px 64px -12px rgba(0,0,0,0.10),
-                0 0 12px rgba(0,122,255,0.06);
+  /* ── 阴影层级（克制，无主色辉光） ── */
+  --shadow-xs:  0 1px 2px rgba(20,33,43,0.04);
+  --shadow-sm:  0 2px 6px -2px rgba(20,33,43,0.08);
+  --shadow-md:  0 8px 24px -6px rgba(20,33,43,0.10);
+  --shadow-lg:  0 16px 40px -10px rgba(20,33,43,0.14);
+  --shadow-xl:  0 24px 56px -14px rgba(20,33,43,0.18);
 
   /* ── 兼容别名（供 Tailwind extend 和旧组件过渡） ── */
   --surface:      var(--bg);
@@ -58,30 +59,29 @@
 }
 
 :root[data-theme='dark'] {
-  --bg:             #0C0E12;
-  --bg-raised:      #14171C;
-  --bg-card:        #1A1D23;
-  --border:         rgba(255, 255, 255, 0.08);
-  --text:           #E8EAED;
-  --text-secondary: #8B9098;
-  --accent:         #3B8AFF;
-  --accent-hover:   #60A0FF;
-  --accent-soft:    rgba(59, 138, 255, 0.12);
-  --accent-text:    #ffffff;
-  --danger:         #ef4444;
-  --success:        #22c55e;
-  --warning:        #fbbf24;
+  --bg:             #0d1115;
+  --bg-raised:      #202832;
+  --bg-card:        #171c22;
+  --border:         rgba(218, 230, 236, 0.12);
+  --text:           #edf3f7;
+  --text-secondary: #96a5af;
+  --accent:         #5aa2ff;
+  --accent-hover:   #7cb6ff;
+  --accent-2:       #36d0b2;
+  --accent-soft:    rgba(90, 162, 255, 0.14);
+  --accent-text:    #0d1115;
+  --danger:         #ff6b5e;
+  --success:        #4fd18b;
+  --warning:        #ffbd5a;
+  --good-soft:      rgba(79, 209, 139, 0.18);
+  --warn-soft:      rgba(255, 189, 90, 0.20);
 
-  /* 深色阴影（更强蓝色辉光） */
-  --shadow-xs:  0 1px 2px rgba(0,0,0,0.20);
-  --shadow-sm:  0 2px 8px -2px rgba(0,0,0,0.25),
-                0 0 4px rgba(59,138,255,0.06);
-  --shadow-md:  0 8px 24px -4px rgba(0,0,0,0.30),
-                0 0 8px rgba(59,138,255,0.08);
-  --shadow-lg:  0 16px 48px -8px rgba(0,0,0,0.35),
-                0 0 12px rgba(59,138,255,0.10);
-  --shadow-xl:  0 24px 64px -12px rgba(0,0,0,0.40),
-                0 0 16px rgba(59,138,255,0.12);
+  /* 深色阴影（克制，无主色辉光） */
+  --shadow-xs:  0 1px 2px rgba(0,0,0,0.30);
+  --shadow-sm:  0 2px 6px -2px rgba(0,0,0,0.34);
+  --shadow-md:  0 8px 24px -6px rgba(0,0,0,0.38);
+  --shadow-lg:  0 16px 40px -10px rgba(0,0,0,0.40);
+  --shadow-xl:  0 24px 56px -14px rgba(0,0,0,0.45);
 
   --surface:      var(--bg);
   --surface-low:  var(--bg-raised);
@@ -196,41 +196,14 @@ select:focus-visible {
 
 /* ── 工具类 ── */
 
-/* 主按钮纯色背景（替代渐变） */
-.signature-gradient {
-  background: var(--accent);
-}
-
 /* 边框 */
 .ghost-border {
   border: 1px solid var(--border);
 }
 
-/* 毛玻璃顶栏 */
-.glass {
-  background: color-mix(in srgb, var(--bg) 70%, transparent);
-  backdrop-filter: blur(24px) saturate(180%);
-  -webkit-backdrop-filter: blur(24px) saturate(180%);
-}
-
-.glass-panel {
-  background: color-mix(in srgb, var(--bg) 65%, transparent);
-  backdrop-filter: blur(24px) saturate(180%);
-  -webkit-backdrop-filter: blur(24px) saturate(180%);
-}
-
 /* 阴影：仅弹窗/浮层使用 */
 .ambient-shadow {
   box-shadow: var(--shadow-lg);
-}
-
-/* Bento 卡片交互 */
-.bento-card {
-  transition: transform 0.25s ease, box-shadow 0.25s ease;
-}
-.bento-card:hover {
-  transform: scale(1.01);
-  box-shadow: var(--shadow-xl);
 }
 
 /* 色调悬停 */
@@ -244,9 +217,28 @@ select:focus-visible {
   background: rgba(255, 255, 255, 0.06);
 }
 
-/* 主色渐变按钮 */
-.gradient-primary {
-  background: linear-gradient(135deg, var(--accent), var(--accent-hover));
+/* Atlas Ops 面板 */
+.atlas-panel {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.app-shell {
+  grid-template-columns:
+    var(--sidebar-width) minmax(0, 1fr) minmax(252px, 300px);
+}
+
+@media (max-width: 1199px) {
+  .app-shell {
+    grid-template-columns: var(--sidebar-width) minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 720px) {
+  .app-shell {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }
 
 /* ── 动画 ── */
@@ -328,24 +320,6 @@ select:focus-visible {
 @keyframes scaleUp {
   from { transform: scale(0.95); }
   to { transform: scale(1); }
-}
-
-@keyframes breathe {
-  0%, 100% { opacity: 0.4; }
-  50% { opacity: 0.8; }
-}
-.animate-breathe {
-  animation: breathe 2.5s ease-in-out infinite;
-}
-
-@keyframes gradient-shift {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
-}
-.animate-gradient {
-  background-size: 200% 200%;
-  animation: gradient-shift 4s ease infinite;
 }
 
 /* ── 文件类型图标颜色 ── */

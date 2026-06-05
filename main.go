@@ -57,7 +57,12 @@ func main() {
 	app.RegisterService(application.NewService(services.NewSystemService(app)))
 
 	app.Window.NewWithOptions(application.WebviewWindowOptions{
-		Title: "Cloud Pika",
+		Title:     "Cloud Pika",
+		Width:     1280,
+		Height:    820,
+		MinWidth:  960,
+		MinHeight: 680,
+		Frameless: true,
 		Mac: application.MacWindow{
 			InvisibleTitleBarHeight: 50,
 			Backdrop:                application.MacBackdropTranslucent,

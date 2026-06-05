@@ -3,6 +3,7 @@
 - 日期：2026-06-05
 - 范围：cloud-pika 前端（Wails v3 + React 18 + Tailwind）整体 UI 方向重构
 - 参考：`docs/atlas-ops-ui-design-spec.md`、`docs/atlas-ops-ui-prototype/`
+- 当前状态：核心应用壳层与 Bucket 工作台第一阶段已落地；Windows 实机、深层组件精修与全局规则更新待继续。
 
 ## 1. 背景与目标
 
@@ -25,6 +26,8 @@
 不采用平行 `--atlas-*` 令牌（双轨割裂、违反"唯一方向"），不采用仅局部套壳（与四区重构矛盾）。
 
 ## 4. 设计令牌层
+
+> 状态：已完成。`index.css` 已替换 Atlas Ops 浅/深色令牌，`tailwind.config.ts` 已调整圆角/阴影，旧 `glass`/`bento-card`/`gradient-primary` 等视觉工具类在 `frontend/src` 中已清理。
 
 ### 4.1 `index.css` 根令牌值替换（变量名不变）
 
@@ -53,6 +56,8 @@
 
 ## 5. 四区布局
 
+> 状态：已完成核心布局。`AppLayout` 已改为标题栏 / 侧栏 / 中央工作区 / 右侧检查器四区 grid；`1280×820` 与 `960×680` 已用浏览器验证无横向溢出，`<1200px` 右侧检查器会隐藏。
+
 ```
 ┌ AppTitlebar  48px(mac)/52px(win) · 拖拽区 · ⌘K命令 · 主题/语言/通知/设置 ┐
 ├ Sidebar 224px ─┬ Main minmax(0,1fr) ───────────┬ Inspector 252–320px ───┤
@@ -71,6 +76,8 @@
 
 ### 6.1 AppTitlebar（新增，替换现有 Header）
 
+> 状态：已完成前端实现。已新增 `AppTitlebar`，迁移主题/语言/账户入口，接入 `⌘K`/`Ctrl K` 命令入口；Windows 按钮已接 Wails Window API。待 Windows 实机确认 frameless/拖拽体验。
+
 - 平台检测：优先后端注入/`@wailsio/runtime`，回退 `navigator.userAgent`，结果置于布局根 class（`platform--mac`/`platform--win`）。
 - macOS：左侧为交通灯避让占位（系统已绘，`main.go` 已设 `InvisibleTitleBarHeight:50`、`MacTitleBarHiddenInset`）；命令入口居中偏左；右侧图标操作（主题/语言/通知/设置）。
 - Windows：左侧 logo + `Cloud Pika`；右侧最小化/最大化/关闭，接 Wails Window API（关闭 hover 红 `#c42b1c`）；命令入口避开右侧窗口控件。
@@ -79,6 +86,8 @@
 - 主题/语言切换逻辑从现有 `Header` 迁移保留。
 
 ### 6.2 MetricsBar（新增）
+
+> 状态：已完成第一版。已新增 `MetricsBar`，展示当前 Bucket、可见对象、可见容量、活动队列数；缺失数据降级为 `-`。
 
 四指标卡（对象 / 存储 / CDN / 队列），数字 17–18px：
 - 对象：当前 bucket 已加载对象数（`objects.length`，分页场景标注"已加载"）。
@@ -89,10 +98,14 @@
 
 ### 6.3 工具栏与面包屑
 
+> 状态：部分完成。`BucketToolbar` 已移除旧渐变视觉并统一 8px 圆角、保留对象过滤搜索与上传/刷新/视图切换；`BreadcrumbNav` 尚未单独精修。
+
 - `BreadcrumbNav` 改 Atlas 样式（账户/Bucket/路径，单行截断）。
 - `BucketToolbar` 改造：左保留对象过滤搜索框；右为视图切换 / 排序 / 刷新（图标按钮 32×32）/ 上传（主按钮，蓝底白字）。危险操作不常驻。
 
 ### 6.4 ResourceTable
+
+> 状态：待继续。现有表格逻辑保留并随 Atlas tokens 自动换肤，但状态列、行高密度与表格细节 polish 尚未完整实施。
 
 - 行高 42–44px（现 `py-3.5`≈调整），表格容器 8px 圆角、行无圆角。
 - 新增"状态"列（小胶囊）：基于对象属性推导（如目录/公开/私有/CDN 状态）；成功用 `--good`，警告用 `--warn`。无法判定时显示中性标签。
@@ -101,12 +114,16 @@
 
 ### 6.5 AppInspector（新增）
 
+> 状态：已完成第一版。已新增 `AppInspector`，包含当前 Bucket 摘要、治理摘要、传输队列、选中对象快速动作；底部 `TransferPanel` 已从 `AppLayout` 移除挂载。治理摘要目前为 UI 摘要层，后续可继续接真实配置状态。
+
 三段式：
 1. 当前 Bucket：治理摘要只读卡（Versioning / HTTPS / Lifecycle / 公开策略，来自 `useProviderFeaturesQuery` 与 bucket 配置），底部"管理"按钮打开 `BucketSettingsDrawer`。
 2. 传输队列：复用 `useTransferStore`，进度条高 6px；**移除 `AppLayout` 中底部 `TransferPanel`**（组件文件可保留待清理，但不再挂载）。
 3. 快速动作（高 32px）：批量复制 URL / CDN 刷新 / 下载选中；无选中时禁用并提示。
 
 ### 6.6 状态共享（关键架构变更）
+
+> 状态：已完成。`selectedKeys` 已从 `BucketPage` 本地 state 提升到 `useBucketStore`；Inspector 通过 `CustomEvent` 调用现有批量复制、下载、CDN 刷新、删除逻辑；`SelectionBar` 保留为窄屏/即时反馈入口。
 
 检查器位于 `AppLayout` 层，而批量逻辑当前在 `BucketPage`。方案：
 - 将 `selectedKeys`（选中态）从 `BucketPage` 本地 state 提升到 `useBucketStore`，供 Inspector 读取以显示选中数、启用/禁用快速动作。`BucketPage` 改为从 store 读写。
@@ -115,35 +132,53 @@
 
 ### 6.7 Dialog / Drawer / Form 密度统一
 
+> 状态：部分完成。基础 `Button`/`Card`/`Input`/`Select` 与启动页已做 Atlas 圆角和视觉语言兼容；`AccountDialog`、`SettingsDrawer`、`BucketSettingsDrawer` 等深层表单/抽屉尚未逐个精修。
+
 `AccountDialog`/`SettingsDrawer`/`BucketSettingsDrawer` 及 `ui/` 基础组件统一：按钮/输入 32px、面板 8px、去玻璃营销感、focus 环明显。模态遮罩保留轻量。
 
 ## 7. i18n
+
+> 状态：已完成本阶段新增文案。已补齐 `titlebar.*`、`metrics.*`、`inspector.*` 中英双语；后续新增真实治理状态文案时再扩展。
 
 `src/i18n/i18n.ts` 新增 `titlebar.*`（命令占位、窗口控件 aria）、`inspector.*`（治理摘要、队列、快速动作、管理）、`metrics.*`（对象/存储/CDN/队列及 hint），中英双语同步。中英切换后按钮/标签不溢出。
 
 ## 8. main.go
 
+> 状态：待确认。窗口尺寸要求已沿用项目现状；Windows frameless 与窗口行为仍需结合 Go 侧配置和 Windows 实机复核。
+
 新增 Windows 窗口 frameless 配置（自绘标题栏 + 按钮），保持 macOS 现有 `MacTitleBarHiddenInset` 配置不变；窗口尺寸 1280×820 / 最小 960×680 保持。
 
 ## 9. 全局规则更新
+
+> 状态：未完成。`~/.claude/rules/ui-rules.md` 位于当前项目工作区外，本次未修改。
 
 重写 `~/.claude/rules/ui-rules.md`：由 "Cirrus Ether 玻璃态" 改为 "Atlas Ops 高密度工作台"（8px 圆角、冷调工作台、双主题、四区布局、禁营销态），与 `docs/atlas-ops-ui-design-spec.md` 保持一致。
 
 ## 10. 落地分阶段（按规范 §13）
 
-1. 令牌层：`index.css` + `tailwind.config.ts` 替换 + 清理玻璃态工具类。
-2. 布局骨架 + `AppTitlebar`（两平台）。
-3. 中央工作区：`MetricsBar` + 面包屑/工具栏 + `ResourceTable` 状态列与密度。
-4. 右侧检查器 `AppInspector` + `selectedKeys` 提升 store + 批量事件 + 移除底部面板。
-5. Dialog/Drawer/Form 密度统一。
-6. `main.go` Windows frameless + i18n 补齐 + 动效/细节 polish。
-7. 全局 `ui-rules.md` 更新。
+- [x] 1. 令牌层：`index.css` + `tailwind.config.ts` 替换 + 清理玻璃态工具类。
+- [x] 2. 布局骨架 + `AppTitlebar`（两平台前端实现）。
+- [~] 3. 中央工作区：`MetricsBar` + 面包屑/工具栏 + `ResourceTable` 状态列与密度。已完成 `MetricsBar` 与工具栏基础视觉；面包屑、表格状态列和密度 polish 待继续。
+- [x] 4. 右侧检查器 `AppInspector` + `selectedKeys` 提升 store + 批量事件 + 移除底部面板。
+- [~] 5. Dialog/Drawer/Form 密度统一。基础 UI 组件已兼容，深层对话框/抽屉待继续。
+- [~] 6. `main.go` Windows frameless + i18n 补齐 + 动效/细节 polish。i18n 已补齐本阶段文案；Windows Go 侧/实机验证与细节 polish 待继续。
+- [ ] 7. 全局 `ui-rules.md` 更新。
 
 每阶段单独验证，保证 `vitest` 现有测试通过。
 
 ## 11. 验收清单（规范 §14）
 
 `1280×820` 与 `960×680` 两尺寸 × 深/浅主题 × macOS/Windows 标题栏共 8 组合，逐项检查：无页面级横向滚动、标题栏按钮不遮挡命令搜索、Windows 窗口按钮区独立、表格主要列可读、深色对比度足够、中英切换不溢出、125% 缩放工具栏不重叠。macOS 组合在本机验证；Windows 组合提供实现并由用户实机复核。
+
+当前已验证：
+
+- [x] `npm run build` 通过。
+- [x] 浏览器 `1280×820`：三列布局正常，无页面级横向滚动。
+- [x] 浏览器 `960×680`：Inspector 自动隐藏，主区正常，无页面级横向滚动。
+- [x] `/designs` 原型验证页仍可访问。
+- [ ] 深/浅主题 × macOS/Windows 共 8 组合完整视觉验收。
+- [ ] Windows 实机标题栏与 frameless 行为复核。
+- [ ] 125% 缩放与中英文长文案完整走查。
 
 ## 12. 风险与缓解
 

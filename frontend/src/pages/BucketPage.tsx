@@ -65,9 +65,6 @@ export function BucketPage() {
   const [searchKeyword, setSearchKeyword] = useState('');
 
   // ---- 选中状态 ----
-  const [selectedKeys, setSelectedKeys] = useState<Set<string>>(
-    new Set(),
-  );
   const lastClickedKeyRef = useRef<string | null>(null);
 
   // ---- 对话框状态 ----
@@ -100,13 +97,18 @@ export function BucketPage() {
     objects,
     syncStatus,
     domainPrefs,
+    selectedKeys: selectedKeyList,
     setBuckets,
     setActiveBucket,
     setObjects,
     appendObjects,
     setDomainPref,
+    setSelectedKeys,
+    updateSelectedKeys,
+    clearSelection,
     reset,
   } = useBucketStore();
+  const selectedKeys = selectedKeyList;
 
   const prevAccountIdRef = useRef('');
 
@@ -214,7 +216,7 @@ export function BucketPage() {
       setPageMarker('');
       prevAccountIdRef.current = activeAccountId;
     }
-  }, [activeAccountId, reset]);
+  }, [activeAccountId, reset, setSelectedKeys]);
 
   // bucket 切换时重置目录、搜索和选中状态
   const prevBucketRef = useRef(activeBucket);
@@ -226,13 +228,13 @@ export function BucketPage() {
       setPageMarker('');
       prevBucketRef.current = activeBucket;
     }
-  }, [activeBucket]);
+  }, [activeBucket, setSelectedKeys]);
 
   // prefix改变时清空选中和分页
   useEffect(() => {
     setSelectedKeys(new Set());
     setPageMarker('');
-  }, [prefix, searchKeyword]);
+  }, [prefix, searchKeyword, setSelectedKeys]);
 
   // ---- previewKey 变化时生成预览 URL ----
   useEffect(() => {
@@ -259,7 +261,7 @@ export function BucketPage() {
   /** 切换单个文件选中（支持Shift范围选择） */
   const handleSelect = useCallback(
     (key: string, shiftKey: boolean) => {
-      setSelectedKeys((prev) => {
+      updateSelectedKeys((prev) => {
         const next = new Set(prev);
 
         if (shiftKey && lastClickedKeyRef.current) {
@@ -288,23 +290,19 @@ export function BucketPage() {
         return next;
       });
     },
-    [objects],
+    [objects, updateSelectedKeys],
   );
 
   /** 全选/取消全选 */
   const handleSelectAll = useCallback(() => {
-    setSelectedKeys((prev) => {
+    updateSelectedKeys((prev) => {
       const allSelected = objects.every(
         (o) => prev.has(o.key),
       );
       if (allSelected) return new Set();
       return new Set(objects.map((o) => o.key));
     });
-  }, [objects]);
-
-  const clearSelection = useCallback(() => {
-    setSelectedKeys(new Set());
-  }, []);
+  }, [objects, updateSelectedKeys]);
 
   // ---- 文件操作 ----
   const uploadLocalFiles = useCallback(
@@ -396,7 +394,7 @@ export function BucketPage() {
       // mutation hook 已处理 toast
     }
     setDeleteTargets([]);
-    setSelectedKeys((prev) => {
+    updateSelectedKeys((prev) => {
       const next = new Set(prev);
       deleteTargets.forEach((k) => next.delete(k));
       return next;
@@ -408,6 +406,7 @@ export function BucketPage() {
     deleteObjects,
     deleteTargets,
     refetchObjects,
+    updateSelectedKeys,
   ]);
 
   /** 触发重命名对话框 */
@@ -798,6 +797,13 @@ export function BucketPage() {
   useEffect(() => {
     const onRefresh = () => handleRefresh();
     const onUpload = () => void onClickUpload();
+    const onOpenSettings = () => setSettingsDrawerOpen(true);
+    const onBatchCopyUrl = () => void handleBatchCopyUrl();
+    const onBatchDownload = () => void handleBatchDownload();
+    const onBatchRefreshCDN = () => {
+      if (hasRefreshCDN) void handleBatchRefreshCDN();
+    };
+    const onBatchDelete = () => handleBatchDelete();
     window.addEventListener(
       'cloud-pika:refresh-active',
       onRefresh,
@@ -805,6 +811,26 @@ export function BucketPage() {
     window.addEventListener(
       'cloud-pika:upload-active',
       onUpload,
+    );
+    window.addEventListener(
+      'cloud-pika:open-bucket-settings',
+      onOpenSettings,
+    );
+    window.addEventListener(
+      'cloud-pika:batch-copy-url',
+      onBatchCopyUrl,
+    );
+    window.addEventListener(
+      'cloud-pika:batch-download',
+      onBatchDownload,
+    );
+    window.addEventListener(
+      'cloud-pika:batch-refresh-cdn',
+      onBatchRefreshCDN,
+    );
+    window.addEventListener(
+      'cloud-pika:batch-delete',
+      onBatchDelete,
     );
     return () => {
       window.removeEventListener(
@@ -815,8 +841,36 @@ export function BucketPage() {
         'cloud-pika:upload-active',
         onUpload,
       );
+      window.removeEventListener(
+        'cloud-pika:open-bucket-settings',
+        onOpenSettings,
+      );
+      window.removeEventListener(
+        'cloud-pika:batch-copy-url',
+        onBatchCopyUrl,
+      );
+      window.removeEventListener(
+        'cloud-pika:batch-download',
+        onBatchDownload,
+      );
+      window.removeEventListener(
+        'cloud-pika:batch-refresh-cdn',
+        onBatchRefreshCDN,
+      );
+      window.removeEventListener(
+        'cloud-pika:batch-delete',
+        onBatchDelete,
+      );
     };
-  }, [handleRefresh, onClickUpload]);
+  }, [
+    handleRefresh,
+    onClickUpload,
+    handleBatchCopyUrl,
+    handleBatchDownload,
+    handleBatchRefreshCDN,
+    handleBatchDelete,
+    hasRefreshCDN,
+  ]);
 
   // ---- 上传完成后自动刷新 CDN ----
   useEffect(() => {

@@ -17,12 +17,12 @@ export function Card({
     <section
       style={style}
       className={[
-        'rounded-2xl p-4',
+        'rounded-[8px] p-4',
         'bg-[var(--bg-card)]',
         'border border-[var(--border)]',
         'shadow-sm',
         hoverable
-          ? 'bento-card transition-all duration-250'
+          ? 'atlas-panel transition-all duration-200'
           : '',
         className ?? '',
       ].join(' ')}

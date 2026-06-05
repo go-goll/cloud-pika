@@ -12,6 +12,7 @@ interface BucketState {
   buckets: BucketInfo[];
   activeBucket: string;
   objects: ObjectItem[];
+  selectedKeys: Set<string>;
   marker: string;
   syncStatus: 'idle' | 'syncing';
   /** per-bucket 域名偏好（key = bucket name） */
@@ -21,6 +22,9 @@ interface BucketState {
   setActiveBucket: (bucket: string) => void;
   setObjects: (items: ObjectItem[], marker?: string) => void;
   appendObjects: (items: ObjectItem[], marker?: string) => void;
+  setSelectedKeys: (keys: Set<string>) => void;
+  updateSelectedKeys: (updater: (prev: Set<string>) => Set<string>) => void;
+  clearSelection: () => void;
   setSyncStatus: (status: 'idle' | 'syncing') => void;
   setDomainPref: (bucket: string, pref: DomainPref) => void;
 }
@@ -31,11 +35,12 @@ export const useBucketStore = create<BucketState>()(
       buckets: [],
       activeBucket: '',
       objects: [],
+      selectedKeys: new Set(),
       marker: '',
       syncStatus: 'idle',
       domainPrefs: {},
       reset: () => set({
-        buckets: [], activeBucket: '', objects: [],
+        buckets: [], activeBucket: '', objects: [], selectedKeys: new Set(),
         marker: '', syncStatus: 'idle',
       }),
       setBuckets: (buckets) =>
@@ -53,6 +58,12 @@ export const useBucketStore = create<BucketState>()(
         set((prev) => ({
           objects: [...prev.objects, ...items], marker,
         })),
+      setSelectedKeys: (selectedKeys) => set({ selectedKeys }),
+      updateSelectedKeys: (updater) =>
+        set((prev) => ({
+          selectedKeys: updater(new Set(prev.selectedKeys)),
+        })),
+      clearSelection: () => set({ selectedKeys: new Set() }),
       setSyncStatus: (syncStatus) => set({ syncStatus }),
       setDomainPref: (bucket, pref) =>
         set((prev) => ({

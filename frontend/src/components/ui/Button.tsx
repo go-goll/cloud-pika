@@ -17,9 +17,9 @@ interface ButtonProps
 
 const variantClasses: Record<Variant, string> = {
   primary: [
-    'gradient-primary text-white',
-    'hover:shadow-[0_0_15px_rgba(0,122,255,0.3)]',
-    'active:scale-[0.97]',
+    'bg-[var(--accent)] text-[var(--accent-text)]',
+    'hover:bg-[var(--accent-hover)]',
+    'active:scale-[0.98]',
   ].join(' '),
   secondary: [
     'bg-[var(--bg-raised)] text-[var(--accent)]',
@@ -78,7 +78,7 @@ export function Button({
       disabled={isDisabled}
       className={[
         'inline-flex items-center justify-center',
-        'rounded-xl font-medium',
+        'rounded-[8px] font-medium',
         'transition-all duration-150 ease-out',
         'disabled:cursor-not-allowed',
         'disabled:opacity-50',

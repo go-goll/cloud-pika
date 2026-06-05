@@ -3,7 +3,7 @@
  * 根据当前prefix解析路径层级，支持点击跳转到任意层级
  */
 import { useTranslation } from 'react-i18next';
-import { ChevronRight, Cloud } from 'lucide-react';
+import { Cloud } from 'lucide-react';
 
 interface BreadcrumbNavProps {
   bucket: string;
@@ -32,22 +32,22 @@ export function BreadcrumbNav({
   if (!bucket) return null;
 
   return (
-    <nav className="flex items-center gap-1 text-sm">
+    <nav className="flex min-w-0 items-center gap-1.5 text-[13px] text-[var(--text-secondary)]">
       {/* 根Bucket入口 */}
       <button
         type="button"
         onClick={() => onNavigate('')}
         className={[
-          'flex items-center gap-1.5 rounded-lg',
+          'flex min-w-0 items-center gap-1.5 rounded-[8px]',
           'px-2 py-1 transition-colors',
-          'hover:bg-surface-container-low',
+          'hover:bg-[var(--bg-raised)]',
           segments.length === 0
-            ? 'font-headline font-bold text-on-surface'
-            : 'text-on-surface-variant',
+            ? 'font-medium text-[var(--text)]'
+            : 'text-[var(--text-secondary)]',
         ].join(' ')}
       >
-        <Cloud size={14} className="text-primary" />
-        <span>{bucket}</span>
+        <Cloud size={14} className="shrink-0 text-[var(--accent)]" />
+        <span className="truncate">{bucket}</span>
       </button>
 
       {/* 路径段 */}
@@ -59,25 +59,22 @@ export function BreadcrumbNav({
         return (
           <div
             key={targetPrefix}
-            className="flex items-center gap-1"
+            className="flex min-w-0 items-center gap-1"
           >
-            <ChevronRight
-              size={12}
-              className="text-on-surface-variant/50"
-            />
+            <span className="text-[var(--text-secondary)]/50">/</span>
             <button
               type="button"
               onClick={() => onNavigate(targetPrefix)}
               className={[
-                'rounded-lg px-2 py-1',
+                'min-w-0 rounded-[8px] px-2 py-1',
                 'transition-colors',
-                'hover:bg-surface-container-low',
+                'hover:bg-[var(--bg-raised)]',
                 isLast
-                  ? 'font-headline font-bold text-on-surface'
-                  : 'text-on-surface-variant',
+                  ? 'font-medium text-[var(--text)]'
+                  : 'text-[var(--text-secondary)]',
               ].join(' ')}
             >
-              {segment}
+              <span className="block truncate">{segment}</span>
             </button>
           </div>
         );

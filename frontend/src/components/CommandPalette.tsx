@@ -37,9 +37,20 @@ export function CommandPalette() {
         setOpen((prev) => !prev);
       }
     };
+    const onOpenCommand = () => setOpen(true);
     window.addEventListener('keydown', handler);
+    window.addEventListener(
+      'cloud-pika:open-command',
+      onOpenCommand,
+    );
     return () =>
-      window.removeEventListener('keydown', handler);
+      {
+        window.removeEventListener('keydown', handler);
+        window.removeEventListener(
+          'cloud-pika:open-command',
+          onOpenCommand,
+        );
+      };
   }, []);
 
   /** 执行命令后关闭面板 */
@@ -61,7 +72,7 @@ export function CommandPalette() {
     <div className="fixed inset-0 z-50">
       {/* 遮罩 */}
       <div
-        className="absolute inset-0 bg-slate-900/30 backdrop-blur-sm"
+        className="absolute inset-0 bg-[rgba(13,17,21,0.4)]"
         onClick={() => setOpen(false)}
       />
 
@@ -70,7 +81,7 @@ export function CommandPalette() {
         <Command
           className={[
             'relative w-full max-w-lg',
-            'overflow-hidden rounded-2xl',
+            'overflow-hidden rounded-[8px]',
             'bg-[var(--bg-card)] shadow-xl',
             'border border-[var(--border)]',
           ].join(' ')}
@@ -226,7 +237,7 @@ function CommandItem({
       onSelect={onSelect}
       className={[
         'flex cursor-pointer items-center gap-3',
-        'mx-2 rounded-xl px-4 py-2.5 text-sm',
+        'mx-2 rounded-[8px] px-4 py-2.5 text-sm',
         'text-[var(--text)]',
         'aria-selected:bg-[var(--accent-soft)] aria-selected:text-[var(--accent)]',
         'hover:bg-[var(--accent-soft)] hover:text-[var(--accent)]',

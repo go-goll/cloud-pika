@@ -79,7 +79,7 @@ export function SettingsDrawer({
         <Dialog.Overlay
           className={[
             'fixed inset-0 z-50',
-            'bg-black/30 backdrop-blur-sm',
+            'bg-[rgba(13,17,21,0.4)]',
             'data-[state=open]:animate-fade-in',
             'data-[state=closed]:animate-[fadeOut_100ms_ease-in]',
           ].join(' ')}
@@ -88,7 +88,7 @@ export function SettingsDrawer({
           className={[
             'fixed right-0 top-0 z-50',
             'h-full w-[440px]',
-            'rounded-l-2xl',
+            'rounded-l-[8px]',
             'bg-[var(--bg-card)]',
             'shadow-xl',
             'p-6 overflow-y-auto',

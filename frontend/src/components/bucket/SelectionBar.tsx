@@ -1,6 +1,6 @@
 /**
  * SelectionBar - 批量操作浮动栏组件
- * 当有文件被选中时从底部滑入，pill 形毛玻璃效果
+ * 当有文件被选中时从底部滑入，作为 Inspector 隐藏时的紧凑批量入口
  */
 import { useTranslation } from 'react-i18next';
 import {
@@ -40,7 +40,7 @@ export function SelectionBar({
       className={[
         'fixed bottom-6 left-1/2 -translate-x-1/2 z-50',
         'flex items-center gap-3',
-        'rounded-full glass',
+        'rounded-[8px] atlas-panel',
         'px-5 py-2.5',
         'shadow-xl',
         'border border-[var(--border)]',

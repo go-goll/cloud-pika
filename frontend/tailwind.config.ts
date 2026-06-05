@@ -32,14 +32,11 @@ export default {
         body: ['Inter', 'Noto Sans SC', 'system-ui', 'sans-serif'],
       },
       borderRadius: {
-        DEFAULT: '12px',
-        soft: '16px',
-        bento: '24px',
+        DEFAULT: '8px',
+        soft: '10px',
       },
       boxShadow: {
-        ambient: '0 24px 64px -12px rgba(0,0,0,0.08), 0 0 12px rgba(0,122,255,0.06)',
-        'glow-sm': '0 0 15px rgba(0,122,255,0.15)',
-        glow: '0 0 30px rgba(0,122,255,0.2)',
+        ambient: '0 16px 40px -10px rgba(20,33,43,0.14)',
       },
       keyframes: {
         shimmer: {

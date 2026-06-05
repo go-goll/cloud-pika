@@ -16,7 +16,7 @@ const DialogTrigger = DialogPrimitive.Trigger;
 /** 对话框关闭按钮 */
 const DialogClose = DialogPrimitive.Close;
 
-/** 对话框遮罩层 - 增加 backdrop-blur */
+/** 对话框遮罩层 */
 const DialogOverlay = forwardRef<
   ElementRef<typeof DialogPrimitive.Overlay>,
   ComponentPropsWithoutRef<typeof DialogPrimitive.Overlay>
@@ -25,7 +25,7 @@ const DialogOverlay = forwardRef<
     ref={ref}
     className={[
       'fixed inset-0 z-50',
-      'bg-slate-900/30 backdrop-blur-sm',
+      'bg-[rgba(13,17,21,0.4)]',
       'data-[state=open]:animate-[fadeIn_150ms_ease-out]',
       'data-[state=closed]:animate-[fadeOut_100ms_ease-in]',
       className ?? '',
@@ -35,7 +35,7 @@ const DialogOverlay = forwardRef<
 ));
 DialogOverlay.displayName = 'DialogOverlay';
 
-/** 对话框内容区 - 增加多层阴影和更精致的圆角 */
+/** 对话框内容区 */
 const DialogContent = forwardRef<
   ElementRef<typeof DialogPrimitive.Content>,
   ComponentPropsWithoutRef<typeof DialogPrimitive.Content>
@@ -48,9 +48,9 @@ const DialogContent = forwardRef<
         'fixed left-1/2 top-1/2 z-50',
         'w-full max-w-lg',
         '-translate-x-1/2 -translate-y-1/2',
-        'rounded-2xl bg-[var(--bg-card)]',
+        'rounded-[8px] bg-[var(--bg-card)]',
         'p-6 border border-[var(--border)]',
-        'shadow-xl',
+        'shadow-[var(--shadow-xl)]',
         'data-[state=open]:animate-[dialogIn_200ms_ease-out]',
         'data-[state=closed]:animate-[dialogOut_150ms_ease-in]',
         className ?? '',

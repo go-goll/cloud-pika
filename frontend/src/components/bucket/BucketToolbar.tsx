@@ -116,7 +116,7 @@ export function BucketToolbar({
             handleInputChange(e.target.value)
           }
           placeholder={t('common.search')}
-          className="rounded-xl bg-[var(--bg-raised)] pl-9 pr-8"
+          className="rounded-[8px] bg-[var(--bg-raised)] pl-9 pr-8"
         />
         {inputValue ? (
           <button
@@ -183,7 +183,7 @@ export function BucketToolbar({
           <Button
             variant="ghost"
             iconOnly
-            className="rounded-xl"
+            className="rounded-[8px]"
             onClick={onCreateFolder}
             title={t('bucket.newFolder')}
           >
@@ -195,7 +195,7 @@ export function BucketToolbar({
         {onFetchUrl ? (
           <Button
             variant="ghost"
-            className="rounded-xl"
+            className="rounded-[8px]"
             onClick={onFetchUrl}
           >
             <Link2 size={15} className="mr-1.5" />
@@ -208,7 +208,7 @@ export function BucketToolbar({
           <Button
             variant="ghost"
             iconOnly
-            className="rounded-xl"
+            className="rounded-[8px]"
             onClick={onSettings}
           >
             <Settings2 size={15} />
@@ -219,14 +219,14 @@ export function BucketToolbar({
         <Button
           variant="ghost"
           iconOnly
-          className="rounded-xl"
+          className="rounded-[8px]"
           onClick={onRefresh}
         >
           <RefreshCcw size={15} />
         </Button>
 
         {/* 上传按钮 - 品牌色 */}
-        <Button className="gradient-primary rounded-xl" onClick={onUpload}>
+        <Button className="rounded-[8px]" onClick={onUpload}>
           <UploadCloud size={15} className="mr-1.5" />
           {t('bucket.upload')}
         </Button>

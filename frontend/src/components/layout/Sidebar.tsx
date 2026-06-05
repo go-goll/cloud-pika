@@ -1,10 +1,11 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
   ChevronLeft,
   ChevronRight,
   Database,
   FolderOpen,
+  Palette,
   Upload,
   User,
 } from 'lucide-react';
@@ -16,10 +17,8 @@ import { useBucketStore } from '@/stores/useBucketStore';
 /** 导航菜单项配置（仅保留已实现的路由） */
 const navItems = [
   { to: '/bucket', icon: FolderOpen, key: 'nav.explorer' },
+  { to: '/designs', icon: Palette, key: 'nav.designs' },
 ];
-
-/** 窄窗口折叠阈值（px） */
-const COLLAPSE_WIDTH = 900;
 
 /** 侧边栏展开宽度 */
 export const SIDEBAR_WIDTH = 220;
@@ -27,14 +26,19 @@ export const SIDEBAR_WIDTH = 220;
 /** 侧边栏折叠宽度 */
 export const SIDEBAR_COLLAPSED_WIDTH = 64;
 
-/** 侧边栏组件，支持自动折叠/展开 */
-export function Sidebar() {
+interface SidebarProps {
+  collapsed: boolean;
+  onCollapsedChange: (collapsed: boolean) => void;
+}
+
+/** 侧边栏组件，折叠状态由 AppLayout 控制 */
+export function Sidebar({
+  collapsed,
+  onCollapsedChange,
+}: SidebarProps) {
   const location = useLocation();
   const navigate = useNavigate();
   const { t } = useTranslation();
-  const [collapsed, setCollapsed] = useState(
-    window.innerWidth < COLLAPSE_WIDTH,
-  );
   const buckets = useBucketStore((s) => s.buckets);
   const activeBucket = useBucketStore((s) => s.activeBucket);
   const setActiveBucket = useBucketStore((s) => s.setActiveBucket);
@@ -46,22 +50,13 @@ export function Sidebar() {
     [accounts, activeAccountId],
   );
 
-  useEffect(() => {
-    const onResize = () => {
-      setCollapsed(window.innerWidth < COLLAPSE_WIDTH);
-    };
-    window.addEventListener('resize', onResize);
-    return () =>
-      window.removeEventListener('resize', onResize);
-  }, []);
-
   const sidebarWidth = collapsed
     ? SIDEBAR_COLLAPSED_WIDTH
     : SIDEBAR_WIDTH;
 
   return (
     <aside
-      className="glass fixed left-0 top-0 z-40 flex h-screen flex-col border-r border-[var(--border)]/30 transition-[width] duration-200"
+      className="flex min-h-0 flex-col border-r border-[var(--border)] bg-[var(--bg-card)] transition-[width] duration-200 max-[720px]:hidden"
       style={{ width: sidebarWidth }}
     >
       {/* 品牌区域 */}
@@ -93,7 +88,7 @@ export function Sidebar() {
             <button
               type="button"
               onClick={() => window.dispatchEvent(new Event('cloud-pika:upload-active'))}
-              className="flex h-10 w-full items-center justify-center rounded-xl bg-[var(--accent)] text-[var(--accent-text)] transition-colors hover:opacity-90"
+              className="flex h-9 w-full items-center justify-center rounded-[8px] bg-[var(--accent)] text-[var(--accent-text)] transition-colors hover:bg-[var(--accent-hover)]"
             >
               <Upload size={18} />
             </button>
@@ -102,7 +97,7 @@ export function Sidebar() {
           <button
             type="button"
             onClick={() => window.dispatchEvent(new Event('cloud-pika:upload-active'))}
-            className="flex h-10 w-full items-center justify-center gap-2 rounded-xl bg-[var(--accent)] text-sm font-medium text-[var(--accent-text)] transition-colors hover:opacity-90"
+            className="flex h-9 w-full items-center justify-center gap-2 rounded-[8px] bg-[var(--accent)] text-sm font-medium text-[var(--accent-text)] transition-colors hover:bg-[var(--accent-hover)]"
           >
             <Upload size={16} />
             <span>{t('nav.upload')}</span>
@@ -122,7 +117,7 @@ export function Sidebar() {
               key={item.to}
               to={item.to}
               className={[
-                'flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition-all',
+                'flex items-center gap-3 rounded-[8px] px-3 py-2 text-sm transition-all',
                 collapsed ? 'justify-center' : '',
                 active
                   ? 'bg-[var(--accent-soft)] font-medium text-[var(--accent)]'
@@ -196,7 +191,7 @@ export function Sidebar() {
               <button
                 type="button"
                 onClick={() => navigate('/')}
-                className="flex w-full items-center justify-center rounded-xl py-2 text-[var(--text-secondary)] transition-colors hover:bg-[var(--bg-raised)]"
+                className="flex w-full items-center justify-center rounded-[8px] py-2 text-[var(--text-secondary)] transition-colors hover:bg-[var(--bg-raised)]"
               >
                 <User size={16} />
               </button>
@@ -206,7 +201,7 @@ export function Sidebar() {
               type="button"
               onClick={() => navigate('/')}
               className={[
-                'flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5',
+                'flex w-full items-center gap-2.5 rounded-[8px] px-3 py-2.5',
                 'text-left transition-colors',
                 'hover:bg-[var(--bg-raised)]',
               ].join(' ')}
@@ -230,8 +225,8 @@ export function Sidebar() {
         {/* 折叠切换 */}
         <button
           type="button"
-          onClick={() => setCollapsed((prev) => !prev)}
-          className="flex w-full items-center justify-center rounded-xl py-1.5 text-[var(--text-secondary)] transition-colors hover:bg-[var(--bg-raised)]"
+          onClick={() => onCollapsedChange(!collapsed)}
+          className="flex w-full items-center justify-center rounded-[8px] py-1.5 text-[var(--text-secondary)] transition-colors hover:bg-[var(--bg-raised)]"
         >
           {collapsed ? (
             <ChevronRight size={16} />

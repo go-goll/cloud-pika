@@ -54,7 +54,7 @@ export function TransferPanel() {
   return (
     <div
       className={[
-        'shrink-0 rounded-2xl',
+        'shrink-0 rounded-[8px]',
         'bg-[var(--bg-card)] border border-[var(--border)]',
       ].join(' ')}
     >
@@ -64,7 +64,7 @@ export function TransferPanel() {
         onClick={() => setExpanded(!expanded)}
         className={[
           'flex w-full items-center justify-between',
-          'h-10 px-4 rounded-xl',
+          'h-10 px-4 rounded-[8px]',
           'text-xs text-[var(--text-secondary)]',
           'hover:text-[var(--text)]',
           'transition-colors',

@@ -22,7 +22,7 @@ export function BootstrapScreen({
     <div className="flex min-h-screen items-center justify-center bg-[var(--bg)]">
       <div className="flex flex-col items-center text-center">
         {/* Logo */}
-        <div className="rounded-2xl bg-[var(--bg-card)] shadow-md p-3">
+        <div className="rounded-[8px] bg-[var(--bg-card)] shadow-md p-3">
           <img
             src="/images/logo.svg"
             alt="Cloud Pika"
@@ -45,14 +45,14 @@ export function BootstrapScreen({
             <h2 className="mt-3 text-sm font-semibold text-[var(--text)]">
               {t('bootstrap.failure', 'Bootstrap Failure')}
             </h2>
-            <div className="mt-3 w-full rounded-xl bg-[var(--bg-raised)] p-4">
+            <div className="mt-3 w-full rounded-[8px] bg-[var(--bg-raised)] p-4">
               <p className="font-mono text-xs text-[var(--text-secondary)] break-all">
                 {error}
               </p>
             </div>
             <button
               onClick={onRetry}
-              className="mt-4 w-full gradient-primary rounded-xl py-2.5 text-sm font-medium text-white"
+              className="mt-4 w-full rounded-[8px] bg-[var(--accent)] py-2.5 text-sm font-medium text-[var(--accent-text)] hover:bg-[var(--accent-hover)]"
             >
               {t('bootstrap.retry', 'Retry')}
             </button>

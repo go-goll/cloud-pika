@@ -45,6 +45,10 @@
 
 ---
 
+## 当前执行状态
+
+> 2026-06-05 更新：此前已完成一轮 Atlas Ops 主应用壳层实现，但没有完全按本计划的 task-by-task 顺序补齐纯函数、测试、分支/提交流程。以下 checkbox 只标记已经符合本计划验收口径的步骤；部分完成项保留未勾选，并在任务下用“当前状态”说明。
+
 ## 阶段 0：准备
 
 ### Task 0：创建特性分支
@@ -69,7 +73,9 @@ Expected: 现有测试全部 PASS（记录基线，后续不得回归）。
 
 **Files:** Modify `frontend/src/index.css`
 
-- [ ] **Step 1：替换 `:root`（浅色）令牌值**
+当前状态：浅/深色 Atlas 令牌已替换，`npm run build` 已通过；营销态工具类已从令牌层移除。`atlas-region` 尚未补充，但当前布局直接使用 `bg-[var(--bg-card)]`/`border-[var(--border)]`。
+
+- [x] **Step 1：替换 `:root`（浅色）令牌值**
 
 把 `:root` 内的核心调色板替换为 Atlas 浅色值，并新增 `--accent-2`、状态软背景：
 
@@ -106,7 +112,7 @@ Expected: 现有测试全部 PASS（记录基线，后续不得回归）。
 
 兼容别名块（`--surface`/`--color-*` 等）保持不变——它们引用上面的变量，无需改。
 
-- [ ] **Step 2：替换 `:root[data-theme='dark']` 令牌值**
+- [x] **Step 2：替换 `:root[data-theme='dark']` 令牌值**
 
 ```css
   --bg:             #0d1115;
@@ -129,7 +135,7 @@ Expected: 现有测试全部 PASS（记录基线，后续不得回归）。
 
 深色阴影同步改克制（去强蓝辉光，参照浅色比例加深 alpha）。
 
-- [ ] **Step 3：清理营销态工具类**
+- [x] **Step 3：清理营销态工具类**
 
 删除 `.glass`、`.glass-panel`、`.bento-card`、`.bento-card:hover`、`.gradient-primary`、`.signature-gradient`、`.animate-gradient`、`.animate-breathe`、`@keyframes gradient-shift`、`@keyframes breathe`、`.progress-shimmer` 中的辉光（保留 shimmer 关键帧供骨架屏）。新增 Atlas 面板与色调悬停工具类：
 
@@ -150,7 +156,7 @@ Expected: 现有测试全部 PASS（记录基线，后续不得回归）。
 
 保留 `.tonal-hover`、`.ambient-shadow`（改引用 `--shadow-lg`）、`.ghost-border`、文件图标颜色块、`pageFadeIn`/`rowFadeIn`/`dialogIn`/`slideUp` 动画。
 
-- [ ] **Step 4：验证构建**
+- [x] **Step 4：验证构建**
 
 Run: `cd frontend && npm run build`
 Expected: tsc + vite 构建成功（玻璃类删除若有引用会在后续任务处理；本步只要 CSS 合法、构建过）。
@@ -160,7 +166,9 @@ Expected: tsc + vite 构建成功（玻璃类删除若有引用会在后续任�
 
 **Files:** Modify `frontend/tailwind.config.ts`、`frontend/src/components/ui/Button.tsx`
 
-- [ ] **Step 1：调整 `tailwind.config.ts` borderRadius 与 boxShadow**
+当前状态：Tailwind 与 Button 已改为 Atlas 方向；`npm run build` 与 `npm run test:run` 已通过。本阶段尚未按计划提交。
+
+- [x] **Step 1：调整 `tailwind.config.ts` borderRadius 与 boxShadow**
 
 ```ts
       borderRadius: {
@@ -174,7 +182,7 @@ Expected: tsc + vite 构建成功（玻璃类删除若有引用会在后续任�
 
 移除 `bento` 圆角与 `glow-sm`/`glow` 阴影键。
 
-- [ ] **Step 2：Button primary 改纯色（去渐变辉光）**
+- [x] **Step 2：Button primary 改纯色（去渐变辉光）**
 
 把 `variantClasses.primary` 改为：
 
@@ -188,7 +196,7 @@ Expected: tsc + vite 构建成功（玻璃类删除若有引用会在后续任�
 
 并把基础类里的 `rounded-xl` 改为 `rounded-[8px]`（容器级 8px）。
 
-- [ ] **Step 3：验证构建 + 现有测试**
+- [x] **Step 3：验证构建 + 现有测试**
 
 Run: `cd frontend && npm run build && npm run test:run`
 Expected: 构建成功，测试全 PASS。
@@ -210,7 +218,9 @@ git commit -m "style(ui): 切换设计令牌为 Atlas Ops 调色板并清理玻�
 
 **Files:** Create `frontend/src/lib/platform.ts`、`frontend/src/lib/__tests__/platform.test.ts`
 
-- [ ] **Step 1：写失败测试**
+当前状态：已创建 `platform.ts` 与测试，定向测试和全量测试均通过。
+
+- [x] **Step 1：写失败测试**
 
 ```ts
 import { describe, it, expect } from 'vitest';
@@ -229,12 +239,12 @@ describe('detectPlatform', () => {
 });
 ```
 
-- [ ] **Step 2：运行确认失败**
+- [x] **Step 2：运行确认失败**
 
 Run: `cd frontend && npx vitest run src/lib/__tests__/platform.test.ts`
 Expected: FAIL（模块不存在）。
 
-- [ ] **Step 3：实现**
+- [x] **Step 3：实现**
 
 ```ts
 export type Platform = 'mac' | 'win' | 'other';
@@ -249,7 +259,7 @@ export function detectPlatform(
 }
 ```
 
-- [ ] **Step 4：运行确认通过**
+- [x] **Step 4：运行确认通过**
 
 Run: `cd frontend && npx vitest run src/lib/__tests__/platform.test.ts`
 Expected: PASS。
@@ -258,7 +268,9 @@ Expected: PASS。
 
 **Files:** Create `frontend/src/lib/window-controls.ts`
 
-- [ ] **Step 1：实现适配层（集中封装，便于实机微调）**
+当前状态：已创建 `window-controls.ts`，`AppTitlebar` 已改为通过适配层调用 Wails Window API。
+
+- [x] **Step 1：实现适配层（集中封装，便于实机微调）**
 
 ```ts
 import { Window } from '@wailsio/runtime';
@@ -280,7 +292,7 @@ export const windowControls = {
 };
 ```
 
-- [ ] **Step 2：验证构建**
+- [x] **Step 2：验证构建**
 
 Run: `cd frontend && npm run build`
 Expected: 构建成功（`@wailsio/runtime` 已是依赖）。
@@ -290,7 +302,9 @@ Expected: 构建成功（`@wailsio/runtime` 已是依赖）。
 
 **Files:** Create `frontend/src/components/layout/AppTitlebar.tsx`
 
-- [ ] **Step 1：实现标题栏（迁移 Header 的主题/语言/设置/账户逻辑）**
+当前状态：已创建 `AppTitlebar`，接入主题/语言/设置/账户、`detectPlatform()`、`windowControls`、Wails drag/no-drag style，并统一命令事件为 `cloud-pika:open-command`。
+
+- [x] **Step 1：实现标题栏（迁移 Header 的主题/语言/设置/账户逻辑）**
 
 要点（完整实现，复用现有 store 与对话框）：
 - 顶层 `<header>` 高度 macOS 48px / Windows 52px，`bg-[var(--bg-card)]` 底、底部 `border-b border-[var(--border)]`。
@@ -303,11 +317,11 @@ Expected: 构建成功（`@wailsio/runtime` 已是依赖）。
 - 渲染 `<AccountDialog>` 与 `<SettingsDrawer>`（迁移自 Header）。
 - "没有账户自动打开账户对话框" 的 effect 从 Header 迁移过来。
 
-- [ ] **Step 2：让 CommandPalette 响应命令事件**
+- [x] **Step 2：让 CommandPalette 响应命令事件**
 
 `frontend/src/components/CommandPalette.tsx` 内新增监听（若其已支持 `⌘K` 快捷键则只需补事件入口）：在其打开逻辑中加 `useEffect` 监听 `window` 的 `cloud-pika:open-command` 事件并 `setOpen(true)`。
 
-- [ ] **Step 3：验证构建**
+- [x] **Step 3：验证构建**
 
 Run: `cd frontend && npm run build`
 Expected: 成功。
@@ -316,7 +330,9 @@ Expected: 成功。
 
 **Files:** Modify `frontend/src/components/layout/AppLayout.tsx`
 
-- [ ] **Step 1：重构为四区 grid**
+当前状态：四区 grid、真实 `AppInspector`、移除 `Header`/`TransferPanel` 挂载已完成，并已验证 `1280×820` / `960×680` 无横向溢出；`Sidebar` 仍保留可折叠状态，这是相对计划静态侧栏的实现差异。
+
+- [x] **Step 1：重构为四区 grid**
 
 ```tsx
 import type { PropsWithChildren } from 'react';
@@ -360,7 +376,7 @@ export function AppInspector() {
 }
 ```
 
-- [ ] **Step 4：移除旧 Header 引用，验证**
+- [x] **Step 4：移除旧 Header 引用，验证**
 
 确认 `AppLayout` 不再 import `Header`/`TransferPanel`（TransferPanel 在阶段 4 处理；此处先保留底部不挂载——直接从布局移除）。
 
@@ -389,7 +405,9 @@ git commit -m "feat(layout): Atlas 四区布局与跨平台自绘标题栏"
 
 **Files:** Create `frontend/src/lib/object-status.ts`、`frontend/src/lib/__tests__/object-status.test.ts`
 
-- [ ] **Step 1：写失败测试**
+当前状态：已创建 `object-status.ts` 与测试，`ResourceTable` 状态列已接入。
+
+- [x] **Step 1：写失败测试**
 
 ```ts
 import { describe, it, expect } from 'vitest';
@@ -410,12 +428,12 @@ describe('getObjectStatus', () => {
 });
 ```
 
-- [ ] **Step 2：运行确认失败**
+- [x] **Step 2：运行确认失败**
 
 Run: `cd frontend && npx vitest run src/lib/__tests__/object-status.test.ts`
 Expected: FAIL。
 
-- [ ] **Step 3：实现**
+- [x] **Step 3：实现**
 
 ```ts
 import type { ObjectItem } from '@/types/cloud';
@@ -440,7 +458,7 @@ export function getObjectStatus(item: ObjectItem): ObjectStatus {
 }
 ```
 
-- [ ] **Step 4：运行确认通过**
+- [x] **Step 4：运行确认通过**
 
 Run: `cd frontend && npx vitest run src/lib/__tests__/object-status.test.ts`
 Expected: PASS。
@@ -449,7 +467,9 @@ Expected: PASS。
 
 **Files:** Create `frontend/src/lib/metrics.ts`、`frontend/src/lib/__tests__/metrics.test.ts`、`frontend/src/components/layout/MetricsBar.tsx`
 
-- [ ] **Step 1：写失败测试**
+当前状态：已创建 `metrics.ts` 与测试，`MetricsBar.tsx` 已改为使用 `deriveMetrics`。
+
+- [x] **Step 1：写失败测试**
 
 ```ts
 import { describe, it, expect } from 'vitest';
@@ -479,12 +499,12 @@ describe('deriveMetrics', () => {
 });
 ```
 
-- [ ] **Step 2：运行确认失败**
+- [x] **Step 2：运行确认失败**
 
 Run: `cd frontend && npx vitest run src/lib/__tests__/metrics.test.ts`
 Expected: FAIL。
 
-- [ ] **Step 3：实现 `metrics.ts`**
+- [x] **Step 3：实现 `metrics.ts`**
 
 ```ts
 import type { BucketInfo } from '@/types/cloud';
@@ -516,16 +536,16 @@ export function deriveMetrics(input: MetricsInput): MetricsView {
 }
 ```
 
-- [ ] **Step 4：运行确认通过**
+- [x] **Step 4：运行确认通过**
 
 Run: `cd frontend && npx vitest run src/lib/__tests__/metrics.test.ts`
 Expected: PASS。
 
-- [ ] **Step 5：实现 `MetricsBar.tsx`**
+- [x] **Step 5：实现 `MetricsBar.tsx`**
 
 四列 `grid grid-cols-4 gap-2 max-[720px]:grid-cols-2`，每格 `.atlas-panel p-3`：上 label（`text-[11px] uppercase tracking-[0.05em] text-[var(--text-secondary)]`）、中 value（`text-[17px] font-semibold`）、下 hint（`text-[11px] text-[var(--text-secondary)]`）。props 接收 `MetricsView` + hint 文案 key。label 文案用 `t('metrics.objects')` 等。
 
-- [ ] **Step 6：验证构建**
+- [x] **Step 6：验证构建**
 
 Run: `cd frontend && npm run build`
 Expected: 成功。
@@ -534,18 +554,20 @@ Expected: 成功。
 
 **Files:** Modify `frontend/src/components/bucket/BreadcrumbNav.tsx`、`frontend/src/components/bucket/BucketToolbar.tsx`
 
-- [ ] **Step 1：BreadcrumbNav 改 Atlas 样式**
+当前状态：`BucketToolbar` 与 `BreadcrumbNav` 均已做 Atlas 基础样式。
+
+- [x] **Step 1：BreadcrumbNav 改 Atlas 样式**
 
 容器 `flex items-center gap-1.5 text-[13px] text-[var(--text-secondary)]`，当前段 `text-[var(--text)] font-medium`，各段单行截断（`truncate min-w-0`）；分隔符用 `/`。保留现有导航回调逻辑。
 
-- [ ] **Step 2：BucketToolbar 改 Atlas 样式**
+- [x] **Step 2：BucketToolbar 改 Atlas 样式**
 
 - 搜索框（保留对象过滤）：`Input` 容器 `h-8 rounded-[8px] bg-[var(--bg-raised)]`，去除 `rounded-xl`。
 - 视图切换/新建/抓取/设置/刷新：统一 32×32 图标按钮，`rounded-[8px]`，hover `tonal-hover`。
 - 上传主按钮：`<Button>`（已在 Task 2 改纯色），去 `gradient-primary` class，改 `rounded-[8px]`。
 - 移除任何 `gradient-primary`/`shadow-sm` 营销样式。
 
-- [ ] **Step 3：验证构建 + 测试**
+- [x] **Step 3：验证构建 + 测试**
 
 Run: `cd frontend && npm run build && npm run test:run`
 Expected: 成功、PASS。
@@ -554,13 +576,15 @@ Expected: 成功、PASS。
 
 **Files:** Modify `frontend/src/components/resource/ResourceTable.tsx`
 
-- [ ] **Step 1：行高与圆角调整**
+当前状态：已实现状态列、行高调整、状态胶囊与空态 colSpan 更新，并通过构建/测试/浏览器尺寸回归。
+
+- [x] **Step 1：行高与圆角调整**
 
 - 单元格 `py-3.5` → `py-2.5`（行高约 42–44px）；`ROW_HEIGHT` 常量 36 → 42。
 - 行容器去 `rounded-xl`；hover 用 `hover:bg-[var(--bg-raised)]`（替换硬编码 `rgba(234,239,242,0.4)`），选中态 `bg-[var(--accent-soft)] ring-1 ring-inset ring-[var(--accent)]/40`，focus 态保留。
 - 表头 `bg-[var(--bg)]` 保留 sticky。
 
-- [ ] **Step 2：新增"状态"列**
+- [x] **Step 2：新增"状态"列**
 
 - 表头在"更新时间"与操作列之间插入 `<th>` 状态列（`t('bucket.columnStatus')`，宽约 96px，不可排序）。
 - 行内对应 `<td>`：渲染状态胶囊
@@ -583,7 +607,7 @@ const status = getObjectStatus(item);
 
 - import `getObjectStatus`；空态 `colSpan` 由 5 改为 6。
 
-- [ ] **Step 3：验证构建 + 测试 + 目测**
+- [x] **Step 3：验证构建 + 测试 + 目测**
 
 Run: `cd frontend && npm run build && npm run test:run`
 Expected: 成功、PASS。`npm run dev` 目测表格行高、状态列、深浅主题胶囊对比度。
@@ -609,7 +633,9 @@ git commit -m "feat(bucket): Atlas 中央工作区 指标条/工具栏/表格状
 
 **Files:** Modify `frontend/src/stores/useBucketStore.ts`、Create `frontend/src/stores/__tests__/useBucketStore.test.ts`
 
-- [ ] **Step 1：写失败测试**
+当前状态：已按计划改为 `Set<string>`，并补齐 store 测试。
+
+- [x] **Step 1：写失败测试**
 
 ```ts
 import { describe, it, expect, beforeEach } from 'vitest';
@@ -631,12 +657,12 @@ describe('useBucketStore selection', () => {
 });
 ```
 
-- [ ] **Step 2：运行确认失败**
+- [x] **Step 2：运行确认失败**
 
 Run: `cd frontend && npx vitest run src/stores/__tests__/useBucketStore.test.ts`
 Expected: FAIL（`setSelectedKeys` 不存在）。
 
-- [ ] **Step 3：实现**
+- [x] **Step 3：实现**
 
 在 `BucketState` 接口加：
 
@@ -655,7 +681,7 @@ Expected: FAIL（`setSelectedKeys` 不存在）。
 
 `reset` 内追加 `selectedKeys: new Set()`。`persist.partialize` 不变（不持久化选中态）。
 
-- [ ] **Step 4：运行确认通过**
+- [x] **Step 4：运行确认通过**
 
 Run: `cd frontend && npx vitest run src/stores/__tests__/useBucketStore.test.ts`
 Expected: PASS。
@@ -664,13 +690,15 @@ Expected: PASS。
 
 **Files:** Modify `frontend/src/pages/BucketPage.tsx`
 
-- [ ] **Step 1：选中态改读 store**
+当前状态：已改为从 store 读写选中态，并已监听 Inspector 批量事件；构建、测试与尺寸回归已通过。
+
+- [x] **Step 1：选中态改读 store**
 
 - 删除本地 `const [selectedKeys, setSelectedKeys] = useState(...)`，改为从 `useBucketStore` 取 `selectedKeys`/`setSelectedKeys`/`clearSelection`。
 - `handleSelect`/`handleSelectAll` 内的 `setSelectedKeys((prev) => …)` 改为基于 store 当前值计算后 `setSelectedKeys(next)`（store 的 setter 为覆盖式）。读取当前值用 `useBucketStore.getState().selectedKeys` 或把 `selectedKeys` 纳入 useCallback 依赖。
 - 各处 `setSelectedKeys(new Set())` 改 `clearSelection()`。
 
-- [ ] **Step 2：监听检查器批量事件**
+- [x] **Step 2：监听检查器批量事件**
 
 新增 effect，把检查器派发的事件映射到既有批量函数：
 
@@ -690,7 +718,7 @@ useEffect(() => {
 }, [handleBatchCopyUrl, handleBatchRefreshCDN, handleBatchDownload]);
 ```
 
-- [ ] **Step 3：验证构建 + 测试 + 目测**
+- [x] **Step 3：验证构建 + 测试 + 目测**
 
 Run: `cd frontend && npm run build && npm run test:run`
 Expected: 成功、PASS。`npm run dev` 验证多选、Shift 范围选、全选、删除后清选中仍正常。
@@ -699,7 +727,9 @@ Expected: 成功、PASS。`npm run dev` 验证多选、Shift 范围选、全选�
 
 **Files:** Modify `frontend/src/components/layout/AppInspector.tsx`
 
-- [ ] **Step 1：实现三段式检查器**
+当前状态：已实现三段式检查器，包含 Bucket 摘要、治理摘要、传输队列、快速动作；`open-bucket-settings` 事件已由 `BucketPage` 监听；构建和两个窗口尺寸已验证。治理摘要目前仍是基础摘要，后续可继续接真实 provider/config 状态。
+
+- [x] **Step 1：实现三段式检查器**
 
 `<aside className="hidden min-[1201px]:flex h-full min-h-0 flex-col gap-2 overflow-auto border-l border-[var(--border)] bg-[var(--bg-card)] p-3">`，含三段（各为 `.atlas-panel p-3`）：
 
@@ -709,15 +739,15 @@ Expected: 成功、PASS。`npm run dev` 验证多选、Shift 范围选、全选�
 
 > "管理"按钮事件由 BucketPage 监听打开 `BucketSettingsDrawer`（下step）。CDN 刷新按钮仅在 provider 支持时启用——检查器无法直接拿 featureList，则始终渲染但点击由 BucketPage 内部判断（不支持时 `handleBatchRefreshCDN` 已 try/catch）。
 
-- [ ] **Step 2：BucketPage 监听打开治理抽屉事件**
+- [x] **Step 2：BucketPage 监听打开治理抽屉事件**
 
 `BucketPage.tsx` 新增 effect 监听 `cloud-pika:open-bucket-settings` → `setSettingsDrawerOpen(true)`（与 Task 12 的事件 effect 合并或并列）。
 
-- [ ] **Step 3：AppLayout 挂载真实 Inspector + 移除底部 TransferPanel**
+- [x] **Step 3：AppLayout 挂载真实 Inspector + 移除底部 TransferPanel**
 
 确认 `AppLayout` 已渲染 `<AppInspector />`（阶段 2 占位被本任务替换），且**不**渲染 `TransferPanel`。
 
-- [ ] **Step 4：验证构建 + 测试 + 目测**
+- [x] **Step 4：验证构建 + 测试 + 目测**
 
 Run: `cd frontend && npm run build && npm run test:run`
 Expected: 成功、PASS。`npm run dev`：检查器显示治理摘要/队列；有传输任务时进度实时；选中对象后快速动作可用并触发批量操作；"管理"打开治理抽屉。
@@ -742,7 +772,9 @@ git commit -m "feat(inspector): 右侧常驻检查器 接管传输队列/治理�
 
 **Files:** Modify `frontend/src/components/ui/Input.tsx`、`frontend/src/components/ui/Dialog.tsx`、`frontend/src/components/settings/SettingsDrawer.tsx`、`frontend/src/components/bucket/BucketSettingsDrawer.tsx`、`frontend/src/components/account/AccountDialog.tsx`、`frontend/src/components/transfers/TransferPanel.tsx`
 
-- [ ] **Step 1：基础组件**
+当前状态：`Input`、`Dialog`、`SettingsDrawer`、`BucketSettingsDrawer`、`TransferPanel` 与命令面板遮罩已做 Atlas 基础密度兼容；扫描仍有媒体预览和若干旧自定义 Dialog 残留，待后续单独清理。
+
+- [x] **Step 1：基础组件**
 
 - `Input`：高度统一 `h-8`，圆角 `rounded-[8px]`，focus 自定义环 `focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30`，去玻璃底。
 - `Dialog`：容器 `rounded-[8px]`（由 `rounded-2xl`）、`bg-[var(--bg-card)]`、阴影 `shadow-[var(--shadow-xl)]`；遮罩保留轻量 `bg-[rgba(13,17,21,0.4)]`，去重 `backdrop-blur` 营销感（可保留极轻 blur）。
@@ -751,7 +783,7 @@ git commit -m "feat(inspector): 右侧常驻检查器 接管传输队列/治理�
 
 `SettingsDrawer`/`BucketSettingsDrawer`/`AccountDialog`：移除 `glass`/`bento`/`gradient`/`shadow-glow` 等 class，面板改 `.atlas-panel`，按钮 32px、圆角 8px，分组用幽灵线/背景层差而非大卡片。
 
-- [ ] **Step 3：清理 TransferPanel 残留**
+- [x] **Step 3：清理 TransferPanel 残留**
 
 `TransferPanel.tsx` 已不再挂载（阶段 4）。移除其 `glass`/`rounded-2xl` 等失效引用即可（文件保留或删除：本计划保留文件不挂载，避免影响其测试）。其测试 `TransferCard.test.tsx` 针对 `TransferCard`，不受影响。
 
@@ -760,7 +792,7 @@ git commit -m "feat(inspector): 右侧常驻检查器 接管传输队列/治理�
 Run: `cd frontend && grep -rnE "glass|bento|gradient-primary|backdrop-blur|shadow-glow|rounded-3xl|rounded-2xl" src/ || echo "clean"`
 Expected: 输出为空或仅剩有意保留项（逐项确认无营销态残留）。
 
-- [ ] **Step 5：验证构建 + 测试**
+- [x] **Step 5：验证构建 + 测试**
 
 Run: `cd frontend && npm run build && npm run test:run`
 Expected: 成功、PASS。
@@ -785,7 +817,9 @@ git commit -m "style(ui): 统一对话框/抽屉/输入为 Atlas 密度"
 
 **Files:** Modify `main.go`
 
-- [ ] **Step 1：为 Windows 增加 frameless 配置**
+当前状态：已按当前 Wails v3 API 增加顶层 `Frameless: true`；`go build ./...` 通过，只有 macOS 链接器 warning。
+
+- [x] **Step 1：为 Windows 增加 frameless 配置**
 
 在 `WebviewWindowOptions` 增加 Windows 字段（与现有 Mac 字段并列）：
 
@@ -797,7 +831,7 @@ git commit -m "style(ui): 统一对话框/抽屉/输入为 Atlas 密度"
 
 > macOS 字段保持不变。Frameless 后由前端 `AppTitlebar` 的 Windows 分支提供窗口按钮与拖拽区。
 
-- [ ] **Step 2：验证 Go 构建**
+- [x] **Step 2：验证 Go 构建**
 
 Run: `cd /Users/goll/work/my/cloud-pika && go build ./...`
 Expected: 成功。
@@ -807,7 +841,9 @@ Expected: 成功。
 
 **Files:** Modify `frontend/src/i18n/i18n.ts`
 
-- [ ] **Step 1：zh-CN 与 en-US 各新增以下分组**
+当前状态：已补齐本计划要求的 `titlebar`、`metrics`、`inspector`、`status` 与 `bucket.columnStatus` 中英文文案。
+
+- [x] **Step 1：zh-CN 与 en-US 各新增以下分组**
 
 `titlebar`: `commandPlaceholder`（"搜索对象、Bucket、账户或命令" / "Search objects, buckets, accounts or commands"）、`minimize`/`maximize`/`close`。
 `metrics`: `objects`/`storage`/`cdn`/`queue` 及对应 hint。
@@ -815,7 +851,7 @@ Expected: 成功。
 `status`: `folder`（"文件夹"/"Folder"）、`ready`（"就绪"/"Ready"）。
 `bucket.columnStatus`: "状态"/"Status"。
 
-- [ ] **Step 2：验证构建 + 中英切换目测**
+- [x] **Step 2：验证构建 + 中英切换目测**
 
 Run: `cd frontend && npm run build`
 Expected: 成功。`npm run dev` 切中/英，标题栏、指标、检查器、状态列文案不溢出。
@@ -824,7 +860,9 @@ Expected: 成功。`npm run dev` 切中/英，标题栏、指标、检查器、�
 
 **Files:** Modify `~/.claude/rules/ui-rules.md`
 
-- [ ] **Step 1：改写为 Atlas Ops 规范**
+当前状态：已更新 `~/.claude/rules/ui-rules.md` 为 Atlas Ops 规范。该文件位于项目工作区外，不纳入 git。
+
+- [x] **Step 1：改写为 Atlas Ops 规范**
 
 将文件整体改写：定位"Atlas Ops 高密度多云工作台"，要点——语义令牌 + `data-theme` 双主题、8px 圆角、四区布局（标题栏/侧栏/中央/检查器）、1px 幽灵线分隔、禁毛玻璃/大渐变/漂浮大卡片/卡片套卡片、表格密度优先、跨平台标题栏、图标用 lucide-react Light。与 `docs/atlas-ops-ui-design-spec.md` 对齐（可摘其关键章节）。
 
@@ -832,11 +870,13 @@ Expected: 成功。`npm run dev` 切中/英，标题栏、指标、检查器、�
 
 ### Task 18：全量验收 + 收尾提交
 
+当前状态：已完成 `npm run build`、`npm run test:run`、`go build ./...`、浏览器 `1280×820` 与 `960×680` 布局检查、`/designs` 可访问检查；尚未做 Windows 实机与 8 组合完整验收，也尚未阶段提交。
+
 - [ ] **Step 1：按规范 §14 验收（8 组合）**
 
 `npm run dev`，依次在 1280×820 与 960×680（用浏览器/窗口缩放或 `DesignShowcasePage` 多尺寸预览）× 浅/深主题 × macOS/Windows 标题栏分支，逐项核对：无页面级横向滚动、标题栏按钮不遮挡命令入口、Windows 窗口按钮区独立、表格主列可读、深色对比度足够、中英不溢出。macOS 本机验证；Windows 分支可临时改 `detectPlatform` 返回值或 mock UA 目测布局，实机效果由用户在 Windows 复核。
 
-- [ ] **Step 2：全量构建与测试**
+- [x] **Step 2：全量构建与测试**
 
 Run: `cd frontend && npm run build && npm run test:run` 且 `cd /Users/goll/work/my/cloud-pika && go build ./...`
 Expected: 全部成功、测试 PASS。

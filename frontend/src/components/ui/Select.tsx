@@ -63,7 +63,7 @@ const SelectTrigger = forwardRef<
     ref={ref}
     className={[
       'inline-flex h-10 w-full items-center justify-between',
-      'rounded-xl border border-[var(--border)]',
+      'rounded-[8px] border border-[var(--border)]',
       'bg-[var(--bg)] px-3 text-sm text-[var(--text)]',
       'placeholder:text-[var(--text-secondary)]',
       'hover:border-[var(--accent)]/30',
@@ -93,7 +93,7 @@ const SelectContent = forwardRef<
     sideOffset={4}
     className={[
       'z-50 max-h-60 min-w-[var(--radix-select-trigger-width)]',
-      'overflow-hidden rounded-xl',
+      'overflow-hidden rounded-[8px]',
       'bg-[var(--bg-card)] p-1 border border-[var(--border)] shadow-lg',
       'animate-[fadeIn_150ms_ease-out]',
       className ?? '',

@@ -26,6 +26,7 @@ import {
 } from '@/lib/format';
 import { getFileIcon } from '@/lib/file-icon';
 import { getPreviewType } from '@/lib/preview-type';
+import { getObjectStatus } from '@/lib/object-status';
 import { ResourceContextMenu } from '@/components/bucket/ResourceContextMenu';
 
 /** 排序方向 */
@@ -60,7 +61,7 @@ interface ResourceTableProps {
 const VIRTUAL_THRESHOLD = 100;
 
 /** 虚拟滚动行高估计值 */
-const ROW_HEIGHT = 36;
+const ROW_HEIGHT = 42;
 
 /** 行操作下拉菜单 */
 function RowActionMenu({
@@ -325,6 +326,7 @@ export function ResourceTable({
     const fileName = extractFileName(item.key);
     const canPreview =
       !isDir && getPreviewType(item.key) !== null;
+    const status = getObjectStatus(item);
 
     return (
       <ResourceContextMenu
@@ -351,20 +353,20 @@ export function ResourceTable({
         <tr
           style={style}
           className={[
-            'group rounded-xl transition-colors duration-150',
+            'group transition-colors duration-150',
             'cursor-default',
             isFocused
-              ? 'ring-1 ring-[var(--accent)]/30 bg-[var(--accent-soft)]'
+              ? 'bg-[var(--accent-soft)] ring-1 ring-inset ring-[var(--accent)]/40'
               : isSelected
-                ? 'bg-[var(--accent-soft)]'
-                : 'hover:bg-[rgba(234,239,242,0.4)]',
+                ? 'bg-[var(--accent-soft)] ring-1 ring-inset ring-[var(--accent)]/30'
+                : 'hover:bg-[var(--bg-raised)]',
           ].join(' ')}
           onDoubleClick={() => {
             if (isDir) onNavigateFolder?.(item.key);
           }}
         >
           {/* Checkbox */}
-          <td className="w-8 px-4 py-3.5">
+          <td className="w-8 px-4 py-2.5">
             <input
               type="checkbox"
               checked={isSelected}
@@ -380,7 +382,7 @@ export function ResourceTable({
           </td>
 
           {/* 文件名 */}
-          <td className="px-4 py-3.5">
+          <td className="px-4 py-2.5">
             <div className="flex items-center gap-2 w-full">
               <span className="shrink-0">
                 {getFileIcon(item.key, item.mimeType, 24)}
@@ -421,19 +423,36 @@ export function ResourceTable({
           </td>
 
           {/* 大小 */}
-          <td className="px-4 py-3.5 text-sm text-[var(--text-secondary)]">
+          <td className="px-4 py-2.5 text-sm text-[var(--text-secondary)]">
             {isDir ? '-' : formatFileSize(item.size)}
           </td>
 
           {/* 更新时间 */}
-          <td className="px-4 py-3.5 text-sm text-[var(--text-secondary)]">
+          <td className="px-4 py-2.5 text-sm text-[var(--text-secondary)]">
             {item.lastModified
               ? formatRelativeTime(item.lastModified)
               : '-'}
           </td>
 
+          {/* 状态 */}
+          <td className="px-4 py-2.5">
+            <span
+              className={[
+                'inline-flex min-w-[64px] items-center justify-center',
+                'rounded-full px-2 py-0.5 text-[11px] font-semibold',
+                status.tone === 'good'
+                  ? 'bg-[var(--good-soft)] text-[var(--success)]'
+                  : status.tone === 'warn'
+                    ? 'bg-[var(--warn-soft)] text-[var(--warning)]'
+                    : 'bg-[var(--bg-raised)] text-[var(--text-secondary)]',
+              ].join(' ')}
+            >
+              {t(status.labelKey)}
+            </span>
+          </td>
+
           {/* 操作 */}
-          <td className="px-4 py-3.5">
+          <td className="px-4 py-2.5">
             <RowActionMenu
               objectKey={item.key}
               canPreview={canPreview}
@@ -460,7 +479,7 @@ export function ResourceTable({
       <div
         ref={scrollRef}
         className={[
-          'rounded-xl',
+          'rounded-[8px]',
           useVirtual ? 'max-h-[70vh] overflow-auto' : '',
         ].join(' ')}
       >
@@ -515,6 +534,9 @@ export function ResourceTable({
                   dir={sortDir}
                 />
               </th>
+              <th className="w-24 px-4 py-3 text-[10px] font-bold uppercase tracking-[0.05em] text-[var(--text-secondary)]">
+                {t('bucket.columnStatus')}
+              </th>
               <th className="w-10 px-4 py-3" />
             </tr>
           </thead>
@@ -555,7 +577,7 @@ export function ResourceTable({
               {objects.length === 0 ? (
                 <tr>
                   <td
-                    colSpan={5}
+                    colSpan={6}
                     className="px-4 py-8 text-center text-sm text-[var(--text-secondary)]"
                   >
                     {t('bucket.empty')}
