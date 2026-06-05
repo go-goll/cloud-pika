@@ -90,13 +90,14 @@ export function useCancelTransferMutation() {
 }
 
 export function useSaveSettingsMutation() {
-  const qc = useQueryClient();
   const { t } = useTranslation();
   return useMutation({
     mutationFn: (settings: AppSettings) =>
       cloudApi.updateSettings(settings),
     onSuccess: () => {
-      void qc.invalidateQueries({ queryKey: ['settings'] });
+      // 不可在此 invalidate ['settings']：本地 state 已是权威，且 Wails
+      // bindings 返回 model 类实例会破坏 React Query 的 structural sharing，
+      // refetch 必得新引用 → setSettings → 再次自动保存 → 死循环。
       toast.success(t('toast.settingsSaved'));
     },
     onError: (err: Error) => {
