@@ -1,33 +1,7 @@
 package config
 
-import (
-	"flag"
-	"os"
-)
-
-// Config 定义 sidecar 服务运行配置。
+// Config 定义应用运行配置。Wails 单进程下仅需密钥加密主密钥；
+// 主密钥的来源（环境变量/默认值）由调用方（main.go resolveMasterKey）决定。
 type Config struct {
-	Host      string
-	Port      int
-	Token     string
-	DBPath    string
-	MasterKey string
-}
-
-// Load 从 flag 与环境变量加载配置。
-func Load() Config {
-	cfg := Config{}
-
-	flag.StringVar(&cfg.Host, "host", "127.0.0.1", "sidecar bind host")
-	flag.IntVar(&cfg.Port, "port", 8787, "sidecar bind port")
-	flag.StringVar(&cfg.Token, "token", "dev-token", "api bearer token")
-	flag.StringVar(&cfg.DBPath, "db", "cloud-pika.sqlite", "sqlite db path")
-	flag.Parse()
-
-	cfg.MasterKey = os.Getenv("CLOUD_PIKA_MASTER_KEY")
-	if cfg.MasterKey == "" {
-		cfg.MasterKey = "cloud-pika-default-master-key"
-	}
-
-	return cfg
+	MasterKey string // 密钥加密主密钥
 }
