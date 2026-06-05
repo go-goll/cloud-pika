@@ -1,39 +1,39 @@
-PM := $(shell if command -v npm >/dev/null 2>&1; then echo npm; elif command -v pnpm >/dev/null 2>&1; then echo pnpm; elif command -v yarn >/dev/null 2>&1; then echo yarn; fi)
+# Cloud Pika — Wails v3 构建入口
+# 实际任务定义在 Taskfile.yml（Wails 标准）；此 Makefile 仅做便捷封装。
+# 需先安装 Wails v3 CLI：
+#   go install github.com/wailsapp/wails/v3/cmd/wails3@latest
 
-.PHONY: check-pm install dev build sidecar-build sidecar-build-windows sidecar-test
+.PHONY: install dev build package test test-go test-frontend bindings doctor
 
-check-pm:
-	@if [ -z "$(PM)" ]; then \
-		echo "No package manager found. Please install npm, pnpm, or yarn."; \
-		exit 1; \
-	fi
+# 安装前端依赖
+install:
+	cd frontend && npm install
 
-install: check-pm
-	$(PM) install
+# 开发模式（热重载，启动桌面窗口 + Vite 开发服务器）
+dev:
+	wails3 dev -config ./build/config.yml
 
-dev: check-pm sidecar-build
-	@if [ ! -d node_modules ]; then \
-		echo "node_modules not found, installing dependencies..."; \
-		$(PM) install; \
-	fi
-	$(PM) run tauri:dev
+# 构建可执行二进制（bin/cloud-pika）
+build:
+	wails3 build
 
-build: check-pm sidecar-build
-	@if [ ! -d node_modules ]; then \
-		echo "node_modules not found, installing dependencies..."; \
-		$(PM) install; \
-	fi
-	$(PM) run tauri:build
+# 打包为 macOS .app（bin/cloud-pika.app）
+package:
+	wails3 package
 
-sidecar-build:
-	$(MAKE) -C sidecar build
-	mkdir -p src-tauri/binaries
-	cp sidecar/bin/cloud-pika-sidecar src-tauri/binaries/cloud-pika-sidecar
+# 重新生成前端 TS bindings
+bindings:
+	wails3 generate bindings -ts -clean=true
 
-sidecar-build-windows:
-	$(MAKE) -C sidecar build-windows
-	mkdir -p src-tauri/binaries
-	cp sidecar/bin/cloud-pika-sidecar-windows-amd64.exe src-tauri/binaries/cloud-pika-sidecar.exe
+# 运行全部测试（Go + 前端）
+test: test-go test-frontend
 
-sidecar-test:
-	$(MAKE) -C sidecar test
+test-go:
+	go test ./...
+
+test-frontend:
+	cd frontend && npm run test:run
+
+# 检查 Wails 构建环境
+doctor:
+	wails3 doctor
