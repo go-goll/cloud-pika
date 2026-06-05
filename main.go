@@ -1,6 +1,7 @@
 package main
 
 import (
+	"embed"
 	"log"
 	"os"
 	"path/filepath"
@@ -16,6 +17,11 @@ import (
 	"github.com/goll/cloud-pika/services"
 )
 
+// assets 嵌入前端构建产物，由 Wails 资源服务器提供给 webview。
+//
+//go:embed all:frontend/dist
+var assets embed.FS
+
 func main() {
 	db, err := database.Open(resolveDBPath())
 	if err != nil {
@@ -29,6 +35,12 @@ func main() {
 	app := application.New(application.Options{
 		Name:        "Cloud Pika",
 		Description: "多云对象存储管理客户端",
+		Assets: application.AssetOptions{
+			Handler: application.AssetFileServerFS(assets),
+		},
+		Mac: application.MacOptions{
+			ApplicationShouldTerminateAfterLastWindowClosed: true,
+		},
 	})
 
 	// 事件 publisher 复用 queue 已有的 publisher 接口，把传输进度转发到前端。
@@ -44,7 +56,15 @@ func main() {
 	app.RegisterService(application.NewService(services.NewSettingsService(deps)))
 	app.RegisterService(application.NewService(services.NewSystemService(app)))
 
-	app.Window.New()
+	app.Window.NewWithOptions(application.WebviewWindowOptions{
+		Title: "Cloud Pika",
+		Mac: application.MacWindow{
+			InvisibleTitleBarHeight: 50,
+			Backdrop:                application.MacBackdropTranslucent,
+			TitleBar:                application.MacTitleBarHiddenInset,
+		},
+		URL: "/",
+	})
 	tray.Setup(app)
 
 	if err := app.Run(); err != nil {
