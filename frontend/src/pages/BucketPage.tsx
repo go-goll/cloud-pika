@@ -11,6 +11,7 @@ import {
 } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useDropzone } from 'react-dropzone';
+import { Events } from '@wailsio/runtime';
 import {
   useBucketsQuery,
   useCreateFolderMutation,
@@ -782,28 +783,15 @@ export function BucketPage() {
       },
     });
 
-  // ---- Tauri事件监听 ----
+  // ---- 托盘上传事件监听 ----
   useEffect(() => {
-    if (!tauriApi.isTauriEnv()) return;
-    let disposed = false;
-    let unlisten: (() => void) | undefined;
-
-    const bind = async () => {
-      const { listen } = await import(
-        '@tauri-apps/api/event'
-      );
-      if (disposed) return;
-      unlisten = await listen<string[]>(
-        'tray-upload-files',
-        (event) => void uploadLocalFiles(event.payload),
-      );
-    };
-    void bind();
-
-    return () => {
-      disposed = true;
-      unlisten?.();
-    };
+    const off = Events.On('tray.upload', () => {
+      void (async () => {
+        const paths = await tauriApi.openFileDialog();
+        if (paths.length > 0) void uploadLocalFiles(paths);
+      })();
+    });
+    return () => off();
   }, [uploadLocalFiles]);
 
   // ---- 全局事件监听 ----

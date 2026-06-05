@@ -5,7 +5,6 @@ import {
   ChevronUp,
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { AxiosError } from 'axios';
 import { Button } from '@/components/ui/Button';
 import { Checkbox } from '@/components/ui/Checkbox';
 import { Input } from '@/components/ui/Input';
@@ -148,26 +147,9 @@ export function AccountForm({
       });
     } catch (error) {
       const fallback = t('login.connectFailed');
-      if (error instanceof AxiosError) {
-        const resp = error.response?.data as
-          | {
-              error?: string;
-              message?: string;
-              detail?: string;
-            }
-          | undefined;
-        setSubmitError(
-          resp?.message ||
-            resp?.error ||
-            resp?.detail ||
-            error.message ||
-            fallback,
-        );
-      } else if (error instanceof Error) {
-        setSubmitError(error.message || fallback);
-      } else {
-        setSubmitError(fallback);
-      }
+      const message =
+        error instanceof Error ? error.message : String(error);
+      setSubmitError(message || fallback);
     }
   };
 

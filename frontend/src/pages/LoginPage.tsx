@@ -2,7 +2,6 @@ import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Trash2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { AxiosError } from 'axios';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { Input } from '@/components/ui/Input';
@@ -99,16 +98,8 @@ export function LoginPage() {
       navigate('/bucket');
     } catch (error) {
       const fallback = t('login.connectFailed');
-      if (error instanceof AxiosError) {
-        const response = error.response?.data as
-          | { error?: string; message?: string; detail?: string }
-          | undefined;
-        setSubmitError(response?.message || response?.error || response?.detail || error.message || fallback);
-      } else if (error instanceof Error) {
-        setSubmitError(error.message || fallback);
-      } else {
-        setSubmitError(fallback);
-      }
+      const message = error instanceof Error ? error.message : String(error);
+      setSubmitError(message || fallback);
     }
   };
 
