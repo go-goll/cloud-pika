@@ -13,6 +13,12 @@ src-tauri/binaries/cloud-pika-sidecar*
 sidecar/bin/
 sidecar/.cache/
 
+# Wails build output
+/cloud-pika
+bin/
+.task/
+frontend/dist/
+
 # OS / IDE
 .DS_Store
 .idea/

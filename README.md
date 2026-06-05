@@ -8,10 +8,10 @@
 
 [English](./README.en.md) · 简体中文
 
-![Tauri](https://img.shields.io/badge/Tauri-2-24C8DB?logo=tauri&logoColor=white)
+![Wails](https://img.shields.io/badge/Wails-v3-DF0000?logo=go&logoColor=white)
 ![React](https://img.shields.io/badge/React-18-61DAFB?logo=react&logoColor=white)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript&logoColor=white)
-![Go](https://img.shields.io/badge/Go-1.23-00ADD8?logo=go&logoColor=white)
+![Go](https://img.shields.io/badge/Go-1.25-00ADD8?logo=go&logoColor=white)
 ![Version](https://img.shields.io/badge/version-0.1.0-blue)
 ![License](https://img.shields.io/badge/license-GPL--3.0-green)
 
@@ -35,7 +35,7 @@ Cloud Pika 的目标不是再做一个"能传文件的工具"，而是成为开�
 - **📦 传输队列** — 独立的传输任务中心，支持进度追踪、断点与并发控制。
 - **🔐 凭证加密** — 云厂商密钥本地加密存储，不上云、不外传。
 - **🌍 国际化** — 内置简体中文 / English，跟随系统语言并支持手动切换。
-- **♻️ 稳定可靠** — Sidecar 崩溃自愈、SSE 断线自动重连。
+- **♻️ 原生直连** — 原生 Go 后端，进程内直接调用，无需本地端口，无独立后台进程。
 
 ## ☁️ 支持的云厂商
 
@@ -54,36 +54,38 @@ Cloud Pika 的目标不是再做一个"能传文件的工具"，而是成为开�
 
 ## 🏗️ 技术架构
 
-Cloud Pika 采用 **Tauri 前端 + Go Sidecar** 的混合架构，兼顾原生桌面体验与后端生态的丰富 SDK：
+Cloud Pika 基于 **Wails v3 (alpha)** 构建为单进程桌面应用：Go 业务逻辑封装为 Wails 绑定服务，前端通过生成的类型安全 TS bindings 直接调用，无独立后台进程、无本地 HTTP 端口与 token。
 
 ```
-┌──────────────────────────────────────────────┐
-│  前端 UI  (React 18 + TypeScript + Tailwind)   │
-│  Radix UI · Zustand · TanStack Query/Virtual   │
-└───────────────────────┬──────────────────────┘
-                        │ Tauri IPC
-┌───────────────────────┴──────────────────────┐
-│  桌面外壳  (Tauri 2 / Rust)                     │
-│  窗口管理 · 系统托盘 · Sidecar 生命周期         │
-└───────────────────────┬──────────────────────┘
-                        │ HTTP + SSE (localhost)
-┌───────────────────────┴──────────────────────┐
-│  Sidecar  (Go 1.23)                            │
-│  各云厂商 SDK · 传输队列 · 凭证加密 · 本地存储  │
-└──────────────────────────────────────────────┘
+┌─────────────────────────────────────────────┐
+│  React 前端 (Vite + TS + Tailwind)           │
+│  通过 Wails 生成的 TS bindings 调用 Go 方法   │
+└─────────────────────────────────────────────┘
+               ↑ Wails bindings + 事件（进程内）
+┌─────────────────────────────────────────────┐
+│  Wails v3 应用 (Go 1.25，单进程)              │
+│  绑定服务：账号/桶/对象/传输/CDN/治理/设置/系统 │
+│  8 云厂商 SDK · SQLite · 加密 · 传输队列      │
+└─────────────────────────────────────────────┘
 ```
 
-- **前端**：React 18、Vite 6、TailwindCSS 3、Radix UI、Zustand（状态）、TanStack Query/Virtual、i18next、react-markdown、Shiki。
-- **桌面外壳**：Tauri 2（Rust），负责窗口、系统托盘，并托管 Go Sidecar 进程。
-- **Sidecar**：Go 1.23 编写的本地 HTTP 服务，封装各云厂商 SDK，通过 SSE 向前端推送传输进度等事件。
+- **前端**：React 18、Vite、TailwindCSS 3、Radix UI、Zustand（状态）、TanStack Query/Virtual、i18next、react-markdown、Shiki。
+- **Wails v3 应用**：Go 1.25 单进程桌面外壳，负责窗口、系统托盘，并将业务逻辑装配为绑定服务。
+- **绑定服务**：账号、桶、对象、传输、CDN、治理、设置、系统等服务以 Wails bindings 暴露给前端，前端经类型安全的 TS 绑定进程内直连调用。
+- **事件推送**：传输进度等通过 Wails 事件系统（`Events.On`）推送到前端，替代旧架构的 SSE。
 
 ## 🚀 快速开始
 
+> 当前处于尝鲜阶段，仅支持 **macOS**。
+
 ### 环境要求
 
-- **Node.js** ≥ 18，及 npm / pnpm / yarn 任一包管理器
-- **Go** ≥ 1.23（编译 Sidecar）
-- **Rust** 工具链（Tauri 2 要求，见 [Tauri 环境配置](https://v2.tauri.app/start/prerequisites/)）
+- **macOS**（当前唯一支持的平台）
+- **Node.js** ≥ 18，及 npm
+- **Go** ≥ 1.25
+- **Wails v3 CLI**：`go install github.com/wailsapp/wails/v3/cmd/wails3@latest`
+
+> 可执行 `make doctor`（即 `wails3 doctor`）检查 Wails 构建环境是否就绪。
 
 ### 安装依赖
 
@@ -97,55 +99,56 @@ make install
 make dev
 ```
 
-该命令会先编译 Go Sidecar，再启动 Tauri 开发窗口（前端热更新）。
+该命令运行 `wails3 dev`，启动桌面窗口并接入 Vite 热更新，Go 与前端代码改动即时生效。
 
 ### 打包构建
 
 ```bash
-make build
+make build      # 编译可执行二进制，产物为 bin/cloud-pika
+make package    # 打包为 macOS 应用，产物为 bin/cloud-pika.app
 ```
 
-构建完成后，安装包产出在 `src-tauri/target/release/bundle/` 下：
+- `make build`（即 `wails3 build`）产出 `bin/cloud-pika`。
+- `make package`（即 `wails3 package`）产出可分发的 `bin/cloud-pika.app`。
 
-- **macOS**：`bundle/dmg/cloud-pika_<版本>_<架构>.dmg`（推荐分发）及 `bundle/macos/cloud-pika.app`
-- **Windows**：先执行 `make sidecar-build-windows` 准备 Sidecar，再在 Windows 上 `make build`，产物为 `.msi` / `.exe`
-
-> 提示：`make build` 默认编译当前机器架构。Apple Silicon 构建出的包（`aarch64`）无法在 Intel Mac 上运行，反之亦然。
+> 当 Go 服务方法签名变更后，运行 `make bindings`（即 `wails3 generate bindings`）重新生成前端 TS 绑定。
 
 ### 运行测试
 
 ```bash
-make sidecar-test   # Go Sidecar 单元测试
-npm run test        # 前端测试 (Vitest)
+make test           # 运行全部测试（Go + 前端）
+make test-go        # 仅 Go 测试
+make test-frontend  # 仅前端测试 (Vitest)
 ```
 
 ## 📂 项目结构
 
 ```
 cloud-pika/
-├── src/                  # 前端 React 应用
-│   ├── pages/            # 页面：登录 / Bucket / 传输 / 设置
-│   ├── components/       # UI 组件
-│   ├── stores/           # Zustand 状态
-│   ├── i18n/             # 国际化资源（zh-CN / en）
-│   └── lib/              # 工具与 API 封装
-├── src-tauri/            # Tauri 桌面外壳 (Rust)
-│   ├── src/commands/     # Tauri 命令
-│   └── tauri.conf.json   # 应用与打包配置
-├── sidecar/              # Go Sidecar 后端
-│   ├── cmd/              # 入口
-│   └── internal/
-│       ├── storage/      # 各云厂商存储实现
-│       ├── handler/      # HTTP 路由处理
-│       ├── crypto/       # 凭证加密
-│       └── queue/        # 传输队列
+├── main.go               # Wails 应用入口（装配服务/事件/数据库/托盘）
+├── services/             # Wails 绑定服务层（账号/桶/对象/传输/CDN/治理/设置/系统）
+├── internal/             # 业务逻辑
+│   ├── storage/          # 各云厂商存储实现
+│   ├── database/         # SQLite 数据访问
+│   ├── crypto/           # 凭证加密
+│   ├── queue/            # 传输队列
+│   ├── model/            # 领域模型
+│   ├── config/           # 配置
+│   ├── events/           # 事件推送
+│   ├── system/           # 系统能力（对话框/剪贴板等）
+│   └── tray/             # 系统托盘
+├── frontend/             # React 前端
+│   ├── src/              # 页面 / 组件 / 状态 / i18n
+│   └── bindings/         # Wails 生成的 TS 绑定
+├── build/                # Wails 构建配置（darwin/ · config.yml）
 ├── docs/                 # 产品规划与设计文档
-└── Makefile              # 构建入口
+├── Taskfile.yml          # Wails 标准构建任务
+└── Makefile              # 便捷封装
 ```
 
 ## 🤝 贡献
 
-欢迎提交 Issue 与 Pull Request。提交代码前请确保通过 `make sidecar-test` 与前端测试。
+欢迎提交 Issue 与 Pull Request。提交代码前请确保通过 `make test`。
 
 ## 📄 许可证
 

@@ -8,10 +8,10 @@ Bring the storage and CDN capabilities scattered across every cloud vendor's con
 
 English · [简体中文](./README.md)
 
-![Tauri](https://img.shields.io/badge/Tauri-2-24C8DB?logo=tauri&logoColor=white)
+![Wails](https://img.shields.io/badge/Wails-v3-DF0000?logo=go&logoColor=white)
 ![React](https://img.shields.io/badge/React-18-61DAFB?logo=react&logoColor=white)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript&logoColor=white)
-![Go](https://img.shields.io/badge/Go-1.23-00ADD8?logo=go&logoColor=white)
+![Go](https://img.shields.io/badge/Go-1.25-00ADD8?logo=go&logoColor=white)
 ![Version](https://img.shields.io/badge/version-0.1.0-blue)
 ![License](https://img.shields.io/badge/license-GPL--3.0-green)
 
@@ -35,7 +35,7 @@ Its differentiation: **unified multi-cloud management × deep CDN integration ×
 - **📦 Transfer queue** — A dedicated transfer center with progress tracking and concurrency control.
 - **🔐 Encrypted credentials** — Vendor keys are encrypted and stored locally — never uploaded, never shared.
 - **🌍 i18n** — Built-in Simplified Chinese / English, follows the system locale and can be switched manually.
-- **♻️ Resilient** — Sidecar crash self-recovery and automatic SSE reconnection.
+- **♻️ Native & direct** — A native Go backend called in-process, with no local ports and no separate background process.
 
 ## ☁️ Supported Providers
 
@@ -54,36 +54,39 @@ Its differentiation: **unified multi-cloud management × deep CDN integration ×
 
 ## 🏗️ Architecture
 
-Cloud Pika combines a **Tauri frontend with a Go sidecar**, getting both a native desktop experience and the rich SDK ecosystem of the backend:
+Cloud Pika is a single-process desktop app built on **Wails v3 (alpha)**. The Go business logic is exposed as Wails binding services, which the frontend calls directly through generated, type-safe TS bindings — with no separate background process and no local HTTP port or token.
 
 ```
-┌──────────────────────────────────────────────┐
-│  Frontend UI  (React 18 + TypeScript + Tailwind) │
-│  Radix UI · Zustand · TanStack Query/Virtual    │
-└───────────────────────┬──────────────────────┘
-                        │ Tauri IPC
-┌───────────────────────┴──────────────────────┐
-│  Desktop shell  (Tauri 2 / Rust)               │
-│  Windowing · system tray · sidecar lifecycle   │
-└───────────────────────┬──────────────────────┘
-                        │ HTTP + SSE (localhost)
-┌───────────────────────┴──────────────────────┐
-│  Sidecar  (Go 1.23)                            │
-│  Vendor SDKs · transfer queue · crypto · store │
-└──────────────────────────────────────────────┘
+┌─────────────────────────────────────────────┐
+│  React frontend (Vite + TS + Tailwind)       │
+│  Calls Go methods via generated TS bindings   │
+└─────────────────────────────────────────────┘
+            ↑ Wails bindings + events (in-process)
+┌─────────────────────────────────────────────┐
+│  Wails v3 app (Go 1.25, single process)      │
+│  Services: account/bucket/object/transfer/    │
+│            CDN/governance/settings/system     │
+│  8 vendor SDKs · SQLite · crypto · queue      │
+└─────────────────────────────────────────────┘
 ```
 
-- **Frontend**: React 18, Vite 6, TailwindCSS 3, Radix UI, Zustand, TanStack Query/Virtual, i18next, react-markdown, Shiki.
-- **Desktop shell**: Tauri 2 (Rust) — handles windowing and the system tray, and supervises the Go sidecar process.
-- **Sidecar**: A local HTTP service in Go 1.23 that wraps vendor SDKs and pushes events (e.g. transfer progress) to the frontend over SSE.
+- **Frontend**: React 18, Vite, TailwindCSS 3, Radix UI, Zustand, TanStack Query/Virtual, i18next, react-markdown, Shiki.
+- **Wails v3 app**: A single-process Go 1.25 desktop shell that handles windowing and the system tray, and wires the business logic up as binding services.
+- **Binding services**: Account, bucket, object, transfer, CDN, governance, settings, and system services are exposed as Wails bindings and invoked in-process by the frontend through type-safe TS bindings.
+- **Events**: Transfer progress and similar updates are pushed to the frontend via the Wails event system (`Events.On`), replacing the old SSE channel.
 
 ## 🚀 Getting Started
 
+> This is an early-access stage and **macOS only** for now.
+
 ### Prerequisites
 
-- **Node.js** ≥ 18, with npm / pnpm / yarn
-- **Go** ≥ 1.23 (to build the sidecar)
-- **Rust** toolchain (required by Tauri 2 — see [Tauri prerequisites](https://v2.tauri.app/start/prerequisites/))
+- **macOS** (the only supported platform for now)
+- **Node.js** ≥ 18, with npm
+- **Go** ≥ 1.25
+- **Wails v3 CLI**: `go install github.com/wailsapp/wails/v3/cmd/wails3@latest`
+
+> Run `make doctor` (i.e. `wails3 doctor`) to check that the Wails build environment is ready.
 
 ### Install
 
@@ -97,55 +100,56 @@ make install
 make dev
 ```
 
-This builds the Go sidecar first, then launches the Tauri dev window with frontend hot-reload.
+This runs `wails3 dev`, launching the desktop window with Vite hot-reload — changes to both Go and frontend code take effect immediately.
 
 ### Build
 
 ```bash
-make build
+make build      # compile the executable binary, output: bin/cloud-pika
+make package    # package the macOS app, output: bin/cloud-pika.app
 ```
 
-Bundles are produced under `src-tauri/target/release/bundle/`:
+- `make build` (i.e. `wails3 build`) produces `bin/cloud-pika`.
+- `make package` (i.e. `wails3 package`) produces the distributable `bin/cloud-pika.app`.
 
-- **macOS**: `bundle/dmg/cloud-pika_<version>_<arch>.dmg` (recommended for distribution) and `bundle/macos/cloud-pika.app`
-- **Windows**: run `make sidecar-build-windows` to prepare the sidecar, then `make build` on Windows to get the `.msi` / `.exe`
-
-> Note: `make build` targets the host architecture. An Apple Silicon build (`aarch64`) won't run on Intel Macs, and vice versa.
+> After changing a Go service method signature, run `make bindings` (i.e. `wails3 generate bindings`) to regenerate the frontend TS bindings.
 
 ### Test
 
 ```bash
-make sidecar-test   # Go sidecar unit tests
-npm run test        # frontend tests (Vitest)
+make test           # run all tests (Go + frontend)
+make test-go        # Go tests only
+make test-frontend  # frontend tests only (Vitest)
 ```
 
 ## 📂 Project Layout
 
 ```
 cloud-pika/
-├── src/                  # React frontend
-│   ├── pages/            # Login / Bucket / Transfers / Settings
-│   ├── components/       # UI components
-│   ├── stores/           # Zustand state
-│   ├── i18n/             # i18n resources (zh-CN / en)
-│   └── lib/              # utilities & API client
-├── src-tauri/            # Tauri desktop shell (Rust)
-│   ├── src/commands/     # Tauri commands
-│   └── tauri.conf.json   # app & bundle config
-├── sidecar/              # Go sidecar backend
-│   ├── cmd/              # entrypoint
-│   └── internal/
-│       ├── storage/      # per-provider storage impls
-│       ├── handler/      # HTTP route handlers
-│       ├── crypto/       # credential encryption
-│       └── queue/        # transfer queue
+├── main.go               # Wails app entry (wires services/events/database/tray)
+├── services/             # Wails binding service layer (account/bucket/object/transfer/CDN/governance/settings/system)
+├── internal/             # business logic
+│   ├── storage/          # per-provider storage impls
+│   ├── database/         # SQLite data access
+│   ├── crypto/           # credential encryption
+│   ├── queue/            # transfer queue
+│   ├── model/            # domain models
+│   ├── config/           # configuration
+│   ├── events/           # event publishing
+│   ├── system/           # system capabilities (dialogs/clipboard/etc.)
+│   └── tray/             # system tray
+├── frontend/             # React frontend
+│   ├── src/              # pages / components / state / i18n
+│   └── bindings/         # Wails-generated TS bindings
+├── build/                # Wails build config (darwin/ · config.yml)
 ├── docs/                 # product & design docs
-└── Makefile              # build entrypoint
+├── Taskfile.yml          # standard Wails build tasks
+└── Makefile              # convenience wrapper
 ```
 
 ## 🤝 Contributing
 
-Issues and pull requests are welcome. Please make sure `make sidecar-test` and the frontend tests pass before submitting.
+Issues and pull requests are welcome. Please make sure `make test` passes before submitting.
 
 ## 📄 License
 
