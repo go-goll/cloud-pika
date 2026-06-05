@@ -15,7 +15,8 @@
     "types": ["vitest/globals"],
     "baseUrl": ".",
     "paths": {
-      "@/*": ["src/*"]
+      "@/*": ["src/*"],
+      "@bindings/*": ["bindings/github.com/goll/cloud-pika/*"]
     }
   },
   "include": ["src"]

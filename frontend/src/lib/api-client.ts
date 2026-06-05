@@ -1,4 +1,13 @@
-import axios from 'axios';
+import {
+  AccountService,
+  BucketService,
+  CDNService,
+  GovernanceService,
+  ObjectService,
+  SettingsService,
+  TransferService,
+} from '@bindings/services';
+import type { ProviderConfig } from '@bindings/internal/model/models';
 import type { AccountSummary, AccountUpsertPayload } from '@/types/account';
 import type {
   AppSettings,
@@ -18,216 +27,170 @@ import type {
   VersionListResult,
 } from '@/types/cloud';
 
-let baseUrl = '';
-let accessToken = '';
-
-const client = axios.create({
-  timeout: 15000,
-});
-
-client.interceptors.request.use((config) => {
-  config.baseURL = baseUrl;
-  if (accessToken) {
-    config.headers.Authorization = `Bearer ${accessToken}`;
-  }
-  return config;
-});
-
-client.interceptors.response.use(
-  (response) => response,
-  (error) => {
-    const payload = error?.response?.data as
-      | { error?: string; message?: string; detail?: string; provider?: string; stage?: string }
-      | undefined;
-    if (payload) {
-      const detail = payload.detail?.trim();
-      const baseMessage = payload.message?.trim() || payload.error?.trim();
-      const providerStage =
-        payload.provider && payload.stage ? ` (${payload.provider}/${payload.stage})` : '';
-      if (baseMessage) {
-        error.message = detail ? `${baseMessage}${providerStage}: ${detail}` : `${baseMessage}${providerStage}`;
-      }
-    }
-    return Promise.reject(error);
-  },
-);
-
-export function setApiRuntime(url: string, token: string): void {
-  baseUrl = url;
-  accessToken = token;
+/**
+ * setApiRuntime 在 Wails 架构下不再需要 HTTP 地址与令牌，
+ * 保留空实现以兼容历史调用方。
+ */
+export function setApiRuntime(_url: string, _token: string): void {
+  // no-op：Wails 进程内调用无需 baseURL/token。
 }
 
+/**
+ * cloudApi 对外形状保持不变（方法名、签名、返回类型同 @/types），
+ * 内部实现由 axios+SSE 改为 Wails service bindings。
+ */
 export const cloudApi = {
-  async health(): Promise<{ status: string }> {
-    const { data } = await client.get('/healthz');
-    return data;
-  },
   async listAccounts(): Promise<AccountSummary[]> {
-    const { data } = await client.get('/api/v1/accounts');
-    return data.accounts;
+    const accounts = await AccountService.List();
+    return accounts as unknown as AccountSummary[];
   },
   async createAccount(payload: AccountUpsertPayload): Promise<AccountSummary> {
-    const { data } = await client.post('/api/v1/accounts', payload);
-    return data.account;
+    const account = await AccountService.Create(payload as unknown as ProviderConfig);
+    return account as unknown as AccountSummary;
   },
   async updateAccount(id: string, payload: AccountUpsertPayload): Promise<AccountSummary> {
-    const { data } = await client.put(`/api/v1/accounts/${id}`, payload);
-    return data.account;
+    const account = await AccountService.Update(id, payload as unknown as ProviderConfig);
+    return account as unknown as AccountSummary;
   },
   async deleteAccount(id: string): Promise<void> {
-    await client.delete(`/api/v1/accounts/${id}`);
+    await AccountService.Delete(id);
   },
   async getBuckets(provider: string, accountId: string): Promise<BucketInfo[]> {
-    const { data } = await client.get(`/api/v1/providers/${provider}/buckets`, {
-      params: { accountId },
-    });
-    return data.buckets;
+    const buckets = await BucketService.ListBuckets(provider, accountId);
+    return buckets as unknown as BucketInfo[];
   },
   async listObjects(params: ListParams & { accountId: string }): Promise<ListResult> {
-    const { data } = await client.get(`/api/v1/buckets/${params.bucket}/objects`, { params });
-    return data.result;
+    const result = await BucketService.ListObjects(params as unknown as Parameters<typeof BucketService.ListObjects>[0]);
+    return result as unknown as ListResult;
   },
   async uploadObject(payload: UploadParams): Promise<{ transferId: string }> {
-    const { data } = await client.post('/api/v1/objects/upload', payload);
-    return data;
+    return ObjectService.Upload(payload as unknown as Parameters<typeof ObjectService.Upload>[0]);
   },
   async fetchObject(payload: UploadParams): Promise<{ transferId: string }> {
-    const { data } = await client.post('/api/v1/objects/fetch', payload);
-    return data;
+    return ObjectService.Fetch(payload as unknown as Parameters<typeof ObjectService.Fetch>[0]);
   },
   async downloadObject(payload: DownloadParams): Promise<{ transferId: string }> {
-    const { data } = await client.post('/api/v1/objects/download', payload);
-    return data;
+    return ObjectService.Download(payload as unknown as Parameters<typeof ObjectService.Download>[0]);
   },
   async renameObject(payload: RenameParams): Promise<void> {
-    await client.post('/api/v1/objects/rename', payload);
+    await ObjectService.Rename(payload as unknown as Parameters<typeof ObjectService.Rename>[0]);
   },
   async createFolder(payload: {
     accountId: string; bucket: string; key: string;
   }): Promise<void> {
-    await client.post('/api/v1/objects/folder', payload);
+    await ObjectService.CreateFolder(payload.accountId, payload.bucket, payload.key);
   },
   async deleteObjects(payload: { accountId: string; bucket: string; keys: string[] }): Promise<void> {
-    await client.delete('/api/v1/objects', { data: payload });
+    await ObjectService.Delete(payload.accountId, payload.bucket, payload.keys);
   },
   async generateURL(payload: SignedURLParams): Promise<{ url: string }> {
-    const { data } = await client.post('/api/v1/objects/url', payload);
-    return data;
+    return ObjectService.GenerateURL(payload as unknown as Parameters<typeof ObjectService.GenerateURL>[0]);
   },
   async refreshCDN(payload: { accountId: string; urls: string[] }): Promise<void> {
-    await client.post('/api/v1/cdn/refresh', payload);
+    await CDNService.Refresh(payload.accountId, payload.urls);
   },
   async prefetchCDN(payload: { accountId: string; urls: string[] }): Promise<void> {
-    await client.post('/api/v1/cdn/prefetch', payload);
+    await CDNService.Prefetch(payload.accountId, payload.urls);
   },
   async getCDNQuota(accountId: string): Promise<CDNQuota | null> {
-    try {
-      const { data } = await client.get('/api/v1/cdn/quota', { params: { accountId } });
-      return data.quota;
-    } catch {
-      return null;
-    }
+    const quota = await CDNService.Quota(accountId);
+    return quota as unknown as CDNQuota | null;
   },
   async listDomains(accountId: string, bucket: string): Promise<string[]> {
-    const { data } = await client.get(`/api/v1/buckets/${bucket}/domains`, {
-      params: { accountId },
-    });
-    return data.domains;
+    return BucketService.ListDomains(accountId, bucket);
   },
   async listTransfers(): Promise<TransferTask[]> {
-    const { data } = await client.get('/api/v1/transfers');
-    return data.transfers;
+    const transfers = await TransferService.List();
+    return transfers as unknown as TransferTask[];
   },
   async cancelTransfer(id: string): Promise<void> {
-    await client.post(`/api/v1/transfers/${id}/cancel`);
+    await TransferService.Cancel(id);
   },
   async getSettings(): Promise<AppSettings> {
-    const { data } = await client.get('/api/v1/settings');
-    return data.settings;
+    const settings = await SettingsService.Get();
+    return settings as unknown as AppSettings;
   },
   async updateSettings(settings: AppSettings): Promise<AppSettings> {
-    const { data } = await client.put('/api/v1/settings', settings);
-    return data.settings;
+    const updated = await SettingsService.Update(
+      settings as unknown as Parameters<typeof SettingsService.Update>[0],
+    );
+    return updated as unknown as AppSettings;
   },
   async getProviderFeatures(accountId: string): Promise<string[]> {
-    const { data } = await client.get(`/api/v1/accounts/${accountId}/features`);
-    return data.features;
+    return SettingsService.ProviderFeatures(accountId);
   },
 
   // ---- Bucket 治理 API ----
 
   async getLifecycle(accountId: string, bucket: string): Promise<LifecycleRule[]> {
-    const { data } = await client.get(
-      `/api/v1/buckets/${bucket}/lifecycle`, { params: { accountId } },
-    );
-    return data.rules ?? [];
+    const rules = await GovernanceService.GetLifecycle(accountId, bucket);
+    return (rules ?? []) as unknown as LifecycleRule[];
   },
   async putLifecycle(
     payload: { accountId: string; bucket: string; rules: LifecycleRule[] },
   ): Promise<void> {
-    await client.put(`/api/v1/buckets/${payload.bucket}/lifecycle`, payload);
+    await GovernanceService.PutLifecycle(
+      payload as unknown as Parameters<typeof GovernanceService.PutLifecycle>[0],
+    );
   },
   async deleteLifecycle(
     payload: { accountId: string; bucket: string },
   ): Promise<void> {
-    await client.delete(`/api/v1/buckets/${payload.bucket}/lifecycle`, { data: payload });
+    await GovernanceService.DeleteLifecycle(payload.accountId, payload.bucket);
   },
 
   async getCORS(accountId: string, bucket: string): Promise<CORSRule[]> {
-    const { data } = await client.get(
-      `/api/v1/buckets/${bucket}/cors`, { params: { accountId } },
-    );
-    return data.rules ?? [];
+    const rules = await GovernanceService.GetCORS(accountId, bucket);
+    return (rules ?? []) as unknown as CORSRule[];
   },
   async putCORS(
     payload: { accountId: string; bucket: string; rules: CORSRule[] },
   ): Promise<void> {
-    await client.put(`/api/v1/buckets/${payload.bucket}/cors`, payload);
+    await GovernanceService.PutCORS(
+      payload as unknown as Parameters<typeof GovernanceService.PutCORS>[0],
+    );
   },
 
   async getReferer(accountId: string, bucket: string): Promise<RefererConfig> {
-    const { data } = await client.get(
-      `/api/v1/buckets/${bucket}/referer`, { params: { accountId } },
-    );
-    return data.config;
+    const config = await GovernanceService.GetReferer(accountId, bucket);
+    return config as unknown as RefererConfig;
   },
   async putReferer(
     payload: { accountId: string; bucket: string; config: RefererConfig },
   ): Promise<void> {
-    await client.put(`/api/v1/buckets/${payload.bucket}/referer`, payload);
+    await GovernanceService.PutReferer(
+      payload as unknown as Parameters<typeof GovernanceService.PutReferer>[0],
+    );
   },
 
   async getEncryption(accountId: string, bucket: string): Promise<EncryptionConfig> {
-    const { data } = await client.get(
-      `/api/v1/buckets/${bucket}/encryption`, { params: { accountId } },
-    );
-    return data.config;
+    const config = await GovernanceService.GetEncryption(accountId, bucket);
+    return config as unknown as EncryptionConfig;
   },
   async putEncryption(
     payload: { accountId: string; bucket: string; config: EncryptionConfig },
   ): Promise<void> {
-    await client.put(`/api/v1/buckets/${payload.bucket}/encryption`, payload);
+    await GovernanceService.PutEncryption(
+      payload as unknown as Parameters<typeof GovernanceService.PutEncryption>[0],
+    );
   },
 
   async getVersioning(accountId: string, bucket: string): Promise<string> {
-    const { data } = await client.get(
-      `/api/v1/buckets/${bucket}/versioning`, { params: { accountId } },
-    );
-    return data.status ?? 'Suspended';
+    const status = await GovernanceService.GetVersioning(accountId, bucket);
+    return status || 'Suspended';
   },
   async putVersioning(
     payload: { accountId: string; bucket: string; status: string },
   ): Promise<void> {
-    await client.put(`/api/v1/buckets/${payload.bucket}/versioning`, payload);
+    await GovernanceService.PutVersioning(payload.accountId, payload.bucket, payload.status);
   },
   async listObjectVersions(params: {
     accountId: string; bucket: string; prefix?: string;
     keyMarker?: string; versionMarker?: string; limit?: number;
   }): Promise<VersionListResult> {
-    const { data } = await client.get(
-      `/api/v1/buckets/${params.bucket}/objects/versions`,
-      { params },
+    const result = await GovernanceService.ListObjectVersions(
+      params as unknown as Parameters<typeof GovernanceService.ListObjectVersions>[0],
     );
-    return data.result;
+    return result as unknown as VersionListResult;
   },
 };

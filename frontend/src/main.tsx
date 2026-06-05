@@ -6,9 +6,8 @@ import App from './App';
 import './index.css';
 import '@/i18n/i18n';
 import { useSidecarBootstrap } from '@/hooks/useSidecarBootstrap';
-import { useSidecarWatchdog } from '@/hooks/useSidecarWatchdog';
 import { useThemeSync } from '@/hooks/useThemeSync';
-import { useSSE } from '@/hooks/useSSE';
+import { useWailsEvents } from '@/hooks/useWailsEvents';
 import { BootstrapScreen } from '@/components/BootstrapScreen';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { Toaster } from '@/components/ui/Toaster';
@@ -20,8 +19,7 @@ const queryClient = new QueryClient();
 function Bootstrap() {
   const { loading, error } = useSidecarBootstrap();
   useThemeSync();
-  useSSE();
-  useSidecarWatchdog();
+  useWailsEvents();
 
   if (loading || error) {
     return (

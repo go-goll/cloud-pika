@@ -1,47 +1,26 @@
-export interface SidecarStartResponse {
-  port: number;
-  token: string;
-  pid: number;
-}
+import { SystemService } from '@bindings/services';
 
-export interface HealthResponse {
-  status: string;
-}
-
-const isTauriEnv = () => '__TAURI_INTERNALS__' in window;
-
-async function invoke<T>(cmd: string, args: Record<string, unknown> = {}): Promise<T> {
-  if (!isTauriEnv()) {
-    throw new Error('当前不在 Tauri 环境中');
-  }
-  const mod = await import('@tauri-apps/api/core');
-  return mod.invoke<T>(cmd, args);
-}
-
+/**
+ * tauriApi 保留对外形状，内部实现由 Tauri invoke 改为 Wails SystemService。
+ * isTauriEnv 恒返回 true（始终运行于桌面环境），以兼容历史调用方。
+ */
 export const tauriApi = {
-  isTauriEnv,
-  startSidecar(): Promise<SidecarStartResponse> {
-    return invoke<SidecarStartResponse>('start_sidecar');
-  },
-  restartSidecar(): Promise<SidecarStartResponse> {
-    return invoke<SidecarStartResponse>('restart_sidecar');
-  },
-  sidecarHealth(): Promise<HealthResponse> {
-    return invoke<HealthResponse>('get_sidecar_health');
+  isTauriEnv(): boolean {
+    return true;
   },
   openFileDialog(): Promise<string[]> {
-    return invoke<string[]>('open_file_dialog');
+    return SystemService.OpenFileDialog();
   },
   openFolderDialog(): Promise<string[]> {
-    return invoke<string[]>('open_folder_dialog');
+    return SystemService.OpenFolderDialog();
   },
   readClipboardImage(): Promise<string> {
-    return invoke<string>('read_clipboard_image');
+    return SystemService.ReadClipboardImage();
   },
   writeClipboardText(text: string): Promise<void> {
-    return invoke<void>('write_clipboard_text', { text });
+    return SystemService.WriteClipboardText(text);
   },
   trayUploadSelect(): Promise<string[]> {
-    return invoke<string[]>('tray_upload_select');
+    return SystemService.OpenFileDialog();
   },
 };

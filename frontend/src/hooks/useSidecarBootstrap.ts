@@ -1,10 +1,14 @@
 import { useEffect, useState } from 'react';
-import { tauriApi } from '@/lib/tauri';
-import { cloudApi, setApiRuntime } from '@/lib/api-client';
+import { cloudApi } from '@/lib/api-client';
 import { useAppStore } from '@/stores/useAppStore';
 import i18n from 'i18next';
 import { normalizeLocale } from '@/lib/locale';
 
+/**
+ * useSidecarBootstrap 在 Wails 架构下不再启动 sidecar，
+ * 仅初始化 runtime 标记并加载应用设置（语言/主题）。
+ * 保留返回结构与名称以兼容调用方。
+ */
 export function useSidecarBootstrap(): { loading: boolean; error: string } {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -17,56 +21,20 @@ export function useSidecarBootstrap(): { loading: boolean; error: string } {
     let active = true;
     const bootstrap = async () => {
       try {
-        if (!tauriApi.isTauriEnv()) {
-          const fallback = {
-            sidecarUrl: 'http://127.0.0.1:8787',
-            token: 'dev-token',
-            ready: true,
-          };
-          setRuntime(fallback);
-          setApiRuntime(fallback.sidecarUrl, fallback.token);
-          try {
-            const settings = await cloudApi.getSettings();
-            if (active) {
-              setSettings(settings);
+        setRuntime({ sidecarUrl: '', token: '', ready: true });
 
-              const resolvedLocale = normalizeLocale(settings.language);
-              setLocale(resolvedLocale);
-              void i18n.changeLanguage(resolvedLocale);
+        const settings = await cloudApi.getSettings();
+        if (active) {
+          setSettings(settings);
 
-              setThemeMode(settings.theme);
-            }
-          } catch {
-            // Keep app bootstrapped with local defaults if settings endpoint is unavailable.
-          }
-          return;
-        }
+          const resolvedLocale = normalizeLocale(settings.language);
+          setLocale(resolvedLocale);
+          void i18n.changeLanguage(resolvedLocale);
 
-        const result = await tauriApi.startSidecar();
-        const runtime = {
-          sidecarUrl: `http://127.0.0.1:${result.port}`,
-          token: result.token,
-          ready: true,
-        };
-        setRuntime(runtime);
-        setApiRuntime(runtime.sidecarUrl, runtime.token);
-
-        try {
-          const settings = await cloudApi.getSettings();
-          if (active) {
-            setSettings(settings);
-
-            const resolvedLocale = normalizeLocale(settings.language);
-            setLocale(resolvedLocale);
-            void i18n.changeLanguage(resolvedLocale);
-
-            setThemeMode(settings.theme);
-          }
-        } catch {
-          // Keep app bootstrapped with local defaults if settings endpoint is unavailable.
+          setThemeMode(settings.theme);
         }
       } catch (err) {
-        const msg = err instanceof Error ? err.message : '启动 sidecar 失败';
+        const msg = err instanceof Error ? err.message : '加载应用设置失败';
         if (active) {
           setError(msg);
         }
