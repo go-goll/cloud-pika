@@ -23,6 +23,7 @@
   --warning:        #d27816;
   --good-soft:      rgba(14, 159, 110, 0.12);
   --warn-soft:      rgba(210, 120, 22, 0.14);
+  --danger-soft:    rgba(210, 74, 63, 0.12);
   --radius:         8px;
 
   /* ── 阴影层级（克制，无主色辉光） ── */
@@ -75,6 +76,7 @@
   --warning:        #ffbd5a;
   --good-soft:      rgba(79, 209, 139, 0.18);
   --warn-soft:      rgba(255, 189, 90, 0.20);
+  --danger-soft:    rgba(255, 107, 94, 0.18);
 
   /* 深色阴影（克制，无主色辉光） */
   --shadow-xs:  0 1px 2px rgba(0,0,0,0.30);
@@ -322,13 +324,35 @@ select:focus-visible {
   to { transform: scale(1); }
 }
 
-/* ── 文件类型图标颜色 ── */
+/* ── 文件类型图标配色 ──
+   单一数据源：前景色为唯一定义，图标底色由 color-mix 自前景色派生，
+   组件层只引用 icon-* / icon-bg-* 语义类，不再出现硬编码色阶。 */
 
-.icon-folder { color: #007AFF; }
-.icon-image  { color: #059669; }
-.icon-video  { color: #7c3aed; }
-.icon-audio  { color: #d97706; }
-.icon-code   { color: #0891b2; }
-.icon-archive { color: #9333ea; }
-.icon-text   { color: #6b7280; }
-.icon-file   { color: var(--text-secondary); }
+:root {
+  --icon-folder: #007aff;
+  --icon-image: #059669;
+  --icon-video: #7c3aed;
+  --icon-audio: #d97706;
+  --icon-code: #0891b2;
+  --icon-archive: #9333ea;
+  --icon-text: #6b7280;
+  --icon-file: var(--text-secondary);
+}
+
+.icon-folder  { color: var(--icon-folder); }
+.icon-image   { color: var(--icon-image); }
+.icon-video   { color: var(--icon-video); }
+.icon-audio   { color: var(--icon-audio); }
+.icon-code    { color: var(--icon-code); }
+.icon-archive { color: var(--icon-archive); }
+.icon-text    { color: var(--icon-text); }
+.icon-file    { color: var(--icon-file); }
+
+.icon-bg-folder  { background-color: color-mix(in srgb, var(--icon-folder) 12%, transparent); }
+.icon-bg-image   { background-color: color-mix(in srgb, var(--icon-image) 12%, transparent); }
+.icon-bg-video   { background-color: color-mix(in srgb, var(--icon-video) 12%, transparent); }
+.icon-bg-audio   { background-color: color-mix(in srgb, var(--icon-audio) 12%, transparent); }
+.icon-bg-code    { background-color: color-mix(in srgb, var(--icon-code) 12%, transparent); }
+.icon-bg-archive { background-color: color-mix(in srgb, var(--icon-archive) 12%, transparent); }
+.icon-bg-text    { background-color: color-mix(in srgb, var(--icon-text) 12%, transparent); }
+.icon-bg-file    { background-color: var(--bg-raised); }

@@ -50,7 +50,7 @@ export function AudioPreview({
         onClick={(e) => e.stopPropagation()}
       >
         {/* 音乐图标 */}
-        <div className="flex h-32 w-32 items-center justify-center rounded-3xl bg-white/10 backdrop-blur-md">
+        <div className="flex h-32 w-32 items-center justify-center rounded-[10px] bg-white/10">
           <Music size={48} className="text-white/60" />
         </div>
 

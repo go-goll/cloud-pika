@@ -114,7 +114,7 @@ export function AccountDialog({
                 />
               ))
             ) : (
-              <p className="rounded-xl bg-[var(--bg-raised)] px-3 py-5 text-center text-sm text-[var(--text-secondary)]">
+              <p className="rounded-[10px] bg-[var(--bg-raised)] px-3 py-5 text-center text-sm text-[var(--text-secondary)]">
                 {t('login.empty')}
               </p>
             )}

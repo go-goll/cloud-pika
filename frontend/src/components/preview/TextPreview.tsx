@@ -106,7 +106,7 @@ export function TextPreview({
             <div className="h-8 w-8 animate-spin rounded-full border-2 border-white/20 border-t-white/80" />
           </div>
         ) : error ? (
-          <div className="flex items-center justify-center h-64 text-red-400 text-sm">
+          <div className="flex items-center justify-center h-64 text-[var(--danger)] text-sm">
             {error}
           </div>
         ) : (

@@ -22,7 +22,7 @@ const DropdownMenuContent = forwardRef<
       sideOffset={sideOffset}
       className={[
         'z-50 min-w-[180px] overflow-hidden',
-        'rounded-xl bg-[var(--bg-card)]',
+        'rounded-[10px] bg-[var(--bg-card)]',
         'p-1 border border-[var(--border)] shadow-lg',
         'animate-[fadeIn_150ms_ease-out]',
         className ?? '',

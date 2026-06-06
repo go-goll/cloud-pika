@@ -79,19 +79,19 @@ function ThumbnailArea({
       onDoubleClick={onDoubleClick}
     >
       {isImage && loading ? (
-        <Skeleton className="h-20 w-20 rounded-xl" />
+        <Skeleton className="h-20 w-20 rounded-[10px]" />
       ) : isImage && url && !error && !imgError ? (
         <img
           src={url}
           alt={objectKey}
           loading="lazy"
-          className="h-20 w-20 rounded-xl object-cover"
+          className="h-20 w-20 rounded-[10px] object-cover"
           onError={() => setImgError(true)}
         />
       ) : (
         <div
           className={[
-            'flex h-14 w-14 items-center justify-center rounded-xl',
+            'flex h-14 w-14 items-center justify-center rounded-[10px]',
             getIconBg(objectKey, mimeType),
           ].join(' ')}
         >
@@ -170,7 +170,7 @@ function CardActionMenu({
         <div
           className={[
             'absolute right-0 top-7 z-30',
-            'min-w-[140px] rounded-xl p-1',
+            'min-w-[140px] rounded-[10px] p-1',
             'bg-surface-container-lowest',
             'ghost-border shadow-ambient',
           ].join(' ')}

@@ -18,7 +18,6 @@ import {
   Search,
   Settings2,
   UploadCloud,
-  X,
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
@@ -100,39 +99,17 @@ export function BucketToolbar({
         'justify-between gap-3',
       ].join(' ')}
     >
-      {/* 左侧：搜索框 */}
-      <div className="relative max-w-[360px] flex-1">
-        <Search
-          size={16}
-          className={[
-            'pointer-events-none absolute left-3',
-            'top-1/2 -translate-y-1/2',
-            'text-[var(--text-secondary)]',
-          ].join(' ')}
-        />
+      {/* 左侧：搜索框（复用 Input 内置图标与清除按钮） */}
+      <div className="max-w-[360px] flex-1">
         <Input
+          icon={<Search size={16} />}
+          clearable
+          onClear={handleClear}
           value={inputValue}
-          onChange={(e) =>
-            handleInputChange(e.target.value)
-          }
+          onChange={(e) => handleInputChange(e.target.value)}
           placeholder={t('common.search')}
-          className="rounded-[8px] bg-[var(--bg-raised)] pl-9 pr-8"
+          className="bg-[var(--bg-raised)]"
         />
-        {inputValue ? (
-          <button
-            type="button"
-            onClick={handleClear}
-            className={[
-              'absolute right-2.5 top-1/2',
-              '-translate-y-1/2',
-              'text-[var(--text-secondary)]',
-              'hover:text-[var(--text)]',
-              'transition-colors',
-            ].join(' ')}
-          >
-            <X size={14} />
-          </button>
-        ) : null}
       </div>
 
       {/* 右侧：操作按钮 */}

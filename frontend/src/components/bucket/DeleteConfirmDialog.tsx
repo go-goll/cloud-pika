@@ -30,12 +30,12 @@ export function DeleteConfirmDialog({
       onOpenChange={(v) => !v && onCancel()}
     >
       <Dialog.Portal>
-        <Dialog.Overlay className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm" />
+        <Dialog.Overlay className="fixed inset-0 z-50 bg-[rgba(13,17,21,0.4)]" />
         <Dialog.Content
           className={[
             'fixed left-1/2 top-1/2 z-50 w-[420px]',
             '-translate-x-1/2 -translate-y-1/2',
-            'rounded-xl bg-surface-container-lowest',
+            'rounded-[10px] bg-surface-container-lowest',
             'p-6 ghost-border shadow-ambient',
           ].join(' ')}
         >

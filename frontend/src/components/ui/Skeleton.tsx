@@ -8,7 +8,7 @@ export function Skeleton({
   return (
     <div
       className={[
-        'animate-pulse rounded-xl',
+        'animate-pulse rounded-[10px]',
         'bg-surface-container-low',
         className ?? '',
       ].join(' ')}

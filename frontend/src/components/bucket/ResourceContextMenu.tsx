@@ -33,8 +33,8 @@ const dangerItemClassName = [
   'flex items-center gap-3 px-4 py-2.5 text-sm',
   'cursor-pointer rounded-lg outline-none',
   'text-[var(--danger)]',
-  'hover:bg-red-50 dark:hover:bg-red-950/30',
-  'data-[highlighted]:bg-red-50 dark:data-[highlighted]:bg-red-950/30',
+  'hover:bg-[var(--danger-soft)]',
+  'data-[highlighted]:bg-[var(--danger-soft)]',
   'transition-colors',
 ].join(' ');
 
@@ -92,7 +92,7 @@ export function ResourceContextMenu({
         <ContextMenu.Content
           className={[
             'min-w-[200px] p-1.5',
-            'rounded-xl',
+            'rounded-[10px]',
             'bg-[var(--bg-card)]',
             'border border-[var(--border)]',
             'shadow-lg z-50',

@@ -65,7 +65,7 @@ func main() {
 		Frameless: true,
 		Mac: application.MacWindow{
 			InvisibleTitleBarHeight: 50,
-			Backdrop:                application.MacBackdropTranslucent,
+			Backdrop:                application.MacBackdropNormal, // 不透明画布，工作台不使用毛玻璃
 			TitleBar:                application.MacTitleBarHiddenInset,
 		},
 		URL: "/",

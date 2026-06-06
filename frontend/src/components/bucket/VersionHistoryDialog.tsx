@@ -63,12 +63,12 @@ export function VersionHistoryDialog({
   return (
     <Dialog.Root open={open} onOpenChange={(v) => !v && onClose()}>
       <Dialog.Portal>
-        <Dialog.Overlay className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm" />
+        <Dialog.Overlay className="fixed inset-0 z-50 bg-[rgba(13,17,21,0.4)]" />
         <Dialog.Content
           className={[
             'fixed left-1/2 top-1/2 z-50 w-[520px] max-h-[70vh]',
             '-translate-x-1/2 -translate-y-1/2',
-            'rounded-2xl bg-surface-container-lowest',
+            'rounded-[8px] bg-surface-container-lowest',
             'p-6 ghost-border shadow-ambient',
             'flex flex-col',
           ].join(' ')}
@@ -99,7 +99,7 @@ export function VersionHistoryDialog({
                 <div
                   key={v.versionId}
                   className={[
-                    'flex items-center gap-3 rounded-xl p-3',
+                    'flex items-center gap-3 rounded-[10px] p-3',
                     'ghost-border transition-colors',
                     'hover:bg-[var(--bg-raised)]',
                   ].join(' ')}

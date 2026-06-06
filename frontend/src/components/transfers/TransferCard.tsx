@@ -67,7 +67,7 @@ export function TransferCard({
   return (
     <div
       className={[
-        'rounded-xl bg-[var(--bg)] p-4',
+        'rounded-[10px] bg-[var(--bg)] p-4',
         'transition-all duration-300',
       ].join(' ')}
     >
@@ -186,7 +186,7 @@ export function TransferCard({
           {/* 失败时显示错误信息 */}
           {task.status === 'failed' &&
           task.errorMessage ? (
-            <p className="mt-2 text-xs text-red-500">
+            <p className="mt-2 text-xs text-[var(--danger)]">
               {task.errorMessage}
             </p>
           ) : null}

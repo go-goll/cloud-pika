@@ -353,7 +353,7 @@ export function AccountForm({
 
       {/* 高级配置区域 */}
       {showEndpoint || showRegion || showInternal ? (
-        <div className="space-y-5 rounded-xl border border-[var(--border)] bg-[var(--bg-raised)] p-4">
+        <div className="space-y-5 rounded-[10px] border border-[var(--border)] bg-[var(--bg-raised)] p-4">
           <div className="grid gap-5 sm:grid-cols-2">
             {showEndpoint ? (
               <label className="text-sm">
@@ -416,7 +416,7 @@ export function AccountForm({
       {/* 提交按钮 */}
       <div className="pt-2">
         <Button
-          className="w-full rounded-xl py-3"
+          className="w-full rounded-[10px] py-3"
           size="lg"
           onClick={() => void handleSubmit()}
           disabled={isPending}

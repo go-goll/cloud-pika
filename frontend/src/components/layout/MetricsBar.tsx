@@ -46,7 +46,7 @@ export function MetricsBar() {
   ];
 
   return (
-    <section className="grid gap-3 min-[1180px]:grid-cols-4 sm:grid-cols-2">
+    <section className="grid gap-3 min-[1200px]:grid-cols-4 sm:grid-cols-2">
       {metrics.map((metric) => {
         const Icon = metric.icon;
         return (
@@ -68,7 +68,6 @@ export function MetricsBar() {
           </div>
         );
       })}
-      <span className="sr-only">{activeBucket || buckets.length}</span>
     </section>
   );
 }

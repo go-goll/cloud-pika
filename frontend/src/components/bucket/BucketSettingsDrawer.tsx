@@ -124,7 +124,7 @@ export function BucketSettingsDrawer({
                 type="button"
                 className={[
                   'flex h-8 w-8 items-center justify-center',
-                  'rounded-xl',
+                  'rounded-[10px]',
                   'text-[var(--text-secondary)]',
                   'hover:bg-[var(--bg-raised)]',
                   'hover:text-[var(--text)]',
@@ -155,7 +155,7 @@ export function BucketSettingsDrawer({
                     onClick={() => setActiveTab(td.key)}
                     className={[
                       'flex items-center gap-1.5 px-3 py-2',
-                      'text-xs rounded-xl transition-all duration-200',
+                      'text-xs rounded-[10px] transition-all duration-200',
                       activeTab === td.key
                         ? 'bg-[var(--bg-raised)] font-semibold text-[var(--text)] shadow-sm'
                         : 'text-[var(--text-secondary)] hover:text-[var(--text)]',
@@ -269,7 +269,7 @@ function LifecycleTab({ accountId, bucket }: TabProps) {
               key={rule.id}
               className={[
                 'flex items-center justify-between',
-                'rounded-xl bg-[var(--bg-raised)] px-4 py-3',
+                'rounded-[10px] bg-[var(--bg-raised)] px-4 py-3',
                 'transition-all duration-250',
                 'hover:shadow-lg hover:scale-[1.01]',
               ].join(' ')}
@@ -283,7 +283,7 @@ function LifecycleTab({ accountId, bucket }: TabProps) {
                     className={[
                       'inline-block rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide',
                       rule.enabled
-                        ? 'bg-emerald-500/10 text-emerald-600'
+                        ? 'bg-[var(--good-soft)] text-[var(--success)]'
                         : 'bg-[var(--bg-raised)] text-[var(--text-secondary)]',
                     ].join(' ')}
                   >
@@ -325,7 +325,7 @@ function LifecycleTab({ accountId, bucket }: TabProps) {
 
       {/* 添加表单 */}
       {showForm ? (
-        <div className="space-y-3 rounded-xl bg-[var(--bg-raised)] p-4">
+        <div className="space-y-3 rounded-[10px] bg-[var(--bg-raised)] p-4">
           <div>
             <label className="mb-1 block text-xs font-bold uppercase tracking-wide text-[var(--text-secondary)]">
               {t('bucketSettings.prefix')}
@@ -425,7 +425,7 @@ function CORSTab({ accountId, bucket }: TabProps) {
         <div
           key={idx}
           className={[
-            'rounded-xl bg-[var(--bg-raised)] px-4 py-3',
+            'rounded-[10px] bg-[var(--bg-raised)] px-4 py-3',
             'transition-all duration-250',
             'hover:shadow-lg hover:scale-[1.01]',
           ].join(' ')}
@@ -464,7 +464,7 @@ function CORSTab({ accountId, bucket }: TabProps) {
       ))}
 
       {showForm ? (
-        <div className="space-y-3 rounded-xl bg-[var(--bg-raised)] p-4">
+        <div className="space-y-3 rounded-[10px] bg-[var(--bg-raised)] p-4">
           <div>
             <label className="mb-1 block text-xs font-bold uppercase tracking-wide text-[var(--text-secondary)]">
               {t('bucketSettings.allowedOrigins')}
@@ -577,7 +577,7 @@ function RefererTab({ accountId, bucket }: TabProps) {
   return (
     <div className="space-y-4">
       {/* 启用开关 */}
-      <div className="flex items-center justify-between rounded-xl bg-[var(--bg-raised)] px-4 py-3">
+      <div className="flex items-center justify-between rounded-[10px] bg-[var(--bg-raised)] px-4 py-3">
         <span className="text-sm text-[var(--text)]">{t('bucketSettings.enabled')}</span>
         <button
           type="button"
@@ -597,7 +597,7 @@ function RefererTab({ accountId, bucket }: TabProps) {
       </div>
 
       {/* 类型选择 */}
-      <div className="rounded-xl bg-[var(--bg-raised)] px-4 py-3">
+      <div className="rounded-[10px] bg-[var(--bg-raised)] px-4 py-3">
         <label className="mb-2 block text-xs font-bold uppercase tracking-wide text-[var(--text-secondary)]">
           {t('bucketSettings.whitelist')} / {t('bucketSettings.blacklist')}
         </label>
@@ -621,7 +621,7 @@ function RefererTab({ accountId, bucket }: TabProps) {
       </div>
 
       {/* 允许空 Referer */}
-      <div className="flex items-center justify-between rounded-xl bg-[var(--bg-raised)] px-4 py-3">
+      <div className="flex items-center justify-between rounded-[10px] bg-[var(--bg-raised)] px-4 py-3">
         <span className="text-sm text-[var(--text)]">{t('bucketSettings.allowEmpty')}</span>
         <button
           type="button"
@@ -648,7 +648,7 @@ function RefererTab({ accountId, bucket }: TabProps) {
         {config.referers.map((ref, idx) => (
           <div
             key={idx}
-            className="flex items-center justify-between rounded-xl bg-[var(--bg-raised)] px-4 py-2"
+            className="flex items-center justify-between rounded-[10px] bg-[var(--bg-raised)] px-4 py-2"
           >
             <span className="text-sm text-[var(--text)]">{ref}</span>
             <Button
@@ -708,7 +708,7 @@ function EncryptionTab({ accountId, bucket }: TabProps) {
   return (
     <div className="space-y-4">
       {/* 启用开关 */}
-      <div className="flex items-center justify-between rounded-xl bg-[var(--bg-raised)] px-4 py-3">
+      <div className="flex items-center justify-between rounded-[10px] bg-[var(--bg-raised)] px-4 py-3">
         <span className="text-sm text-[var(--text)]">{t('bucketSettings.enabled')}</span>
         <button
           type="button"
@@ -728,7 +728,7 @@ function EncryptionTab({ accountId, bucket }: TabProps) {
       </div>
 
       {/* 算法选择 */}
-      <div className="rounded-xl bg-[var(--bg-raised)] px-4 py-3">
+      <div className="rounded-[10px] bg-[var(--bg-raised)] px-4 py-3">
         <label className="mb-2 block text-xs font-bold uppercase tracking-wide text-[var(--text-secondary)]">
           {t('bucketSettings.algorithm')}
         </label>
@@ -767,7 +767,7 @@ function VersioningTab({ accountId, bucket }: TabProps) {
   return (
     <div className="space-y-4">
       {/* 状态显示 */}
-      <div className="flex items-center justify-between rounded-xl bg-[var(--bg-raised)] px-4 py-3">
+      <div className="flex items-center justify-between rounded-[10px] bg-[var(--bg-raised)] px-4 py-3">
         <div className="space-y-1">
           <span className="text-sm font-medium text-[var(--text)]">
             {t('bucketSettings.versioning')}

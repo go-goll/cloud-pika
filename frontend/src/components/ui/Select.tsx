@@ -62,11 +62,11 @@ const SelectTrigger = forwardRef<
   <SelectPrimitive.Trigger
     ref={ref}
     className={[
-      'inline-flex h-10 w-full items-center justify-between',
+      'inline-flex h-8 w-full items-center justify-between',
       'rounded-[8px] border border-[var(--border)]',
       'bg-[var(--bg)] px-3 text-sm text-[var(--text)]',
       'placeholder:text-[var(--text-secondary)]',
-      'hover:border-[var(--accent)]/30',
+      'hover:border-[var(--accent)]',
       'focus:border-[var(--accent)]',
       'focus:shadow-[0_0_0_3px_var(--accent-soft)]',
       'focus:outline-none transition-all',

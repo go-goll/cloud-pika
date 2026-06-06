@@ -44,7 +44,7 @@ export function BucketSidebar({
   return (
     <div
       className={[
-        'w-[220px] shrink-0 rounded-xl',
+        'w-[220px] shrink-0 rounded-[10px]',
         'bg-[var(--bg)] ghost-border',
         'p-3 overflow-y-auto',
         'shadow-[var(--shadow-xs)]',

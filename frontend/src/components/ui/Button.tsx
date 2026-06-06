@@ -23,7 +23,7 @@ const variantClasses: Record<Variant, string> = {
   ].join(' '),
   secondary: [
     'bg-[var(--bg-raised)] text-[var(--accent)]',
-    'hover:bg-[var(--bg-raised)]/80',
+    'hover:bg-[var(--accent-soft)]',
     'active:scale-[0.97]',
   ].join(' '),
   ghost: [

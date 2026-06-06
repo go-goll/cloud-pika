@@ -14,7 +14,7 @@ export function SettingsGroup({
   return (
     <div
       className={[
-        'rounded-2xl',
+        'rounded-[8px]',
         'bg-[var(--bg-card)]',
         'border border-[var(--border)]',
         'p-6',

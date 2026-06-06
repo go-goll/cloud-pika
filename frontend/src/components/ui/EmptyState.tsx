@@ -44,7 +44,7 @@ export function EmptyState({
         <div
           className={[
             'mb-4 flex items-center justify-center',
-            'w-24 h-24 rounded-3xl bg-[var(--accent-soft)]',
+            'w-24 h-24 rounded-[10px] bg-[var(--accent-soft)]',
             'text-[var(--accent)]',
           ].join(' ')}
         >

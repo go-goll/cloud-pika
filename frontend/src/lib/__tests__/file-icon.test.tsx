@@ -60,35 +60,35 @@ describe('getFileIcon', () => {
 });
 
 describe('getIconBg', () => {
-  it('returns blue bg for folder', () => {
-    expect(getIconBg('photos/')).toBe('bg-blue-500/10');
+  it('returns folder bg token for folder', () => {
+    expect(getIconBg('photos/')).toBe('icon-bg-folder');
   });
 
-  it('returns emerald bg for image', () => {
-    expect(getIconBg('photo.jpg')).toBe('bg-emerald-500/10');
+  it('returns image bg token for image', () => {
+    expect(getIconBg('photo.jpg')).toBe('icon-bg-image');
   });
 
-  it('returns purple bg for video', () => {
-    expect(getIconBg('clip.mp4', 'video/mp4')).toBe('bg-purple-500/10');
+  it('returns video bg token for video', () => {
+    expect(getIconBg('clip.mp4', 'video/mp4')).toBe('icon-bg-video');
   });
 
-  it('returns amber bg for audio', () => {
-    expect(getIconBg('song.mp3', 'audio/mpeg')).toBe('bg-amber-500/10');
+  it('returns audio bg token for audio', () => {
+    expect(getIconBg('song.mp3', 'audio/mpeg')).toBe('icon-bg-audio');
   });
 
-  it('returns gray bg for text', () => {
-    expect(getIconBg('readme.txt', 'text/plain')).toBe('bg-gray-500/10');
+  it('returns text bg token for text', () => {
+    expect(getIconBg('readme.txt', 'text/plain')).toBe('icon-bg-text');
   });
 
-  it('returns violet bg for archive', () => {
-    expect(getIconBg('file.zip')).toBe('bg-violet-500/10');
+  it('returns archive bg token for archive', () => {
+    expect(getIconBg('file.zip')).toBe('icon-bg-archive');
   });
 
-  it('returns cyan bg for code', () => {
-    expect(getIconBg('app.tsx')).toBe('bg-cyan-500/10');
+  it('returns code bg token for code', () => {
+    expect(getIconBg('app.tsx')).toBe('icon-bg-code');
   });
 
-  it('returns gray bg for unknown', () => {
-    expect(getIconBg('data.bin')).toBe('bg-gray-500/10');
+  it('returns file bg token for unknown', () => {
+    expect(getIconBg('data.bin')).toBe('icon-bg-file');
   });
 });

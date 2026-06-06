@@ -31,11 +31,11 @@ const statConfig: Record<
   },
   completed: {
     icon: CheckCircle,
-    colorClass: 'text-green-500',
+    colorClass: 'text-[var(--success)]',
   },
   failed: {
     icon: XCircle,
-    colorClass: 'text-red-500',
+    colorClass: 'text-[var(--danger)]',
   },
   canceled: {
     icon: XCircle,
@@ -88,7 +88,7 @@ export function TransferStats({
               key={item.key}
               className={[
                 'flex items-center gap-3',
-                'rounded-2xl bg-[var(--bg-card)]',
+                'rounded-[10px] bg-[var(--bg-card)]',
                 'border border-[var(--border)] p-5',
               ].join(' ')}
             >

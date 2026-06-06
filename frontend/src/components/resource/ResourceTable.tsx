@@ -310,7 +310,25 @@ export function ResourceTable({
     'text-[10px] uppercase tracking-[0.05em]',
     'text-[var(--text-secondary)] font-bold',
     'hover:text-[var(--text)] transition-colors',
+    'focus-visible:text-[var(--text)] focus:outline-none',
   ].join(' ');
+
+  /** 计算列表头的 aria-sort 值，供屏幕阅读器播报当前排序状态 */
+  const ariaSortFor = (
+    col: SortColumn,
+  ): 'ascending' | 'descending' | 'none' => {
+    if (sortCol !== col) return 'none';
+    return sortDir === 'asc' ? 'ascending' : 'descending';
+  };
+
+  /** 表头键盘交互：Enter / 空格触发排序，保证键盘可达 */
+  const onHeaderKey =
+    (col: SortColumn) => (e: React.KeyboardEvent<HTMLTableCellElement>) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        toggleSort(col);
+      }
+    };
 
   /** 渲染单行 */
   const renderRow = (
@@ -503,7 +521,10 @@ export function ResourceTable({
               </th>
               <th
                 className={thClass}
+                aria-sort={ariaSortFor('key')}
+                tabIndex={0}
                 onClick={() => toggleSort('key')}
+                onKeyDown={onHeaderKey('key')}
               >
                 {t('bucket.columnKey')}
                 <SortIcon
@@ -514,7 +535,10 @@ export function ResourceTable({
               </th>
               <th
                 className={thClass}
+                aria-sort={ariaSortFor('size')}
+                tabIndex={0}
                 onClick={() => toggleSort('size')}
+                onKeyDown={onHeaderKey('size')}
               >
                 {t('bucket.columnSize')}
                 <SortIcon
@@ -525,7 +549,10 @@ export function ResourceTable({
               </th>
               <th
                 className={thClass}
+                aria-sort={ariaSortFor('lastModified')}
+                tabIndex={0}
                 onClick={() => toggleSort('lastModified')}
+                onKeyDown={onHeaderKey('lastModified')}
               >
                 {t('bucket.columnUpdated')}
                 <SortIcon

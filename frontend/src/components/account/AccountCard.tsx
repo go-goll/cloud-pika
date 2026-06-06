@@ -40,7 +40,7 @@ export function AccountCard({
         }}
         className={[
           'group flex items-center gap-3',
-          'rounded-xl border border-[var(--border)] p-4',
+          'rounded-[10px] border border-[var(--border)] p-4',
           'tonal-hover cursor-pointer',
           'transition-all duration-200',
         ].join(' ')}
@@ -74,7 +74,7 @@ export function AccountCard({
             e.stopPropagation();
             setConfirmOpen(true);
           }}
-          className="shrink-0 opacity-0 group-hover:opacity-100 flex h-7 w-7 items-center justify-center rounded-lg text-[var(--text-secondary)] hover:bg-red-50 hover:text-[var(--danger)] transition-all"
+          className="shrink-0 opacity-0 group-hover:opacity-100 flex h-7 w-7 items-center justify-center rounded-lg text-[var(--text-secondary)] hover:bg-[var(--danger-soft)] hover:text-[var(--danger)] transition-all"
         >
           <Trash2 size={14} />
         </button>

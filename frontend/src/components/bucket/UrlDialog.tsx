@@ -147,12 +147,12 @@ export function UrlDialog({
       }}
     >
       <Dialog.Portal>
-        <Dialog.Overlay className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm" />
+        <Dialog.Overlay className="fixed inset-0 z-50 bg-[rgba(13,17,21,0.4)]" />
         <Dialog.Content
           className={[
             'fixed left-1/2 top-1/2 z-50 w-[480px]',
             '-translate-x-1/2 -translate-y-1/2',
-            'rounded-xl bg-surface-container-lowest',
+            'rounded-[10px] bg-surface-container-lowest',
             'p-6 ghost-border shadow-ambient',
           ].join(' ')}
         >
@@ -209,7 +209,7 @@ export function UrlDialog({
                 className="flex-1 font-mono text-xs"
               />
               {loading ? (
-                <div className="absolute inset-0 flex items-center justify-center bg-surface-container-lowest/80 rounded-xl">
+                <div className="absolute inset-0 flex items-center justify-center bg-surface-container-lowest/80 rounded-[10px]">
                   <Loader2
                     size={16}
                     className="animate-spin text-primary"

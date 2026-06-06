@@ -43,15 +43,15 @@ export function getFileIcon(key: string, mimeType?: string, size = 28) {
   return <File size={size} className="icon-file" />;
 }
 
-/** 文件类型对应的图标容器背景色 */
+/** 文件类型对应的图标容器底色语义类（颜色集中在 index.css 的 icon-bg-* 令牌） */
 export function getIconBg(key: string, mimeType?: string): string {
-  if (key.endsWith('/')) return 'bg-blue-500/10';
-  if (isImageKey(key) || mimeType?.startsWith('image/')) return 'bg-emerald-500/10';
-  if (mimeType?.startsWith('video/')) return 'bg-purple-500/10';
-  if (mimeType?.startsWith('audio/')) return 'bg-amber-500/10';
-  if (mimeType?.startsWith('text/')) return 'bg-gray-500/10';
+  if (key.endsWith('/')) return 'icon-bg-folder';
+  if (isImageKey(key) || mimeType?.startsWith('image/')) return 'icon-bg-image';
+  if (mimeType?.startsWith('video/')) return 'icon-bg-video';
+  if (mimeType?.startsWith('audio/')) return 'icon-bg-audio';
+  if (mimeType?.startsWith('text/')) return 'icon-bg-text';
   const ext = getExtension(key);
-  if (ARCHIVE_EXTS.has(ext)) return 'bg-violet-500/10';
-  if (CODE_EXTS.has(ext)) return 'bg-cyan-500/10';
-  return 'bg-gray-500/10';
+  if (ARCHIVE_EXTS.has(ext)) return 'icon-bg-archive';
+  if (CODE_EXTS.has(ext)) return 'icon-bg-code';
+  return 'icon-bg-file';
 }
