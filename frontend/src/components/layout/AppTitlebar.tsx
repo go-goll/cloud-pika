@@ -29,7 +29,6 @@ import { useAppStore } from '@/stores/useAppStore';
 
 const pageTitleMap: Record<string, string> = {
   '/bucket': 'nav.explorer',
-  '/designs': 'nav.designs',
   '/shared': 'nav.shared',
   '/starred': 'nav.starred',
   '/trash': 'nav.trash',
@@ -61,10 +60,10 @@ export function AppTitlebar() {
   const setSettings = useAppStore((s) => s.setSettings);
 
   useEffect(() => {
-    if (accounts.length === 0 && !pathname.startsWith('/designs')) {
+    if (accounts.length === 0) {
       setAccountDialogOpen(true);
     }
-  }, [accounts.length, pathname, setAccountDialogOpen]);
+  }, [accounts.length, setAccountDialogOpen]);
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {

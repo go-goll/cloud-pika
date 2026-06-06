@@ -5,7 +5,6 @@ import {
   ChevronRight,
   Database,
   FolderOpen,
-  Palette,
   Upload,
   User,
 } from 'lucide-react';
@@ -17,7 +16,6 @@ import { useBucketStore } from '@/stores/useBucketStore';
 /** 导航菜单项配置（仅保留已实现的路由） */
 const navItems = [
   { to: '/bucket', icon: FolderOpen, key: 'nav.explorer' },
-  { to: '/designs', icon: Palette, key: 'nav.designs' },
 ];
 
 /** 侧边栏展开宽度 */

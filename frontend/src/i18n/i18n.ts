@@ -9,7 +9,6 @@ const resources = {
       nav: {
         accounts: '账户',
         explorer: '文件浏览',
-        designs: 'UI 方案',
         transfer: '传输任务',
         settings: '设置',
         upload: '上传文件',
@@ -311,7 +310,6 @@ const resources = {
       nav: {
         accounts: 'Accounts',
         explorer: 'Explorer',
-        designs: 'UI Concepts',
         transfer: 'Transfers',
         settings: 'Settings',
         upload: 'Upload File',

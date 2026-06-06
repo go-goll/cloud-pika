@@ -6,7 +6,6 @@ import {
 } from 'react-router-dom';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { BucketPage } from '@/pages/BucketPage';
-import { DesignShowcasePage } from '@/pages/DesignShowcasePage';
 
 import { useAccountsQuery } from '@/hooks/useCloudApi';
 import { useAccountStore } from '@/stores/useAccountStore';
@@ -39,7 +38,6 @@ export default function App() {
           >
             <Routes>
               <Route path="/bucket" element={<BucketPage />} />
-              <Route path="/designs" element={<DesignShowcasePage />} />
 
               <Route
                 path="*"
