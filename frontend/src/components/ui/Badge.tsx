@@ -19,8 +19,8 @@ const variantClasses: Record<BadgeVariant, string> = {
   default: 'bg-[var(--accent-soft)] text-[var(--accent)]',
   success: 'bg-success/10 text-success',
   warning: [
-    'bg-[color-mix(in_srgb,#f59e0b_18%,transparent)]',
-    'text-[#f59e0b]',
+    'bg-[color-mix(in_srgb,var(--warning)_18%,transparent)]',
+    'text-[var(--warning)]',
   ].join(' '),
   danger: 'bg-danger/10 text-danger',
   muted: 'bg-[var(--bg-raised)] text-[var(--text-secondary)]',

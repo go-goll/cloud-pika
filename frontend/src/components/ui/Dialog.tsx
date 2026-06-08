@@ -60,13 +60,14 @@ const DialogContent = forwardRef<
       {children}
       {/* 右上角关闭按钮 */}
       <DialogPrimitive.Close
+        aria-label="Close"
         className={[
-          'absolute right-4 top-4 rounded-lg',
+          'absolute right-4 top-4 rounded-[8px]',
           'p-1.5 text-[var(--text-secondary)]',
           'hover:bg-[var(--bg-raised)]',
           'hover:text-[var(--text)]',
           'transition-all duration-150',
-          'active:scale-95',
+          'active:scale-90',
         ].join(' ')}
       >
         <X className="h-4 w-4" />

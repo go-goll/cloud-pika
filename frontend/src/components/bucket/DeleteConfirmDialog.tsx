@@ -15,6 +15,17 @@ interface DeleteConfirmDialogProps {
   onCancel: () => void;
 }
 
+/** 从对象 key 提取展示用文件名，保留目录的尾部斜杠。 */
+function displayName(key: string): string {
+  const isDir = key.endsWith('/');
+  const trimmed = isDir ? key.slice(0, -1) : key;
+  const base = trimmed.split('/').pop() ?? trimmed;
+  return isDir ? `${base}/` : base;
+}
+
+/** 批量删除时最多逐项列出的文件数，超出仅显示总数。 */
+const MAX_LISTED = 5;
+
 export function DeleteConfirmDialog({
   open,
   keys,
@@ -35,7 +46,7 @@ export function DeleteConfirmDialog({
           className={[
             'fixed left-1/2 top-1/2 z-50 w-[420px]',
             '-translate-x-1/2 -translate-y-1/2',
-            'rounded-[10px] bg-surface-container-lowest',
+            'rounded-[8px] bg-surface-container-lowest',
             'p-6 ghost-border shadow-ambient',
           ].join(' ')}
         >
@@ -52,14 +63,30 @@ export function DeleteConfirmDialog({
           <div className="mt-3 text-sm text-on-surface-variant">
             <p>{t('bucket.deleteWarning')}</p>
             {isBatch ? (
-              <p className="mt-2 font-medium text-on-surface">
-                {t('bucket.deleteCount', {
-                  count: keys.length,
-                })}
-              </p>
+              <>
+                <p className="mt-2 font-medium text-on-surface">
+                  {t('bucket.deleteCount', { count: keys.length })}
+                </p>
+                {keys.length <= MAX_LISTED ? (
+                  <ul className="mt-2 space-y-1">
+                    {keys.map((key) => (
+                      <li
+                        key={key}
+                        title={key}
+                        className="truncate font-mono text-xs text-on-surface-variant"
+                      >
+                        {displayName(key)}
+                      </li>
+                    ))}
+                  </ul>
+                ) : null}
+              </>
             ) : (
-              <p className="mt-2 truncate font-mono text-xs text-on-surface">
-                {keys[0]}
+              <p
+                className="mt-2 truncate font-mono text-xs text-on-surface"
+                title={keys[0]}
+              >
+                {displayName(keys[0] ?? '')}
               </p>
             )}
           </div>
@@ -69,6 +96,7 @@ export function DeleteConfirmDialog({
             <Button
               variant="secondary"
               onClick={onCancel}
+              autoFocus
             >
               {t('common.cancel')}
             </Button>

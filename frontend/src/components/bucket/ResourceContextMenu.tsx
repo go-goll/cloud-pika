@@ -22,16 +22,16 @@ import {
 /** 菜单项样式 */
 const itemClassName = [
   'flex items-center gap-3 px-4 py-2.5 text-sm',
-  'cursor-pointer rounded-lg outline-none',
+  'cursor-pointer rounded-[8px] outline-none',
   'text-[var(--text)]',
-  'hover:bg-[rgba(234,239,242,0.4)]',
-  'data-[highlighted]:bg-[rgba(234,239,242,0.4)]',
+  'hover:bg-[var(--bg-raised)]',
+  'data-[highlighted]:bg-[var(--bg-raised)]',
   'transition-colors',
 ].join(' ');
 
 const dangerItemClassName = [
   'flex items-center gap-3 px-4 py-2.5 text-sm',
-  'cursor-pointer rounded-lg outline-none',
+  'cursor-pointer rounded-[8px] outline-none',
   'text-[var(--danger)]',
   'hover:bg-[var(--danger-soft)]',
   'data-[highlighted]:bg-[var(--danger-soft)]',
@@ -92,7 +92,7 @@ export function ResourceContextMenu({
         <ContextMenu.Content
           className={[
             'min-w-[200px] p-1.5',
-            'rounded-[10px]',
+            'rounded-[8px]',
             'bg-[var(--bg-card)]',
             'border border-[var(--border)]',
             'shadow-lg z-50',

@@ -77,7 +77,7 @@ export function TransferCard({
         <div
           className={[
             'flex h-10 w-10 shrink-0 items-center',
-            'justify-center rounded-lg',
+            'justify-center rounded-[8px]',
             'bg-[var(--accent)]/10 text-[var(--accent)]',
           ].join(' ')}
         >

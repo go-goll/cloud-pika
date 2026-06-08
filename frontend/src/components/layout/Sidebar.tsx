@@ -156,7 +156,7 @@ export function Sidebar({
                 type="button"
                 onClick={() => setActiveBucket(bucket.name)}
                 className={[
-                  'flex w-full items-center gap-2 rounded-lg pl-10 py-2 text-sm transition-all',
+                  'flex w-full items-center gap-2 rounded-[8px] pl-10 py-2 text-sm transition-all',
                   isActive
                     ? 'text-[var(--accent)] font-medium'
                     : 'text-[var(--text-secondary)] hover:bg-[rgba(234,239,242,0.4)] dark:hover:bg-[rgba(255,255,255,0.06)] hover:text-[var(--text)]',

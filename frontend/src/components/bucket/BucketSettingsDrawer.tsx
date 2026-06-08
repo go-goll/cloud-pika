@@ -122,9 +122,10 @@ export function BucketSettingsDrawer({
             <Dialog.Close asChild>
               <button
                 type="button"
+                aria-label={t('common.close')}
                 className={[
                   'flex h-8 w-8 items-center justify-center',
-                  'rounded-[10px]',
+                  'rounded-[8px]',
                   'text-[var(--text-secondary)]',
                   'hover:bg-[var(--bg-raised)]',
                   'hover:text-[var(--text)]',
@@ -155,7 +156,7 @@ export function BucketSettingsDrawer({
                     onClick={() => setActiveTab(td.key)}
                     className={[
                       'flex items-center gap-1.5 px-3 py-2',
-                      'text-xs rounded-[10px] transition-all duration-200',
+                      'text-xs rounded-[8px] transition-all duration-200',
                       activeTab === td.key
                         ? 'bg-[var(--bg-raised)] font-semibold text-[var(--text)] shadow-sm'
                         : 'text-[var(--text-secondary)] hover:text-[var(--text)]',
@@ -270,8 +271,8 @@ function LifecycleTab({ accountId, bucket }: TabProps) {
               className={[
                 'flex items-center justify-between',
                 'rounded-[10px] bg-[var(--bg-raised)] px-4 py-3',
-                'transition-all duration-250',
-                'hover:shadow-lg hover:scale-[1.01]',
+                'transition-colors duration-200',
+                'hover:bg-[var(--bg-card)]',
               ].join(' ')}
             >
               <div className="min-w-0 flex-1 space-y-1">
@@ -426,8 +427,8 @@ function CORSTab({ accountId, bucket }: TabProps) {
           key={idx}
           className={[
             'rounded-[10px] bg-[var(--bg-raised)] px-4 py-3',
-            'transition-all duration-250',
-            'hover:shadow-lg hover:scale-[1.01]',
+            'transition-colors duration-200',
+            'hover:bg-[var(--bg-card)]',
           ].join(' ')}
         >
           <div className="flex items-start justify-between">
@@ -608,7 +609,7 @@ function RefererTab({ accountId, bucket }: TabProps) {
               type="button"
               onClick={() => save({ ...config, type: v })}
               className={[
-                'flex-1 rounded-lg py-2 text-xs font-medium transition-all duration-150',
+                'flex-1 rounded-[8px] py-2 text-xs font-medium transition-all duration-150',
                 config.type === v
                   ? 'bg-[var(--accent)] text-white'
                   : 'bg-[var(--bg)] text-[var(--text-secondary)] hover:text-[var(--text)]',

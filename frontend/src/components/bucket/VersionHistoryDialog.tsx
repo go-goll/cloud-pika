@@ -127,7 +127,7 @@ export function VersionHistoryDialog({
                     <Button
                       variant="ghost"
                       iconOnly
-                      className="shrink-0 rounded-lg"
+                      className="shrink-0 rounded-[8px]"
                       onClick={() => onDownload(v.key, v.versionId)}
                     >
                       <Download size={14} />

@@ -29,7 +29,7 @@ interface ImagePreviewProps {
 const navBtnClass = [
   'absolute top-1/2 -translate-y-1/2',
   'flex h-12 w-12 items-center justify-center',
-  'rounded-full bg-white/10 backdrop-blur-sm text-white',
+  'rounded-full bg-white/15 text-white',
   'hover:bg-white/20 transition-all duration-200 active:scale-90',
 ].join(' ');
 
@@ -140,7 +140,7 @@ export function ImagePreview({
         <img
           src={imageUrl}
           alt={fileName}
-          className="max-w-[85vw] max-h-[80vh] rounded-2xl object-contain shadow-2xl transition-transform duration-200"
+          className="max-w-[85vw] max-h-[80vh] rounded-[8px] object-contain shadow-2xl transition-transform duration-200"
           style={{
             transform: `scale(${scale}) rotate(${rotation}deg)`,
           }}
@@ -156,7 +156,7 @@ export function ImagePreview({
 
       {/* 底部工具栏 */}
       <div
-        className="mt-4 flex items-center gap-1 rounded-full bg-white/10 backdrop-blur-md px-3 py-1.5"
+        className="mt-4 flex items-center gap-1 rounded-full bg-black/55 px-3 py-1.5"
         onClick={(e) => e.stopPropagation()}
       >
         <button type="button" onClick={zoomOut} className={toolBtnClass} title="Zoom out (-)">

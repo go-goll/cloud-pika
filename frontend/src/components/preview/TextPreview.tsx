@@ -95,7 +95,7 @@ export function TextPreview({
 
       {/* 内容区域 */}
       <div
-        className="relative w-[85vw] max-h-[80vh] overflow-auto rounded-2xl bg-[#1e1e2e] shadow-2xl"
+        className="relative w-[85vw] max-h-[80vh] overflow-auto rounded-[8px] bg-[#1e1e2e] shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
         {loading ? (
@@ -133,7 +133,7 @@ export function TextPreview({
 
       {/* 底部文件名 pill */}
       <p
-        className="mt-4 rounded-full px-5 py-2.5 bg-white/10 backdrop-blur-md text-sm text-white/80 max-w-[80vw] truncate"
+        className="mt-4 rounded-full px-5 py-2.5 bg-black/55 text-sm text-white/80 max-w-[80vw] truncate"
         title={fileName}
         onClick={(e) => e.stopPropagation()}
       >

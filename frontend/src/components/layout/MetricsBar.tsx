@@ -1,4 +1,4 @@
-import { Activity, CheckCircle2, Database, HardDrive } from 'lucide-react';
+import { Activity, Database } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { deriveMetrics } from '@/lib/metrics';
 import { useBucketStore } from '@/stores/useBucketStore';
@@ -6,20 +6,15 @@ import { useTransferStore } from '@/stores/useTransferStore';
 
 export function MetricsBar() {
   const { t } = useTranslation();
-  const buckets = useBucketStore((s) => s.buckets);
   const objects = useBucketStore((s) => s.objects);
-  const activeBucket = useBucketStore((s) => s.activeBucket);
   const transfers = useTransferStore((s) => s.transfers);
-  const bucket = buckets.find((item) => item.name === activeBucket);
 
   const activeTransfers = transfers.filter((item) =>
     ['queued', 'running'].includes(item.status),
   ).length;
   const metricsView = deriveMetrics({
-    bucket,
     objectsLoaded: objects.length,
     activeTransfers,
-    hasCDN: false,
   });
 
   const metrics = [
@@ -29,16 +24,6 @@ export function MetricsBar() {
       icon: Database,
     },
     {
-      label: t('metrics.storage'),
-      value: metricsView.storage,
-      icon: HardDrive,
-    },
-    {
-      label: t('metrics.cdn'),
-      value: metricsView.cdn,
-      icon: CheckCircle2,
-    },
-    {
       label: t('metrics.queue'),
       value: metricsView.queue,
       icon: Activity,
@@ -46,7 +31,7 @@ export function MetricsBar() {
   ];
 
   return (
-    <section className="grid gap-3 min-[1200px]:grid-cols-4 sm:grid-cols-2">
+    <section className="grid gap-3 sm:grid-cols-2">
       {metrics.map((metric) => {
         const Icon = metric.icon;
         return (

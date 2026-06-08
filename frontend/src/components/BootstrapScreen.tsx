@@ -19,7 +19,7 @@ export function BootstrapScreen({
   const { t } = useTranslation();
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-[var(--bg)]">
+    <div className="flex h-full items-center justify-center bg-[var(--bg)]">
       <div className="flex flex-col items-center text-center">
         {/* Logo */}
         <div className="rounded-[8px] bg-[var(--bg-card)] shadow-md p-3">

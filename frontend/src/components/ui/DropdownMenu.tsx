@@ -22,7 +22,7 @@ const DropdownMenuContent = forwardRef<
       sideOffset={sideOffset}
       className={[
         'z-50 min-w-[180px] overflow-hidden',
-        'rounded-[10px] bg-[var(--bg-card)]',
+        'rounded-[8px] bg-[var(--bg-card)]',
         'p-1 border border-[var(--border)] shadow-lg',
         'animate-[fadeIn_150ms_ease-out]',
         className ?? '',
@@ -50,7 +50,7 @@ const DropdownMenuItem = forwardRef<
     ref={ref}
     className={[
       'flex cursor-pointer select-none items-center',
-      'rounded-lg px-3 py-2 text-sm',
+      'rounded-[8px] px-3 py-2 text-sm',
       'outline-none transition-colors',
       danger
         ? 'text-danger focus:bg-danger/10'

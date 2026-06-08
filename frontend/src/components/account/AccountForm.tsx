@@ -199,7 +199,7 @@ export function AccountForm({
             onClick={onBack}
             className={[
               'flex h-8 w-8 items-center justify-center',
-              'rounded-lg text-[var(--text-secondary)]',
+              'rounded-[8px] text-[var(--text-secondary)]',
               'hover:bg-[var(--bg-raised)]',
               'transition-colors',
             ].join(' ')}

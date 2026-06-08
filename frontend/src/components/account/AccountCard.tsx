@@ -49,7 +49,7 @@ export function AccountCard({
         <div
           className={[
             'flex h-10 w-10 shrink-0 items-center',
-            'justify-center rounded-lg',
+            'justify-center rounded-[8px]',
             'bg-[var(--accent-soft)]',
             'text-sm font-bold text-[var(--accent)]',
           ].join(' ')}
@@ -74,7 +74,7 @@ export function AccountCard({
             e.stopPropagation();
             setConfirmOpen(true);
           }}
-          className="shrink-0 opacity-0 group-hover:opacity-100 flex h-7 w-7 items-center justify-center rounded-lg text-[var(--text-secondary)] hover:bg-[var(--danger-soft)] hover:text-[var(--danger)] transition-all"
+          className="shrink-0 opacity-0 group-hover:opacity-100 flex h-7 w-7 items-center justify-center rounded-[8px] text-[var(--text-secondary)] hover:bg-[var(--danger-soft)] hover:text-[var(--danger)] transition-all"
         >
           <Trash2 size={14} />
         </button>

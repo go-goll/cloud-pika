@@ -54,6 +54,7 @@ import {
   extractFileName,
   formatCopyUrl,
 } from '@/lib/format';
+import { collectDownloadTargets } from '@/lib/download';
 import { toast } from '@/lib/toast';
 
 export function BucketPage() {
@@ -331,28 +332,72 @@ export function BucketPage() {
     }
   }, [uploadLocalFiles]);
 
-  const onDownload = useCallback(
-    async (key: string) => {
+  // 递归列举某前缀下的全部对象 key（分页合并），用于目录下载展开。
+  const listAllUnder = useCallback(
+    async (prefix: string): Promise<string[]> => {
+      const keys: string[] = [];
+      let marker = '';
+      // 安全上限，避免异常情况下无限翻页。
+      for (let page = 0; page < 1000; page++) {
+        const res = await cloudApi.listObjects({
+          accountId: activeAccountId,
+          bucket: activeBucket,
+          prefix,
+          delimiter: '',
+          limit: 1000,
+          marker,
+        });
+        for (const item of res.items) keys.push(item.key);
+        if (!res.truncated || !res.marker) break;
+        marker = res.marker;
+      }
+      return keys;
+    },
+    [activeAccountId, activeBucket],
+  );
+
+  // 将选中项（含目录）下载到本地目录，目录会被递归展开并保留层级。
+  const downloadToFolder = useCallback(
+    async (keys: string[]) => {
       if (
         !tauriApi.isTauriEnv()
         || !activeAccountId
         || !activeBucket
+        || keys.length === 0
       ) {
         return;
       }
       const selected = await tauriApi.openFolderDialog();
       const folder = selected[0];
       if (!folder) return;
-      const fileName = key.split('/').pop() || key;
-      const localPath = `${folder}/${fileName}`;
-      await queueDownload({
-        accountId: activeAccountId,
-        bucket: activeBucket,
-        key,
-        localPath,
-      });
+      try {
+        const targets = await collectDownloadTargets(
+          keys, folder, listAllUnder,
+        );
+        if (targets.length === 0) {
+          toast.info(t('bucket.emptyFolder'));
+          return;
+        }
+        for (const target of targets) {
+          await queueDownload({
+            accountId: activeAccountId,
+            bucket: activeBucket,
+            key: target.key,
+            localPath: target.localPath,
+          });
+        }
+      } catch (err) {
+        toast.error(
+          (err as Error).message || t('toast.operationFailed'),
+        );
+      }
     },
-    [activeAccountId, activeBucket, queueDownload],
+    [activeAccountId, activeBucket, listAllUnder, queueDownload, t],
+  );
+
+  const onDownload = useCallback(
+    (key: string) => downloadToFolder([key]),
+    [downloadToFolder],
   );
 
   /** 新建文件夹 */
@@ -638,35 +683,10 @@ export function BucketPage() {
     setDeleteTargets(Array.from(selectedKeys));
   }, [selectedKeys]);
 
-  const handleBatchDownload = useCallback(async () => {
-    if (
-      !tauriApi.isTauriEnv()
-      || !activeAccountId || !activeBucket
-    ) {
-      return;
-    }
-    try {
-      const selected = await tauriApi.openFolderDialog();
-      const folder = selected[0];
-      if (!folder) return;
-      for (const key of selectedKeys) {
-        const fileName = key.split('/').pop() || key;
-        await queueDownload({
-          accountId: activeAccountId,
-          bucket: activeBucket,
-          key,
-          localPath: `${folder}/${fileName}`,
-        });
-      }
-    } catch (err) {
-      toast.error(
-        (err as Error).message || t('toast.operationFailed'),
-      );
-    }
-  }, [
-    activeAccountId, activeBucket, selectedKeys,
-    queueDownload, t,
-  ]);
+  const handleBatchDownload = useCallback(
+    () => downloadToFolder(Array.from(selectedKeys)),
+    [downloadToFolder, selectedKeys],
+  );
 
   const handleBatchCopyUrl = useCallback(async () => {
     if (!activeAccountId || !activeBucket) return;
@@ -1044,7 +1064,7 @@ export function BucketPage() {
                 onClick={() => void handleLoadMore()}
                 disabled={loadingMore}
                 className={[
-                  'px-6 py-2 text-sm rounded-lg',
+                  'px-6 py-2 text-sm rounded-[8px]',
                   'ghost-border transition-colors',
                   'text-[var(--text-muted)]',
                   'hover:bg-[var(--surface-elevated)]',
@@ -1087,28 +1107,30 @@ export function BucketPage() {
       {/* 拖拽上传遮罩 */}
       <UploadZone isDragActive={isDragActive} />
 
-      {/* 批量操作浮动栏 */}
-      <SelectionBar
-        count={selectedKeys.size}
-        onBatchDownload={() => void handleBatchDownload()}
-        onBatchCopyUrl={() => void handleBatchCopyUrl()}
-        onBatchRefreshCDN={
-          hasRefreshCDN
-            ? () => void handleBatchRefreshCDN()
-            : undefined
-        }
-        onBatchPrefetchCDN={
-          hasPrefetchCDN
-            ? () => void handleBatchPrefetchCDN()
-            : undefined
-        }
-        onBatchDelete={
-          settings.hideDeleteButton
-            ? undefined
-            : handleBatchDelete
-        }
-        onClearSelection={clearSelection}
-      />
+      {/* 批量操作浮动栏：仅窄屏（<1200px）显示，宽屏由右侧检查器承担 */}
+      <div className="min-[1200px]:hidden">
+        <SelectionBar
+          count={selectedKeys.size}
+          onBatchDownload={() => void handleBatchDownload()}
+          onBatchCopyUrl={() => void handleBatchCopyUrl()}
+          onBatchRefreshCDN={
+            hasRefreshCDN
+              ? () => void handleBatchRefreshCDN()
+              : undefined
+          }
+          onBatchPrefetchCDN={
+            hasPrefetchCDN
+              ? () => void handleBatchPrefetchCDN()
+              : undefined
+          }
+          onBatchDelete={
+            settings.hideDeleteButton
+              ? undefined
+              : handleBatchDelete
+          }
+          onClearSelection={clearSelection}
+        />
+      </div>
 
       {/* 新建文件夹对话框 */}
       <CreateFolderDialog

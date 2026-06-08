@@ -37,6 +37,7 @@ export function BreadcrumbNav({
       <button
         type="button"
         onClick={() => onNavigate('')}
+        title={bucket}
         className={[
           'flex min-w-0 items-center gap-1.5 rounded-[8px]',
           'px-2 py-1 transition-colors',
@@ -65,6 +66,7 @@ export function BreadcrumbNav({
             <button
               type="button"
               onClick={() => onNavigate(targetPrefix)}
+              title={segment}
               className={[
                 'min-w-0 rounded-[8px] px-2 py-1',
                 'transition-colors',

@@ -86,7 +86,7 @@ export function BucketToolbar({
   /** 视图切换按钮样式 */
   const viewBtnClass = (active: boolean) => [
     'flex items-center gap-1.5 px-3 py-2',
-    'text-xs rounded-lg transition-all duration-200',
+    'text-xs rounded-[8px] transition-all duration-200',
     active
       ? 'bg-[var(--bg-card)] font-semibold text-[var(--text)] shadow-sm'
       : 'text-[var(--text-secondary)] hover:text-[var(--text)]',
@@ -121,7 +121,7 @@ export function BucketToolbar({
               'text-xs font-semibold',
               'text-[var(--accent)]',
               'bg-[var(--accent-soft)]',
-              'px-2 py-1 rounded-md',
+              'px-2 py-1 rounded-[8px]',
             ].join(' ')}
           >
             {t('bucket.selectedCount', {
@@ -133,7 +133,7 @@ export function BucketToolbar({
         {/* 视图切换按钮组 */}
         <div
           className={[
-            'flex overflow-hidden rounded-lg',
+            'flex overflow-hidden rounded-[8px]',
             'bg-[var(--bg-raised)] p-0.5',
           ].join(' ')}
         >
@@ -163,6 +163,7 @@ export function BucketToolbar({
             className="rounded-[8px]"
             onClick={onCreateFolder}
             title={t('bucket.newFolder')}
+            aria-label={t('bucket.newFolder')}
           >
             <FolderPlus size={15} />
           </Button>
@@ -187,6 +188,8 @@ export function BucketToolbar({
             iconOnly
             className="rounded-[8px]"
             onClick={onSettings}
+            title={t('bucketSettings.title')}
+            aria-label={t('bucketSettings.title')}
           >
             <Settings2 size={15} />
           </Button>
@@ -198,6 +201,8 @@ export function BucketToolbar({
           iconOnly
           className="rounded-[8px]"
           onClick={onRefresh}
+          title={t('common.refresh')}
+          aria-label={t('common.refresh')}
         >
           <RefreshCcw size={15} />
         </Button>

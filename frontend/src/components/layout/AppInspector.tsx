@@ -4,13 +4,14 @@ import {
   Download,
   FolderCog,
   RefreshCcw,
-  ShieldCheck,
   Trash2,
   X,
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/Button';
+import { useProviderFeaturesQuery } from '@/hooks/useCloudApi';
 import { formatFileSize } from '@/lib/format';
+import { useAccountStore } from '@/stores/useAccountStore';
 import { useBucketStore } from '@/stores/useBucketStore';
 import { useTransferStore } from '@/stores/useTransferStore';
 
@@ -20,12 +21,18 @@ function emit(name: string) {
 
 export function AppInspector() {
   const { t } = useTranslation();
-  const buckets = useBucketStore((s) => s.buckets);
   const activeBucket = useBucketStore((s) => s.activeBucket);
   const objects = useBucketStore((s) => s.objects);
   const selectedKeys = useBucketStore((s) => s.selectedKeys);
   const clearSelection = useBucketStore((s) => s.clearSelection);
   const transfers = useTransferStore((s) => s.transfers);
+  const activeAccountId = useAccountStore((s) => s.activeAccountId);
+
+  const features = useProviderFeaturesQuery(
+    activeAccountId,
+    Boolean(activeAccountId),
+  );
+  const hasRefreshCDN = (features.data ?? []).includes('refreshCDN');
 
   const selectedObjects = useMemo(
     () => objects.filter((item) => selectedKeys.has(item.key)),
@@ -55,19 +62,10 @@ export function AppInspector() {
             iconOnly
             onClick={() => emit('cloud-pika:open-bucket-settings')}
             title={t('bucketSettings.title')}
+            aria-label={t('bucketSettings.title')}
           >
             <FolderCog size={15} />
           </Button>
-        </div>
-        <div className="mt-3 grid grid-cols-2 gap-2 text-xs">
-          <div className="rounded-[8px] bg-[var(--bg-raised)] p-2">
-            <p className="text-[var(--text-secondary)]">{t('metrics.buckets')}</p>
-            <p className="mt-1 font-semibold">{buckets.length}</p>
-          </div>
-          <div className="rounded-[8px] bg-[var(--bg-raised)] p-2">
-            <p className="text-[var(--text-secondary)]">{t('metrics.objects')}</p>
-            <p className="mt-1 font-semibold">{objects.length}</p>
-          </div>
         </div>
       </section>
 
@@ -82,7 +80,13 @@ export function AppInspector() {
             </p>
           </div>
           {selectedCount > 0 ? (
-            <Button variant="ghost" iconOnly onClick={clearSelection}>
+            <Button
+              variant="ghost"
+              iconOnly
+              onClick={clearSelection}
+              title={t('bucket.clearSelection')}
+              aria-label={t('bucket.clearSelection')}
+            >
               <X size={15} />
             </Button>
           ) : null}
@@ -112,42 +116,25 @@ export function AppInspector() {
             <Download size={14} className="mr-1.5" />
             {t('bucket.download')}
           </Button>
-          <Button
-            variant="ghost"
-            disabled={selectedCount === 0}
-            onClick={() => emit('cloud-pika:batch-refresh-cdn')}
-          >
-            <RefreshCcw size={14} className="mr-1.5" />
-            {t('bucket.refreshCDN')}
-          </Button>
+          {hasRefreshCDN ? (
+            <Button
+              variant="ghost"
+              disabled={selectedCount === 0}
+              onClick={() => emit('cloud-pika:batch-refresh-cdn')}
+            >
+              <RefreshCcw size={14} className="mr-1.5" />
+              {t('bucket.refreshCDN')}
+            </Button>
+          ) : null}
           <Button
             variant="danger"
+            className={hasRefreshCDN ? undefined : 'col-span-2'}
             disabled={selectedCount === 0}
             onClick={() => emit('cloud-pika:batch-delete')}
           >
             <Trash2 size={14} className="mr-1.5" />
             {t('bucket.delete')}
           </Button>
-        </div>
-      </section>
-
-      <section className="atlas-panel mt-3 p-3">
-        <div className="flex items-center gap-2">
-          <ShieldCheck size={15} className="text-[var(--success)]" />
-          <p className="text-sm font-semibold">{t('inspector.governance')}</p>
-        </div>
-        <div className="mt-3 space-y-2 text-xs">
-          {['lifecycle', 'cors', 'referer'].map((item) => (
-            <div
-              key={item}
-              className="flex items-center justify-between rounded-[8px] bg-[var(--bg-raised)] px-2 py-1.5"
-            >
-              <span className="text-[var(--text-secondary)]">
-                {t(`bucketSettings.${item}`)}
-              </span>
-              <span className="text-[var(--success)]">{t('bucketSettings.enabled')}</span>
-            </div>
-          ))}
         </div>
       </section>
 

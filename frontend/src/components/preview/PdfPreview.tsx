@@ -52,13 +52,13 @@ export function PdfPreview({
         <iframe
           src={pdfUrl}
           title={fileName}
-          className="h-full w-full rounded-2xl bg-white"
+          className="h-full w-full rounded-[8px] bg-white"
         />
       </div>
 
       {/* 文件名 */}
       <p
-        className="mt-3 rounded-full px-5 py-2 bg-white/10 backdrop-blur-md text-sm text-white/80 max-w-[80vw] truncate"
+        className="mt-3 rounded-full px-5 py-2 bg-black/55 text-sm text-white/80 max-w-[80vw] truncate"
         title={fileName}
         onClick={(e) => e.stopPropagation()}
       >

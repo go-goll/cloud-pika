@@ -91,7 +91,7 @@ export function BucketSidebar({
                 onClick={() => onSelect(bucket.name)}
                 className={[
                   'flex w-full items-center gap-2.5',
-                  'rounded-lg px-3 py-2',
+                  'rounded-[8px] px-3 py-2',
                   'text-left text-sm transition-all',
                   'duration-150',
                   'animate-slide-in-up',

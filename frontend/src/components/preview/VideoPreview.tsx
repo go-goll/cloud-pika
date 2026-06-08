@@ -50,7 +50,7 @@ export function VideoPreview({
           src={videoUrl}
           controls
           autoPlay
-          className="max-w-[85vw] max-h-[80vh] rounded-2xl shadow-2xl"
+          className="max-w-[85vw] max-h-[80vh] rounded-[8px] shadow-2xl"
         >
           <track kind="captions" />
         </video>
@@ -58,7 +58,7 @@ export function VideoPreview({
 
       {/* 文件名 */}
       <p
-        className="mt-4 rounded-full px-5 py-2.5 bg-white/10 backdrop-blur-md text-sm text-white/80 max-w-[80vw] truncate"
+        className="mt-4 rounded-full px-5 py-2.5 bg-black/55 text-sm text-white/80 max-w-[80vw] truncate"
         title={fileName}
         onClick={(e) => e.stopPropagation()}
       >

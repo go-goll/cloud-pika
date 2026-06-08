@@ -29,7 +29,7 @@ export function AppLayout({ children }: PropsWithChildren) {
 
   return (
     <div
-      className="app-shell grid h-screen min-h-screen bg-[var(--bg)] text-[var(--text)] transition-colors duration-300"
+      className="app-shell grid h-full overflow-hidden bg-[var(--bg)] text-[var(--text)] transition-colors duration-300"
       style={
         {
           '--sidebar-width': `${sidebarWidth}px`,

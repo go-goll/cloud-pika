@@ -122,7 +122,7 @@ function RowActionMenu({
         <div
           className={[
             'absolute right-0 top-7 z-30',
-            'min-w-[140px] rounded-lg p-1',
+            'min-w-[140px] rounded-[8px] p-1',
             'bg-[var(--bg-raised)]',
             'border border-[var(--border)] shadow-lg',
           ].join(' ')}

@@ -243,7 +243,7 @@ function CommandItem({
         'hover:bg-[var(--accent-soft)] hover:text-[var(--accent)]',
       ].join(' ')}
     >
-      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[var(--accent-soft)]">
+      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[8px] bg-[var(--accent-soft)]">
         {icon}
       </span>
       {label}

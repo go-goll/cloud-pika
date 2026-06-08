@@ -59,7 +59,7 @@ export function CreateFolderDialog({
           className={[
             'fixed left-1/2 top-1/2 z-50 w-[400px]',
             '-translate-x-1/2 -translate-y-1/2',
-            'rounded-[10px] bg-surface-container-lowest',
+            'rounded-[8px] bg-surface-container-lowest',
             'p-6 ghost-border shadow-ambient',
           ].join(' ')}
         >

@@ -116,7 +116,7 @@ const SelectItem = forwardRef<
     ref={ref}
     className={[
       'flex cursor-pointer select-none items-center',
-      'rounded-lg px-3 py-2 text-sm',
+      'rounded-[8px] px-3 py-2 text-sm',
       'text-[var(--text)] outline-none',
       'data-[highlighted]:bg-[rgba(234,239,242,0.4)] dark:data-[highlighted]:bg-[rgba(255,255,255,0.06)]',
       'data-[disabled]:pointer-events-none data-[disabled]:opacity-50',

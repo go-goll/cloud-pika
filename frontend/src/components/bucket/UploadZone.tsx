@@ -28,7 +28,7 @@ export function UploadZone({
       {/* 居中卡片 */}
       <div
         className={[
-          'rounded-[10px] bg-[var(--bg-card)] shadow-[var(--shadow-lg)]',
+          'rounded-[8px] bg-[var(--bg-card)] shadow-[var(--shadow-lg)]',
           'p-8 text-center max-w-sm w-full mx-4',
           'border-2 border-dashed border-[var(--accent)]',
         ].join(' ')}

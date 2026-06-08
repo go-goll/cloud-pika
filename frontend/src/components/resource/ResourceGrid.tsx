@@ -158,7 +158,7 @@ function CardActionMenu({
         }}
         className={[
           'flex h-6 w-6 items-center justify-center',
-          'rounded-lg transition-colors',
+          'rounded-[8px] transition-colors',
           'hover:bg-surface-container-low',
           'text-on-surface-variant',
         ].join(' ')}
@@ -205,7 +205,7 @@ function CardActionMenu({
                 }}
                 className={[
                   'flex w-full items-center px-3 py-1.5',
-                  'text-xs text-danger rounded-lg',
+                  'text-xs text-danger rounded-[8px]',
                   'hover:bg-surface-container-low',
                 ].join(' ')}
               >
@@ -405,7 +405,7 @@ function GridCard({
                 className={[
                   'ml-auto shrink-0 flex h-5 w-5',
                   'items-center justify-center',
-                  'rounded-lg transition-all',
+                  'rounded-[8px] transition-all',
                   'hover:bg-[var(--accent-soft)]',
                   'text-[var(--text-secondary)]',
                   'hover:text-[var(--accent)]',

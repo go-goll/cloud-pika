@@ -117,7 +117,7 @@ export function SettingsDrawer({
                 className={[
                   'flex h-8 w-8 items-center',
                   'justify-center',
-                  'rounded-lg',
+                  'rounded-[8px]',
                   'text-[var(--text-secondary)]',
                   'hover:bg-[var(--bg-raised)]',
                   'hover:text-[var(--text)]',

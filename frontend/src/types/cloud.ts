@@ -5,8 +5,6 @@ export interface BucketInfo {
   location?: string;
   provider: ProviderKey;
   permission?: number;
-  count?: number;
-  space?: number;
 }
 
 export interface ObjectItem {
